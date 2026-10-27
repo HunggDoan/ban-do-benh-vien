@@ -6,7 +6,7 @@
     {"id":"cong_nhan_vien","type":"gate","x":398,"y":1060,"name":"Cổng nhân viên"},
     {"id":"cong_sau_bac","type":"gate","x":1665,"y":262,"name":"Cổng sau (phía bắc)"},
     {"id":"cong_sau_dong","type":"gate","x":1655,"y":676,"name":"Cổng sau (phía đông)"},
-    {"id":"cua_a1","type":"door","x":1148,"y":1067,"name":"Cửa chính Tòa A1"},
+    {"id":"cua_a1","type":"door","x":1154,"y":1065,"name":"Cửa chính Tòa A1"},
     {"id":"cua_sau_a1","type":"door","x":1154,"y":940,"name":"Cửa sau Tòa A1"},
     {"id":"cua_a3","type":"door","x":1299,"y":912,"name":"Cửa Tòa A3 (phía trong)"},
     {"id":"cua_a3_ngoai","type":"door","x":1360,"y":1065,"name":"Cửa Tòa A3 (phía ngoài)"},
