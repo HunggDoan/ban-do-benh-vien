@@ -1,0 +1,16 @@
+# Cấu hình Netlify: đăng thẳng thư mục public, không cần build trên máy chủ.
+# Mỗi lần có thay đổi đẩy lên GitHub (từ trang quản trị hoặc git push), Netlify tự đăng lại.
+[build]
+  publish = "public"
+
+# Dữ liệu bản đồ luôn được kiểm tra bản mới, để sửa xong là người bệnh thấy ngay
+[[headers]]
+  for = "/map_data.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Không cho máy tìm kiếm (Google...) đưa trang quản trị vào kết quả
+[[headers]]
+  for = "/quantri/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

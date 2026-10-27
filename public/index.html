@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c5d3cb">
+<!-- Trang chỉ đường cho người bệnh. Dữ liệu đọc từ map_data.json cùng thư mục. Không cần sửa file này khi đổi khoa, thêm tòa hay thêm đường. -->
+<title>Bản đồ Bệnh viện Sản Nhi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}body{margin:0;font-size:14px}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
+<style>
+/* Layout: bản đồ 3D toàn màn hình; khung tìm kiếm phía trên; bảng chỉ dẫn ở đáy (điện thoại) hoặc cột trái (máy tính) */
+:root{
+  --bg:#c5d3cb; --ground:#d3dfd0; --path:#efe9df; --road:#a7a4a0; --road-line:#efe9df;
+  --panel:#fbfbf8; --fg:#24252a; --muted:#62606a; --line:#d9d6cf; --hover:#eef2ee;
+  --clinic:#d9bfc1; --support:#cfc9c2; --park:#bfcfc4; --emergency:#c6453c;
+  --accent:#2f6f73; --roof:#efe7e4; --door:#d2342a;
+  --route:#d4372c; --start:#1f63b0;
+  --font:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16181b; --ground:#202327; --path:#2f3338; --road:#3a3d42; --road-line:#5b5f66;
+  --panel:#1f2226; --fg:#ece8e6; --muted:#a6a2a6; --line:#363a40; --hover:#2a2e33;
+  --clinic:#8f6f73; --support:#6e6a66; --park:#5d7364; --emergency:#d0584e;
+  --accent:#6fb3b7; --roof:#a88d90; --door:#ff6a5c;
+  --route:#ff6b5e; --start:#6eaeff; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#16181b; --ground:#202327; --path:#2f3338; --road:#3a3d42; --road-line:#5b5f66;
+  --panel:#1f2226; --fg:#ece8e6; --muted:#a6a2a6; --line:#363a40; --hover:#2a2e33;
+  --clinic:#8f6f73; --support:#6e6a66; --park:#5d7364; --emergency:#d0584e;
+  --accent:#6fb3b7; --roof:#a88d90; --door:#ff6a5c;
+  --route:#ff6b5e; --start:#6eaeff; color-scheme:dark;}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);overflow:hidden}
+#app{position:relative;height:100%;width:100%}
+canvas{display:block;touch-action:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.10)}
+
+#panel{position:absolute;top:12px;left:max(16px,env(safe-area-inset-left,0px));width:min(400px,calc(100% - 32px));max-height:calc(100% - 24px);display:flex;flex-direction:column;gap:8px;z-index:5}
+.search{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:10px;min-width:0}
+.start{font-size:13px;color:var(--muted)}
+.start .pin{width:12px;height:12px;border-radius:50%;background:var(--start);box-shadow:0 0 0 3px color-mix(in srgb,var(--start) 25%,transparent);flex:none}
+.start label{white-space:nowrap}
+#startSel{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:600;color:var(--fg);background:transparent;border:none;padding:4px 0;text-overflow:ellipsis}
+.find{border-top:1px solid var(--line);padding-top:8px}
+.find svg{flex:none;color:var(--route)}
+#q{flex:1;min-width:0;font:inherit;font-size:16px;border:none;background:transparent;color:var(--fg);padding:6px 0}
+#q::placeholder{color:var(--muted)}
+#q::-webkit-search-cancel-button{display:none}
+#clearQ{border:none;background:none;font-size:20px;line-height:1;color:var(--muted);padding:2px 6px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--hover);border-radius:999px;padding:6px 12px}
+.chips button.em{color:var(--emergency);border-color:color-mix(in srgb,var(--emergency) 45%,var(--line))}
+
+#results{overflow:auto;max-height:min(55vh,460px);padding:4px}
+#results button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;border:none;background:none;border-radius:8px;padding:10px 12px}
+#results button:hover,#results button.on{background:var(--hover)}
+#results .t{font-size:15px;font-weight:600}
+#results .s{font-size:13px;color:var(--muted)}
+#results .empty{padding:14px 12px;font-size:14px;color:var(--muted);line-height:1.5}
+
+#sheet{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#sheet header{padding:14px 16px 10px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#sTitle{margin:0;font-size:18px;line-height:1.3;text-wrap:balance}
+#sSub{font-size:14px;color:var(--muted)}
+#sSum{font-size:15px;font-weight:600;color:var(--route);font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.actions button{font-size:13px;font-weight:500;border:1px solid var(--line);background:none;border-radius:8px;padding:6px 10px}
+.actions button.primary{background:var(--route);border-color:var(--route);color:#fff;font-weight:600}
+#sBody{overflow:auto;min-height:0}
+#sheet[data-collapsed="true"] #sBody{display:none}
+ol.steps{list-style:none;margin:0;padding:6px 8px 12px}
+ol.steps li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:10px 8px;border-bottom:1px solid var(--line)}
+ol.steps li:last-child{border-bottom:none}
+.ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--hover);color:var(--fg)}
+.ic.go{background:color-mix(in srgb,var(--start) 16%,transparent);color:var(--start)}
+.ic.end,.ic.floor{background:color-mix(in srgb,var(--route) 16%,transparent);color:var(--route)}
+ol.steps .tx{font-size:16px;line-height:1.45;padding-top:5px}
+ol.steps .tx b{font-weight:600}
+.floors{padding:8px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.floors .fl{display:grid;grid-template-columns:62px 1fr;gap:10px;font-size:14px;line-height:1.45}
+.floors .fl span:first-child{font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.floors p{margin:0;font-size:14px;color:var(--muted);line-height:1.5}
+
+#views{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:4}
+#views button{background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:12px;font-weight:600;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+#views button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:12px;font-weight:600;padding:3px 7px;border-radius:5px;background:var(--panel);border:1px solid var(--line);pointer-events:auto;cursor:pointer}
+.lb.big{font-size:14px;font-weight:700}
+.lb.small{font-size:10.5px;font-weight:500;color:var(--muted)}
+.lb.text{background:none;border:none;font-size:11px;color:var(--muted);font-weight:500;pointer-events:none}
+.lb.on{background:var(--route);border-color:var(--route);color:#fff}
+.lb.you{background:var(--start);border-color:var(--start);color:#fff;font-size:13px;pointer-events:none;z-index:2}
+.lb.dest{background:var(--route);border-color:var(--route);color:#fff;font-size:13px;pointer-events:none;z-index:2}
+#toast{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);background:var(--fg);color:var(--panel);font-size:14px;padding:10px 14px;border-radius:10px;z-index:20;text-align:center}
+
+#qrView{position:absolute;inset:0;z-index:30;background:var(--bg);overflow:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#qrView h1{font-size:20px;margin:0 0 4px}
+#qrView p{margin:0 0 16px;color:var(--muted);font-size:14px}
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.qrgrid .card{padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;box-shadow:none}
+.qrgrid .qr{background:#fff;padding:8px;border-radius:6px}
+.qrhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.qrhead p{max-width:70ch;line-height:1.55}
+.qrhead .back,.qrgrid .test{font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px}
+.dirs{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;width:100%}
+.dirs button{border:1px solid var(--line);background:none;border-radius:6px;padding:5px 0;font-size:15px;line-height:1}
+.dirs button[aria-pressed="true"]{background:var(--start);border-color:var(--start);color:#fff}
+.qrgrid b{font-size:14px}.qrgrid code{font-size:11px;color:var(--muted);word-break:break-all}
+
+#pickPanel{position:absolute;top:12px;right:max(16px,env(safe-area-inset-right,0px));width:min(380px,calc(100% - 32px));max-height:calc(100% - 24px);overflow:auto;padding:12px 14px;z-index:25;font-size:13px}
+#pickPanel .ph{display:flex;justify-content:space-between;align-items:center;font-size:15px}
+#pickPanel p{margin:8px 0;color:var(--muted);line-height:1.5}
+#pickPanel .pr{display:grid;grid-template-columns:74px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+#pickPanel .k{color:var(--muted);font-size:12px}
+#pickPanel code{font-size:12px;word-break:break-all;user-select:all}
+#pickPanel button{font-size:12px;border:1px solid var(--line);background:none;border-radius:6px;padding:4px 8px}
+#pickPanel .ok{color:var(--accent);font-weight:600}#pickPanel .bad{color:var(--route);font-weight:600}
+#pickPanel ul{margin:4px 0 0;padding-left:18px;line-height:1.5}
+.lb.nid{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;font-weight:500;padding:1px 4px;background:color-mix(in srgb,var(--panel) 85%,transparent);color:var(--fg)}
+.previewBadge{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:22;background:#a86a12;color:#fff;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px;pointer-events:none}
+@media (max-width:720px){
+  #panel{width:auto;right:max(16px,env(safe-area-inset-right,0px));max-height:none}
+  #sheet{position:fixed;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:48%}
+  #panel.routing .chips{display:none}
+  #views{top:auto;bottom:calc(50% + 10px);transform:none}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="labels"></div>
+  <div id="panel">
+    <div class="card search">
+      <div class="row start">
+        <span class="pin" aria-hidden="true"></span>
+        <label for="startSel">Bạn đang ở</label>
+        <select id="startSel"></select>
+      </div>
+      <div class="row find">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" placeholder="Tìm khoa, phòng hoặc tòa nhà…" autocomplete="off" enterkeyhint="search" aria-label="Tìm điểm đến">
+        <button id="clearQ" aria-label="Xóa ô tìm kiếm" hidden>×</button>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="card" id="results" hidden role="listbox" aria-label="Kết quả tìm kiếm"></div>
+    <section class="card" id="sheet" hidden aria-live="polite">
+      <header>
+        <div class="eyebrow" id="sEyebrow"></div>
+        <h2 id="sTitle"></h2>
+        <div id="sSub"></div>
+        <div id="sSum"></div>
+        <div class="actions" id="sActions"></div>
+      </header>
+      <div id="sBody"></div>
+    </section>
+  </div>
+  <div id="views" role="group" aria-label="Góc nhìn">
+    <button id="vTilt" aria-pressed="true">3D</button>
+    <button id="vTop" aria-pressed="false">Từ trên</button>
+    <button id="vAll">Toàn cảnh</button>
+    <button id="vCompass" aria-pressed="false">La bàn</button>
+  </div>
+  <div id="toast" hidden role="status"></div>
+  <div id="qrView" hidden></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(async function(){
+"use strict";
+// ================= NẠP DỮ LIỆU CHUNG (map_data.json) =================
+let D;
+let PREVIEW=false;
+try{
+  // Bản xem thử từ trang quản trị (chưa lưu): ?preview=1
+  if(/[?&]preview=1/.test(location.search)){try{const t=localStorage.getItem("mapEditor.preview");if(t){D=JSON.parse(t);PREVIEW=true;}}catch(e){}}
+  if(!D){const r=await fetch("map_data.json",{cache:"no-cache"});if(!r.ok)throw new Error("HTTP "+r.status);D=await r.json();}
+}
+catch(e){document.getElementById("app").innerHTML='<div style="padding:24px;font:16px/1.5 system-ui">Không tải được dữ liệu bản đồ (map_data.json). Vui lòng tải lại trang.<br><small>'+String(e)+'</small></div>';return;}
+// ================= CẤU HÌNH =================
+const DOMAIN = D.config.domain;
+const LOG_URL = D.config.logUrl;
+const M_PER_PX = D.config.metersPerPixel;   // 1 pixel sơ đồ ≈ bao nhiêu mét
+const WALK_MPS = D.config.walkingSpeed;     // tốc độ đi bộ, m/giây
+const MAP_UP_BEARING = D.config.mapUpBearing; // hướng la bàn của "phía trên" sơ đồ
+const GATE_FACING = D.gateFacing||{};
+const OLD_IDS = D.oldIds||{};
+const PROBLEMS=[]; // lỗi dữ liệu, hiện ở chế độ #toado
+
+// ================= ĐIỂM (NODE) =================
+// type: gate = cổng, door = cửa tòa nhà, jct = ngã rẽ. lm = tên mốc dùng trong câu chỉ dẫn.
+const N={};
+(D.nodes||[]).forEach(n=>{
+  if(N[n.id]) PROBLEMS.push(`Mã điểm "${n.id}" bị trùng.`);
+  const t=n.type==="junction"?"jct":n.type;
+  if(!["gate","door","jct"].includes(t)) PROBLEMS.push(`Điểm "${n.id}" có type "${n.type}" không hợp lệ (gate / door / junction).`);
+  N[n.id]={id:n.id,x:+n.x,y:+n.y,type:t,name:n.name||n.landmark||n.id,lm:n.landmark||n.name||n.id};
+});
+// ================= ĐOẠN ĐƯỜNG (EDGE) =================
+// Mỗi mục trong "edges" là một chuỗi điểm nối liền ("path"), cùng thuộc tính.
+const E=[];
+(D.edges||[]).forEach((e,i)=>{
+  const path=e.path||[e.a,e.b];
+  for(let k=0;k<path.length-1;k++){
+    const a=path[k],b=path[k+1];
+    if(!N[a]||!N[b]){PROBLEMS.push(`Đường thứ ${i+1}: không có điểm "${!N[a]?a:b}".`);continue;}
+    E.push({a,b,w:e.width,cov:e.covered?1:0,canopy:e.canopy===false?0:1,indoor:e.indoor||null});
+  }
+});
+// ================= ĐIỂM ĐẾN VÀ KHOA PHÒNG =================
+const PLACES=(D.places||[]).map(p=>({id:p.id,name:p.name,bld:p.building||null,doors:(p.doors||[]).filter(d=>{if(!N[d])PROBLEMS.push(`Điểm đến "${p.id}": không có cửa "${d}".`);return !!N[d];}),
+  depts:(p.departments||[]).map(d=>({f:d.floor==null?null:+d.floor,n:d.name,a:d.keywords||""})),a:p.keywords||"",note:p.note||""}));
+const PLACE_BY_ID={};PLACES.forEach(p=>PLACE_BY_ID[p.id]=p);
+const PLACE_BY_BLD={};(D.buildings||[]).forEach(b=>{if(b.place){if(PLACE_BY_ID[b.place])PLACE_BY_BLD[b.id]=b.place;else PROBLEMS.push(`Khối nhà "${b.id}": không có điểm đến "${b.place}".`);}});
+const QUICK=(D.quickSearches||[]).map(q=>[q.label,q.query,q.emergency?1:0]);
+
+// ================= THUẬT TOÁN =================
+const ADJ={};Object.keys(N).forEach(k=>ADJ[k]=[]);
+E.forEach(e=>{
+  const A=N[e.a],B=N[e.b]; if(!A||!B){console.warn("Thiếu điểm",e);return;}
+  e.len=Math.hypot(A.x-B.x,A.y-B.y);
+  // chi phí: đi trong nhà hơi bất tiện, hành lang mái che được ưu tiên nhẹ
+  e.cost=e.len*(e.indoor?1.15:e.cov?0.95:1);
+  ADJ[e.a].push({to:e.b,e});ADJ[e.b].push({to:e.a,e});
+});
+function dijkstra(src){
+  const dist={},prev={},done=new Set();
+  Object.keys(N).forEach(k=>dist[k]=Infinity);dist[src]=0;
+  for(;;){
+    let u=null,best=Infinity;
+    for(const k in dist) if(!done.has(k)&&dist[k]<best){best=dist[k];u=k;}
+    if(u===null) break; // các điểm còn lại không tới được
+    done.add(u);
+    for(const {to,e} of ADJ[u]){const d=best+e.cost;if(d<dist[to]){dist[to]=d;prev[to]={from:u,e};}}
+  }
+  return {dist,prev};
+}
+function pathTo(res,src,dst){
+  if(!isFinite(res.dist[dst])) return null;
+  const ids=[dst],edges=[];let c=dst;
+  while(c!==src){const p=res.prev[c];edges.unshift(p.e);ids.unshift(p.from);c=p.from;}
+  return {ids,edges};
+}
+function meters(px){return px*M_PER_PX;}
+function fmtM(m){return Math.max(5,Math.round(m/5)*5)+" m";}
+function turnAt(a,b,c){
+  // cùng quy ước với bản Flutter: trục y hướng xuống, góc dương = rẽ phải
+  const a1=Math.atan2(b.y-a.y,b.x-a.x),a2=Math.atan2(c.y-b.y,c.x-b.x);
+  let d=(a2-a1)*180/Math.PI;while(d<=-180)d+=360;while(d>180)d-=360;
+  if(d>25&&d<155) return "right"; if(d<-25&&d>-155) return "left"; if(Math.abs(d)>=155) return "back"; return null;
+}
+function buildSteps(route,place,dept,facing,fsrc){
+  const ids=route.ids,steps=[],total=route.edges.reduce((s,e)=>s+meters(e.len),0);
+  steps.push({ic:"go",t:`Bạn đang ở <b>${N[ids[0]].name}</b>`});
+  if(route.edges.length&&facing!=null){
+    const a=N[ids[0]],b=N[ids[1]],tgt=b.type==="jct"?b.lm:b.name;
+    let d=Math.atan2(b.x-a.x,-(b.y-a.y))*180/Math.PI-facing;while(d<=-180)d+=360;while(d>180)d-=360;
+    if(Math.abs(d)>145) steps.push({ic:"back",t:`<b>${fsrc==="compass"?"Quay người ra phía sau":"Quay lưng lại tấm biển QR"}</b>, hướng về ${tgt}`});
+    else if(d>=35) steps.push({ic:"right",t:`<b>Quay người sang phải</b>, hướng về ${tgt}`});
+    else if(d<=-35) steps.push({ic:"left",t:`<b>Quay người sang trái</b>, hướng về ${tgt}`});
+    else steps.push({ic:"straight",t:`<b>Đi thẳng về phía trước</b>, hướng về ${tgt}`});
+  }
+  if(ids.length===1){ steps.push({ic:"end",t:`Bạn đang đứng ngay <b>${N[ids[0]].name}</b>`}); }
+  const kind=e=>e.indoor?"in":e.cov?"cov":"out";
+  let acc=0;
+  for(let k=0;k<route.edges.length;k++){
+    const e=route.edges[k];acc+=meters(e.len);
+    const lead=kind(e)==="in"?`Đi xuyên qua ${e.indoor} khoảng <b>${fmtM(acc)}</b>`:
+               kind(e)==="cov"?`Đi theo hành lang có mái che khoảng <b>${fmtM(acc)}</b>`:`Đi thẳng khoảng <b>${fmtM(acc)}</b>`;
+    const at=N[ids[k+1]];
+    if(k===route.edges.length-1){ steps.push({ic:"end",t:`${lead} là tới <b>${at.name}</b>`}); break; }
+    const t=turnAt(N[ids[k]],at,N[ids[k+2]]);
+    if(t){
+      const word=t==="right"?"rẽ phải":t==="left"?"rẽ trái":"quay ngược lại";
+      steps.push({ic:t,t:`${lead}, rồi <b>${word}</b> ở ${at.lm}`});acc=0;
+    }else if(kind(route.edges[k+1])!==kind(e)){
+      steps.push({ic:"straight",t:`${lead} tới ${at.type==="jct"?at.lm:"<b>"+at.name+"</b>"}`});acc=0;
+    }
+  }
+  if(dept){
+    if(dept.f===1) steps.push({ic:"floor",t:`<b>${dept.n}</b> ở ngay <b>Tầng 1</b>, vào cửa là tới`});
+    else if(dept.f) steps.push({ic:"floor",t:`Vào tòa, lên <b>Tầng ${dept.f}</b> bằng thang máy hoặc cầu thang bộ để tới <b>${dept.n}</b>`});
+    else steps.push({ic:"floor",t:`Vào tòa, hỏi quầy hướng dẫn để tới <b>${dept.n}</b>`});
+  }
+  return {steps,total};
+}
+
+{const root=N.cong_chinh?"cong_chinh":Object.keys(N)[0];
+ if(root){const r0=dijkstra(root);Object.keys(N).forEach(k=>{if(!isFinite(r0.dist[k]))PROBLEMS.push(`Điểm "${k}" chưa có đường nối tới ${N[root].name}.`);});}
+ if(PROBLEMS.length) console.warn("Lỗi dữ liệu map_data.json:\n"+PROBLEMS.join("\n"));}
+
+// ================= TÌM KIẾM =================
+const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/[–\-_,&()]/g," ").replace(/\s+/g," ").trim();
+const INDEX=[];
+PLACES.forEach(p=>{
+  INDEX.push({p,d:null,t:p.name,s:p.depts.length?`${p.depts.length} khoa, phòng`:(p.doors[0]&&N[p.doors[0]].type==="gate"?"Cổng":"Điểm đến"),h:norm(p.name+" "+(p.a||""))});
+  p.depts.forEach(d=>INDEX.push({p,d,t:d.n,s:(d.f?`Tầng ${d.f} · `:"")+p.name,h:norm(d.n+" "+p.name+" "+(d.a||""))}));
+});
+function search(q){
+  const nq=norm(q); if(!nq) return [];
+  const toks=nq.split(" ");
+  return INDEX.filter(it=>toks.every(t=>it.h.includes(t)))
+    .map(it=>{const nt=norm(it.t);return {it,r:nt.startsWith(nq)?0:nt.includes(nq)?1:(it.d?2:3)};})
+    .sort((a,b)=>a.r-b.r||(a.it.d?0:1)-(b.it.d?0:1)).slice(0,40).map(x=>x.it);
+}
+
+// ================= 3D =================
+const OX=1100,OZ=900,S=10,FLOOR=1.8;
+const wx=px=>(px-OX)/S, wz=py=>(py-OZ)/S;
+const app=document.getElementById("app");
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+app.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,1,1,2000);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.maxPolarAngle=1.42;controls.minDistance=20;controls.maxDistance=420;
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8378,.75));
+const sun=new THREE.DirectionalLight(0xffffff,.75);sun.position.set(-90,160,70);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-140,right:140,top:110,bottom:-110,near:10,far:500});scene.add(sun);
+
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+const mats={};function mat(k,o){return mats[k]||(mats[k]=new THREE.MeshStandardMaterial(Object.assign({roughness:.9,metalness:0},o||{})));}
+function tinted(t,o){const m=new THREE.MeshStandardMaterial(Object.assign({roughness:.9},o||{}));m.userData.tint=t;return m;}
+
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(360,280),mat("ground"));
+ground.rotation.x=-Math.PI/2;ground.position.set(0,0,5);ground.receiveShadow=true;scene.add(ground);
+function flatShape(pts,y,m,h){
+  const sh=new THREE.Shape();pts.forEach((p,i)=>{const X=wx(p[0]),Y=-wz(p[1]);i?sh.lineTo(X,Y):sh.moveTo(X,Y);});
+  const g=h?new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false}):new THREE.ShapeGeometry(sh);
+  g.rotateX(-Math.PI/2);const mesh=new THREE.Mesh(g,m);mesh.position.y=y;mesh.receiveShadow=true;scene.add(mesh);return mesh;
+}
+flatShape(D.decor.road,.02,mat("road"));
+const dashM=new THREE.LineDashedMaterial({dashSize:2,gapSize:2});
+{const g=new THREE.BufferGeometry().setFromPoints(D.decor.roadCenter.map(p=>new THREE.Vector3(wx(p[0]),.06,wz(p[1]))));const l=new THREE.Line(g,dashM);l.computeLineDistances();scene.add(l);}
+
+function flatStrip(x1,z1,x2,z2,w,m,y){
+  const len=Math.hypot(x2-x1,z2-z1);const mesh=new THREE.Mesh(new THREE.PlaneGeometry(len+w,w),m);
+  mesh.rotation.x=-Math.PI/2;mesh.rotation.z=-Math.atan2(z2-z1,x2-x1);mesh.position.set((x1+x2)/2,y,(z1+z2)/2);return mesh;
+}
+// lối đi vẽ từ chính dữ liệu đường đi
+E.forEach(e=>{if(e.indoor)return;const A=N[e.a],B=N[e.b];const m=flatStrip(wx(A.x),wz(A.y),wx(B.x),wz(B.y),e.w||2.4,mat("path"),.03);m.receiveShadow=true;scene.add(m);});
+// mái che cho các đoạn có mái
+function canopy(x1,z1,x2,z2){
+  const len=Math.hypot(x2-x1,z2-z1),w=3.6,g=new THREE.Group();g.position.set((x1+x2)/2,0,(z1+z2)/2);g.rotation.y=Math.atan2(x2-x1,z2-z1);
+  const rm=tinted("accent",{roughness:.6,transparent:true,opacity:.92});
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(w+.8,.3,len),rm);roof.position.y=3.6;roof.castShadow=true;g.add(roof);
+  const n=Math.max(1,Math.round(len/4));for(let i=0;i<=n;i++)for(const a of[-1,1]){const p=new THREE.Mesh(new THREE.BoxGeometry(.3,3.6,.3),mat("post"));p.position.set(a*w/2,1.8,-len/2+i*len/n);p.castShadow=true;g.add(p);}
+  scene.add(g);
+}
+E.forEach(e=>{if(e.cov&&e.canopy!==0){const A=N[e.a],B=N[e.b];canopy(wx(A.x),wz(A.y),wx(B.x),wz(B.y));}});
+
+function winTex(){
+  const c=document.createElement("canvas");c.width=64;c.height=64;const x=c.getContext("2d");
+  x.fillStyle="#fff";x.fillRect(0,0,64,64);x.fillStyle="rgba(40,50,60,.42)";x.fillRect(8,20,20,26);x.fillRect(36,20,20,26);
+  x.fillStyle="rgba(0,0,0,.12)";x.fillRect(0,60,64,4);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;return t;
+}
+const baseTex=winTex();
+function sideMat(type,rx,ry){const t=baseTex.clone();t.needsUpdate=true;t.repeat.set(rx,ry);return tinted(type,{map:t,roughness:.85});}
+
+const BUILD=(D.buildings||[]).map(b=>({id:b.id,label:b.label||"",r:b.rect,f:Math.max(1,+b.floors||1),t:b.kind==="parking"?"park":(b.kind||"support"),info:b.info||""}));
+const picks=[],labelEls=[],BLD={};
+function addLabel(text,pos,cls,onClick){
+  const el=document.createElement("div");el.className="lb "+(cls||"");el.textContent=text;
+  if(onClick)el.addEventListener("click",onClick);
+  document.getElementById("labels").appendChild(el);const L={el,pos};labelEls.push(L);return L;
+}
+BUILD.forEach(b=>{
+  const [x1,y1,x2,y2]=b.r,w=(x2-x1)/S,d=(y2-y1)/S,h=b.f*FLOOR+.4,cx=wx((x1+x2)/2),cz=wz((y1+y2)/2);
+  const g=new THREE.Group();g.position.set(cx,0,cz);
+  if(b.t==="park"){
+    const roof=new THREE.Mesh(new THREE.BoxGeometry(w,.4,d),tinted("park"));roof.position.y=3.2;roof.castShadow=true;g.add(roof);
+    for(let i=0;i<=4;i++)for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.BoxGeometry(.4,3.2,.4),mat("post"));p.position.set(-w/2+.6+i*(w-1.2)/4,1.6,s*(d/2-.6));g.add(p);}
+    b.h=3.4;
+  }else{
+    const sx=sideMat(b.t,Math.max(1,Math.round(d/3.2)),b.f),sz=sideMat(b.t,Math.max(1,Math.round(w/3.2)),b.f),rf=tinted("roof",{roughness:.95});
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[sx,sx,rf,rf,sz,sz]);m.position.y=h/2;m.castShadow=true;m.receiveShadow=true;g.add(m);
+    const par=new THREE.Mesh(new THREE.BoxGeometry(w+.3,.35,d+.3),rf);par.position.y=h;g.add(par);b.h=h;
+  }
+  scene.add(g);b.group=g;BLD[b.id]=b;
+  g.traverse(o=>{if(o.isMesh){o.userData.bld=b.id;picks.push(o);}});
+  if(b.label) b.lbl=addLabel(b.label,new THREE.Vector3(cx,b.h+1.2,cz),/^[A-Z]\d?$/.test(b.label)?"big":(b.f<=1?"small":""),()=>tapBuilding(b.id));
+});
+// sảnh đón xe (mái che trước A1)
+if(D.decor.porch){const [x1,y1,x2,y2]=D.decor.porch,g=new THREE.Group(),w=(x2-x1)/S,d=(y2-y1)/S;g.position.set(wx((x1+x2)/2),0,wz((y1+y2)/2));
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(w,.35,d),tinted("clinic"));roof.position.y=4.2;roof.castShadow=true;g.add(roof);
+ [-1,1].forEach(a=>{const p=new THREE.Mesh(new THREE.BoxGeometry(.4,4.2,.4),mat("post"));p.position.set(a*(w/2-.5),2.1,d/2-.5);g.add(p);});
+ scene.add(g);}
+// nhà để xe nhân viên
+if(D.decor.staffShed){const s=flatShape(D.decor.staffShed,3,tinted("park"),.35);s.castShadow=true;
+ (D.decor.staffShedPosts||[]).forEach(p=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.4,3,.4),mat("post"));m.position.set(wx(p[0]),1.5,wz(p[1]));scene.add(m);});}
+// cổng
+function gate(x1,x2,y,id){
+  if(!PLACE_BY_ID[id]){PROBLEMS.push(`Cổng: không có điểm đến "${id}".`);return;}
+  const w=(x2-x1)/S,g=new THREE.Group();g.position.set(wx((x1+x2)/2),0,wz(y));const gm=tinted("accent");
+  [-1,1].forEach(a=>{const p=new THREE.Mesh(new THREE.BoxGeometry(1,4.5,1),gm);p.position.set(a*w/2,2.25,0);p.castShadow=true;g.add(p);});
+  const beam=new THREE.Mesh(new THREE.BoxGeometry(w+1,.7,1),gm);beam.position.y=4.6;beam.castShadow=true;g.add(beam);scene.add(g);
+  g.traverse(o=>{if(o.isMesh){o.userData.place=id;picks.push(o);}});
+  addLabel(PLACE_BY_ID[id].name,new THREE.Vector3(wx((x1+x2)/2),6.2,wz(y)),"",()=>openPlace(PLACE_BY_ID[id]));
+}
+(D.gates||[]).forEach(g=>gate(g.x1,g.x2,g.y,g.place));
+// chấm đỏ lối vào
+Object.values(N).forEach(n=>{if(n.type!=="door")return;const m=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.25,16),mat("door",{emissiveIntensity:.5}));m.position.set(wx(n.x),.16,wz(n.y));scene.add(m);});
+(D.decor.labels||[]).forEach(l=>addLabel(l.text,new THREE.Vector3(wx(l.x),l.height||.5,wz(l.y)),l.small?"small":"text"));
+
+// ---- đường đi trên bản đồ ----
+const routeGroup=new THREE.Group();scene.add(routeGroup);
+const routeMat=new THREE.MeshBasicMaterial({depthTest:false,transparent:true,opacity:.92});
+const chevMat=new THREE.MeshBasicMaterial({depthTest:false,color:0xffffff});
+const chevGeo=(()=>{const s=new THREE.Shape();s.moveTo(.9,0);s.lineTo(-.5,.75);s.lineTo(-.15,0);s.lineTo(-.5,-.75);s.lineTo(.9,0);const g=new THREE.ShapeGeometry(s);g.rotateX(-Math.PI/2);return g;})();
+function makePin(colorKey,h){
+  const g=new THREE.Group(),m=mat(colorKey+"Pin",{roughness:.5});
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,h,10),m);stem.position.y=h/2;g.add(stem);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(1.1,20,14),m);head.position.y=h;head.castShadow=true;g.add(head);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(1.2,1.9,32),new THREE.MeshBasicMaterial({transparent:true,opacity:.35,depthTest:false}));
+  ring.userData.tint=colorKey;ring.rotation.x=-Math.PI/2;ring.position.y=.15;ring.renderOrder=9;g.add(ring);
+  g.visible=false;scene.add(g);return g;
+}
+const startPin=makePin("start",7),destPin=makePin("route",9);
+const beamMat=new THREE.MeshBasicMaterial({transparent:true,opacity:.38,depthTest:false});beamMat.userData.tint="start";
+const beam=new THREE.Mesh((()=>{const g=new THREE.CircleGeometry(9,24,-Math.PI/5,2*Math.PI/5);g.rotateX(-Math.PI/2);return g;})(),beamMat);
+beam.renderOrder=8;beam.position.y=.18;beam.visible=false;scene.add(beam);
+function updateBeam(){const d=facingVec(facing);beam.position.x=startPin.position.x;beam.position.z=startPin.position.z;beam.rotation.y=-Math.atan2(d.y,d.x);beam.visible=startPin.visible;}
+const youLbl=addLabel("Bạn đang ở đây",new THREE.Vector3(),"you"),destLbl=addLabel("Điểm đến",new THREE.Vector3(),"dest");
+youLbl.hidden=destLbl.hidden=true;
+let chevrons=[],routePts=[],routeLen=0;
+function drawRoute(ids){
+  while(routeGroup.children.length)routeGroup.remove(routeGroup.children[0]);chevrons=[];
+  routePts=ids.map(id=>new THREE.Vector3(wx(N[id].x),.2,wz(N[id].y)));routeLen=0;
+  for(let i=0;i<routePts.length-1;i++){
+    const a=routePts[i],b=routePts[i+1];routeLen+=a.distanceTo(b);
+    const s=flatStrip(a.x,a.z,b.x,b.z,1.7,routeMat,.2);s.renderOrder=10;routeGroup.add(s);
+  }
+  const n=Math.floor(routeLen/5);
+  for(let i=0;i<n;i++){const c=new THREE.Mesh(chevGeo,chevMat);c.renderOrder=11;c.position.y=.22;routeGroup.add(c);chevrons.push(c);}
+}
+function pointAt(d){
+  for(let i=0;i<routePts.length-1;i++){const a=routePts[i],b=routePts[i+1],l=a.distanceTo(b);
+    if(d<=l){const t=d/l;return {p:new THREE.Vector3(a.x+(b.x-a.x)*t,0,a.z+(b.z-a.z)*t),ang:-Math.atan2(b.z-a.z,b.x-a.x)};}d-=l;}
+  const b=routePts[routePts.length-1];return {p:b.clone(),ang:0};
+}
+function clearRouteGfx(){while(routeGroup.children.length)routeGroup.remove(routeGroup.children[0]);chevrons=[];routePts=[];destPin.visible=false;destLbl.hidden=true;}
+
+// ---- màu theo giao diện sáng/tối ----
+const TINT={clinic:"--clinic",emergency:"--emergency",support:"--support",park:"--park",roof:"--roof",accent:"--accent",route:"--route",start:"--start"};
+function applyTheme(){
+  const c=n=>new THREE.Color(css(n));
+  scene.background=c("--bg");scene.fog=new THREE.Fog(c("--bg"),320,700);
+  mat("ground").color=c("--ground");mat("road").color=c("--road");mat("path").color=c("--path");mat("post").color=c("--support");
+  mat("door").color=c("--door");mat("door").emissive=c("--door");dashM.color=c("--road-line");
+  mat("startPin").color=c("--start");mat("routePin").color=c("--route");routeMat.color=c("--route");
+  scene.traverse(o=>{(o.material?(Array.isArray(o.material)?o.material:[o.material]):[]).forEach(m=>{const t=(m.userData&&m.userData.tint)||o.userData.tint;if(t&&TINT[t])m.color=c(TINT[t]);});});
+  highlight();
+}
+let hiBld=null;
+function highlight(){
+  BUILD.forEach(b=>{b.group.traverse(o=>{if(!o.isMesh)return;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!m.emissive||m===mats.post||m===mats.door)return;m.emissive.set(hiBld===b.id?css("--route"):"#000");m.emissiveIntensity=hiBld===b.id?.28:0;});});
+    if(b.lbl)b.lbl.el.classList.toggle("on",hiBld===b.id);});
+}
+
+// ---- camera ----
+let anim=null,viewMode="tilt",focus={c:new THREE.Vector3(5,0,10),size:150,dir:new THREE.Vector2(0,-1)};
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function tween(target,pos){anim={t0:performance.now(),ft:controls.target.clone(),fp:camera.position.clone(),target,pos};}
+function camFor(f,mode){
+  const dist=f.size*1.05+22;
+  if(mode==="top") return [f.c.clone(),new THREE.Vector3(f.c.x-f.dir.x*.6,dist*1.5,f.c.z-f.dir.y*.6)];
+  return [f.c.clone(),new THREE.Vector3(f.c.x-f.dir.x*dist*.75,dist*.85,f.c.z-f.dir.y*dist*.75)];
+}
+function fit(pts,dir,minSize){
+  const box=new THREE.Box3();pts.forEach(p=>box.expandByPoint(p));
+  const c=box.getCenter(new THREE.Vector3());c.y=0;const sz=box.getSize(new THREE.Vector3());
+  focus={c,size:Math.max(sz.x,sz.z,minSize||25),dir:(dir||new THREE.Vector2(0,-1)).clone().normalize()};
+  tween(...camFor(focus,viewMode));
+}
+const vb={tilt:document.getElementById("vTilt"),top:document.getElementById("vTop")};
+function setView(m){viewMode=m;vb.tilt.setAttribute("aria-pressed",m==="tilt");vb.top.setAttribute("aria-pressed",m==="top");tween(...camFor(focus,m));}
+vb.tilt.onclick=()=>setView("tilt");vb.top.onclick=()=>setView("top");
+document.getElementById("vAll").onclick=()=>{focus={c:new THREE.Vector3(5,0,10),size:150,dir:new THREE.Vector2(0,-1)};tween(...camFor(focus,viewMode));};
+{const [t,p]=camFor(focus,"tilt");controls.target.copy(t);camera.position.copy(p);}
+
+// ================= GIAO DIỆN =================
+const $=id=>document.getElementById(id);
+const panel=$("panel"),q=$("q"),results=$("results"),sheet=$("sheet"),startSel=$("startSel"),toastEl=$("toast");
+let startId="cong_chinh",current=null; // current = {place, dept}
+let toastT;function toast(msg,ms){toastEl.textContent=msg;toastEl.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>toastEl.hidden=true,ms||4000);}
+const ICON={
+ straight:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5"/><path d="m6 11 6-6 6 6"/></svg>',
+ go:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>',
+ right:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20v-7a4 4 0 0 1 4-4h8"/><path d="m15 5 4 4-4 4"/></svg>',
+ left:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-7a4 4 0 0 0-4-4H5"/><path d="m9 5-4 4 4 4"/></svg>',
+ back:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20V9a4 4 0 0 1 8 0v4"/><path d="m13 10 4 4 4-4"/></svg>',
+ end:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>',
+ floor:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 20h5v-5h5v-5h5V5h3"/></svg>'
+};
+
+// điểm xuất phát
+(function fillStart(){
+  const gates=Object.values(N).filter(n=>n.type==="gate"),doors=Object.values(N).filter(n=>n.type==="door");
+  [["Cổng",gates],["Cửa các tòa nhà",doors]].forEach(([lab,arr])=>{const og=document.createElement("optgroup");og.label=lab;
+    arr.forEach(n=>{const o=document.createElement("option");o.value=n.id;o.textContent=n.name;og.appendChild(o);});startSel.appendChild(og);});
+})();
+function readParams(){
+  let start=null,to=null,h=null;
+  try{
+    const u=new URL(location.href);start=u.searchParams.get("start");to=u.searchParams.get("to");h=u.searchParams.get("h");
+    const h=decodeURIComponent(u.hash.slice(1));
+    if(h.includes("?")){const sp=new URLSearchParams(h.slice(h.indexOf("?")+1));start=start||sp.get("start");to=to||sp.get("to");h=h||sp.get("h");}
+    else if(N[h]) start=start||h;
+  }catch(e){}
+  const hv=parseFloat(h);return {start,to,h:isFinite(hv)?((hv%360)+360)%360:null};
+}
+const DOOR_BLD={};PLACES.forEach(p=>p.bld&&p.doors.forEach(d=>{if(!DOOR_BLD[d])DOOR_BLD[d]=p.bld;}));
+function defaultFacing(id){
+  if(id in GATE_FACING) return GATE_FACING[id];
+  const b=BLD[DOOR_BLD[id]],n=N[id];if(!b) return 0;
+  // người quét đứng nhìn vào tấm biển dán trên tường tòa nhà
+  const cx=(b.r[0]+b.r[2])/2,cy=(b.r[1]+b.r[3])/2,dx=cx-n.x,dy=cy-n.y;
+  const ax=Math.abs(dx)/(b.r[2]-b.r[0]),ay=Math.abs(dy)/(b.r[3]-b.r[1]);
+  return ax>ay?(dx>0?90:270):(dy>0?180:0);
+}
+let facing=0,facingSrc="qr",qrFacing=0;
+const facingVec=f=>new THREE.Vector2(Math.sin(f*Math.PI/180),-Math.cos(f*Math.PI/180));
+function setStart(id,h){
+  startId=id;startSel.value=id;const n=N[id];
+  qrFacing=h!=null?h:defaultFacing(id);if(!compass.on){facing=qrFacing;facingSrc="qr";}
+  startPin.position.set(wx(n.x),0,wz(n.y));startPin.visible=true;youLbl.pos.set(wx(n.x),8.6,wz(n.y));youLbl.hidden=false;
+  updateBeam();
+  if(current) showRoute(current.place,current.dept);
+  else fitStart();
+}
+function fitStart(){const d=facingVec(facing),p=startPin.position;fit([p,new THREE.Vector3(p.x+d.x*30,0,p.z+d.y*30)],d,40);}
+startSel.onchange=()=>setStart(startSel.value,null);
+
+// tìm kiếm
+const chips=$("chips");
+QUICK.forEach(([lab,query,em])=>{const b=document.createElement("button");b.textContent=lab;if(em)b.className="em";
+  b.onclick=()=>{q.value=lab;const r=search(query);if(r.length===1)choose(r[0]);else renderResults(r,lab);};chips.appendChild(b);});
+let shown=[];
+function renderResults(list,raw){
+  shown=list;results.innerHTML="";results.hidden=false;$("clearQ").hidden=!q.value;
+  if(!list.length){const d=document.createElement("div");d.className="empty";d.textContent=`Không tìm thấy “${raw}”. Thử gõ tên khoa ngắn hơn, ví dụ “sản”, “nhi”, “xét nghiệm”, hoặc hỏi quầy hướng dẫn gần nhất.`;results.appendChild(d);return;}
+  list.forEach((it,i)=>{const b=document.createElement("button");b.setAttribute("role","option");
+    const t=document.createElement("span");t.className="t";t.textContent=it.t;const s=document.createElement("span");s.className="s";s.textContent=it.s;
+    b.append(t,s);b.onclick=()=>choose(it);results.appendChild(b);});
+}
+q.addEventListener("input",()=>{const v=q.value.trim();if(!v){results.hidden=true;$("clearQ").hidden=true;return;}renderResults(search(v),v);});
+q.addEventListener("keydown",e=>{if(e.key==="Enter"&&shown[0]){choose(shown[0]);}if(e.key==="Escape"){results.hidden=true;q.blur();}});
+q.addEventListener("focus",()=>{if(q.value.trim())renderResults(search(q.value),q.value.trim());});
+$("clearQ").onclick=()=>{q.value="";results.hidden=true;$("clearQ").hidden=true;q.focus();};
+function choose(it){q.value=it.t;results.hidden=true;q.blur();$("clearQ").hidden=false;showRoute(it.p,it.d);}
+
+// bảng chỉ dẫn
+const sTitle=$("sTitle"),sSub=$("sSub"),sSum=$("sSum"),sEyebrow=$("sEyebrow"),sActions=$("sActions"),sBody=$("sBody");
+function btn(label,fn,cls){const b=document.createElement("button");b.textContent=label;b.onclick=fn;if(cls)b.className=cls;return b;}
+function openSheet(){sheet.hidden=false;sheet.dataset.collapsed="false";requestAnimationFrame(updateOffset);}
+function closeSheet(){sheet.hidden=true;panel.classList.remove("routing");current=null;hiBld=null;highlight();clearRouteGfx();q.value="";$("clearQ").hidden=true;
+  fitStart();requestAnimationFrame(updateOffset);}
+function collapseBtn(){const b=btn("Thu gọn",()=>{const c=sheet.dataset.collapsed!=="true";sheet.dataset.collapsed=c;b.textContent=c?"Xem các bước":"Thu gọn";requestAnimationFrame(updateOffset);});return b;}
+
+function showRoute(place,dept,quiet){
+  const wasCollapsed=sheet.dataset.collapsed;
+  const res=dijkstra(startId);
+  let best=null;place.doors.forEach(d=>{if(isFinite(res.dist[d])&&(!best||res.dist[d]<res.dist[best]))best=d;});
+  current={place,dept};panel.classList.add("routing");
+  hiBld=place.bld||null;highlight();
+  sEyebrow.textContent="Chỉ đường";sTitle.textContent=dept?dept.n:place.name;
+  sSub.textContent=dept?((dept.f?`Tầng ${dept.f} · `:"")+place.name):(place.note||"");
+  sActions.innerHTML="";sBody.innerHTML="";
+  if(!best){
+    clearRouteGfx();sSum.textContent="";
+    sBody.innerHTML='<div class="floors"><p>Chưa có lối đi nối từ vị trí của bạn tới điểm này trong dữ liệu. Vui lòng hỏi nhân viên hoặc quầy hướng dẫn gần nhất.</p></div>';
+    sActions.append(btn("Đóng",closeSheet));openSheet();return;
+  }
+  const route=pathTo(res,startId,best),{steps,total}=buildSteps(route,place,dept,facing,facingSrc);
+  const mins=Math.max(1,Math.round(total/WALK_MPS/60));
+  sSum.textContent=route.edges.length?`Khoảng ${mins} phút đi bộ · ${fmtM(total)}`:"Bạn đang ở ngay đây";
+  const ol=document.createElement("ol");ol.className="steps";
+  steps.forEach(s=>{const li=document.createElement("li");li.innerHTML=`<span class="ic ${s.ic==="go"?"go":s.ic==="end"?"end":s.ic==="floor"?"floor":""}">${ICON[s.ic]}</span><span class="tx">${s.t}</span>`;ol.appendChild(li);});
+  sBody.appendChild(ol);
+  const cb=collapseBtn();sActions.append(cb,btn("Xem toàn tuyến",()=>fitRoute(route)),btn("Đóng",closeSheet));
+  drawRoute(route.ids);
+  const dn=N[best];destPin.position.set(wx(dn.x),0,wz(dn.y));destPin.visible=true;destLbl.pos.set(wx(dn.x),10.6,wz(dn.y));destLbl.hidden=false;
+  destLbl.el.textContent=dept?`${place.name}${dept.f?" · Tầng "+dept.f:""}`:place.name;
+  if(quiet){sheet.hidden=false;if(wasCollapsed==="true"){sheet.dataset.collapsed="true";cb.textContent="Xem các bước";}return;}
+  openSheet();fitRoute(route);
+}
+function fitRoute(route){
+  const pts=route.ids.map(id=>new THREE.Vector3(wx(N[id].x),0,wz(N[id].y)));
+  // nhìn theo hướng người đang đứng, để phía trước mặt họ là phía trên màn hình
+  requestAnimationFrame(()=>{updateOffset();fit(pts,facingVec(facing),30);});
+}
+function openPlace(place){
+  current=null;clearRouteGfx();panel.classList.add("routing");hiBld=place.bld||null;highlight();
+  sEyebrow.textContent=place.doors.some(d=>N[d].type==="gate")?"Cổng":"Tòa nhà";sTitle.textContent=place.name;sSub.textContent=place.note||"";sSum.textContent="";
+  sActions.innerHTML="";sBody.innerHTML="";
+  sActions.append(btn("Chỉ đường tới đây",()=>{q.value=place.name;showRoute(place,null);},"primary"),btn("Đóng",closeSheet));
+  if(place.depts.length){
+    const wrap=document.createElement("div");wrap.className="floors";const by={};
+    place.depts.forEach(d=>{const k=d.f||0;(by[k]=by[k]||[]).push(d.n);});
+    Object.keys(by).sort((a,b)=>a-b).forEach(k=>{const r=document.createElement("div");r.className="fl";
+      const a=document.createElement("span");a.textContent=+k?`Tầng ${k}`:"Trong tòa";const b=document.createElement("span");b.textContent=[...new Set(by[k])].join(", ");r.append(a,b);wrap.appendChild(r);});
+    sBody.appendChild(wrap);
+  }
+  openSheet();
+}
+function tapBuilding(id){
+  const pid=PLACE_BY_BLD[id];if(pid){openPlace(PLACE_BY_ID[pid]);return;}
+  const b=BLD[id];current=null;clearRouteGfx();hiBld=id;highlight();
+  sEyebrow.textContent="Công trình";sTitle.textContent=b.label||"Công trình phụ";sSub.textContent=b.info||"";sSum.textContent="";
+  sActions.innerHTML="";sBody.innerHTML="";sActions.append(btn("Đóng",closeSheet));openSheet();
+}
+
+// chạm vào bản đồ
+const ray=new THREE.Raycaster(),mv=new THREE.Vector2();let down=null;
+renderer.domElement.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];results.hidden=true;q.blur();});
+renderer.domElement.addEventListener("pointerup",e=>{
+  if(pick.on&&down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])<=6){pickAt(e);return;}
+  if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;
+  const r=renderer.domElement.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+  ray.setFromCamera(mv,camera);const hit=ray.intersectObjects(picks,false)[0];if(!hit)return;
+  if(hit.object.userData.place)openPlace(PLACE_BY_ID[hit.object.userData.place]);else if(hit.object.userData.bld)tapBuilding(hit.object.userData.bld);
+});
+
+// dịch tâm khung nhìn sang vùng không bị che bởi bảng
+function updateOffset(){
+  const W=app.clientWidth,H=app.clientHeight;let dx=0,dy=0;
+  if(W>720){ if(!sheet.hidden){const r=panel.getBoundingClientRect();dx=r.right/2;} }
+  else{ const top=panel.querySelector(".search").getBoundingClientRect().bottom;
+        const bottom=sheet.hidden?0:H-sheet.getBoundingClientRect().top;dy=(top-bottom)/2; }
+  camera.setViewOffset(W,H,-dx,-dy,W,H);camera.updateProjectionMatrix();
+}
+function resize(){const W=app.clientWidth,H=app.clientHeight;renderer.setSize(W,H);camera.aspect=W/H;camera.fov=W<720?58:42;camera.updateProjectionMatrix();updateOffset();}
+addEventListener("resize",resize);resize();
+
+// ================= LA BÀN (bổ sung, không bắt buộc) =================
+const compass={on:false,follow:false,got:false,heading:null,lastUsed:null,lastT:0};
+const vC=$("vCompass");
+function onOrient(e){
+  let hd=null;
+  if(typeof e.webkitCompassHeading==="number"&&e.webkitCompassHeading>=0){hd=e.webkitCompassHeading;
+    if(e.webkitCompassAccuracy>35&&!compass.warned){compass.warned=1;toast("La bàn đang kém chính xác. Hãy cầm máy nằm ngang và xoay cổ tay theo hình số 8 vài lần.",6000);}}
+  else if(e.absolute&&e.alpha!=null) hd=360-e.alpha;
+  if(hd==null) return;
+  hd=(hd+((screen.orientation&&screen.orientation.angle)||0)+360)%360;
+  compass.got=true;
+  const mf=((hd-MAP_UP_BEARING)%360+360)%360;
+  if(compass.heading==null) compass.heading=mf;
+  else{let d=mf-compass.heading;while(d>180)d-=360;while(d<-180)d+=360;compass.heading=(compass.heading+d*.2+360)%360;}
+  facing=compass.heading;facingSrc="compass";updateBeam();
+  const now=performance.now();
+  if(current&&now-compass.lastT>1200){let d=Math.abs(facing-(compass.lastUsed??facing+99));if(d>180)d=360-d;
+    if(d>25){compass.lastUsed=facing;compass.lastT=now;showRoute(current.place,current.dept,true);}}
+}
+async function startCompass(){
+  try{
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      const r=await DeviceOrientationEvent.requestPermission();if(r!=="granted") throw new Error("denied");
+    }
+  }catch(e){toast("Không được phép dùng la bàn. Bản đồ vẫn xoay theo hướng của tấm biển QR.",5000);return;}
+  if(typeof DeviceOrientationEvent==="undefined"){toast("Máy hoặc trình duyệt này không có la bàn. Bản đồ vẫn xoay theo hướng của tấm biển QR.",5000);return;}
+  compass.on=compass.follow=true;compass.got=false;compass.heading=null;compass.lastUsed=null;vC.setAttribute("aria-pressed","true");
+  if("ondeviceorientationabsolute" in window) addEventListener("deviceorientationabsolute",onOrient);
+  else addEventListener("deviceorientation",onOrient);
+  setTimeout(()=>{if(compass.on&&!compass.got){stopCompass();toast("Máy hoặc trình duyệt này không gửi dữ liệu la bàn. Bản đồ vẫn xoay theo hướng của tấm biển QR.",5000);}},3000);
+}
+function stopCompass(){
+  compass.on=compass.follow=false;vC.setAttribute("aria-pressed","false");
+  removeEventListener("deviceorientationabsolute",onOrient);removeEventListener("deviceorientation",onOrient);
+  facing=qrFacing;facingSrc="qr";updateBeam();if(current)showRoute(current.place,current.dept,true);
+}
+vC.onclick=()=>{if(compass.on&&!compass.follow){compass.follow=true;return;}compass.on?stopCompass():startCompass();};
+renderer.domElement.addEventListener("pointerdown",()=>{compass.follow=false;});
+
+// ================= MÃ QR (nội bộ: thêm #qr vào cuối đường link) =================
+const DIRS=[[0,"↑"],[45,"↗"],[90,"→"],[135,"↘"],[180,"↓"],[225,"↙"],[270,"←"],[315,"↖"]];
+function loadH(){try{return JSON.parse(localStorage.getItem("qr_h")||"{}");}catch(e){return {};}}
+function saveH(o){try{localStorage.setItem("qr_h",JSON.stringify(o));}catch(e){}}
+function showQr(){
+  const v=$("qrView");v.hidden=false;if(v.dataset.done)return;v.dataset.done=1;
+  v.innerHTML=`<div class="qrhead"><div><h1>Mã QR các điểm xuất phát</h1>
+    <p>Với mỗi tấm biển, chọn mũi tên chỉ hướng mà <b>người đứng quét mã đang nhìn</b>, tức hướng từ người tới tấm biển. Mũi tên tính theo sơ đồ: ↑ về phía Tòa E · ↓ về phía đường Tôn Thất Tùng · → về phía Tòa D, Khoa Nhiệt đới · ← về phía Tòa F, B2.</p></div>
+    <button class="back" id="qrBack">Về bản đồ</button></div><div class="qrgrid" id="qrg"></div>`;
+  $("qrBack").onclick=()=>{location.hash="";};
+  const saved=loadH();
+  const go=()=>{Object.values(N).filter(n=>n.type!=="jct").forEach(n=>{
+    let h=saved[n.id]!=null?saved[n.id]:defaultFacing(n.id);
+    const c=document.createElement("div");c.className="card";
+    const box=document.createElement("div");box.className="qr";const b=document.createElement("b");b.textContent=n.name;
+    const code=document.createElement("code");const pick=document.createElement("div");pick.className="dirs";pick.setAttribute("role","group");pick.setAttribute("aria-label","Hướng nhìn khi quét");
+    const test=document.createElement("button");test.className="test";test.textContent="Xem thử trên bản đồ";
+    const draw=()=>{const url=`${DOMAIN}/?start=${n.id}&h=${h}`;code.textContent=url.replace(DOMAIN,"");box.innerHTML="";
+      try{new QRCode(box,{text:url,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});}catch(e){box.textContent=url;}
+      pick.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.h===h));};
+    DIRS.forEach(([deg,ar])=>{const x=document.createElement("button");x.textContent=ar;x.dataset.h=deg;x.setAttribute("aria-label","Hướng "+deg+" độ");
+      x.onclick=()=>{h=deg;saved[n.id]=deg;saveH(saved);draw();};pick.appendChild(x);});
+    test.onclick=()=>{location.hash="";if(compass.on)stopCompass();setStart(n.id,h);};
+    c.append(box,b,pick,code,test);$("qrg").appendChild(c);draw();});};
+  if(window.QRCode)go();else{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";s.onload=go;s.onerror=go;document.head.appendChild(s);}
+}
+// ================= LẤY TỌA ĐỘ (nội bộ: thêm #toado vào cuối đường link) =================
+const pick={on:false,pts:[],panel:null,marks:[],idLabels:[]};
+const pickMat=new THREE.MeshBasicMaterial({color:0x7a3cff,depthTest:false});
+function copyText(t,btn){
+  const done=()=>{const o=btn.textContent;btn.textContent="Đã chép";setTimeout(()=>btn.textContent=o,1200);};
+  try{navigator.clipboard.writeText(t).then(done,()=>sel());}catch(e){sel();}
+  function sel(){const r=document.createRange();r.selectNodeContents(btn.previousElementSibling);const s2=getSelection();s2.removeAllRanges();s2.addRange(r);}
+}
+function enterPick(){
+  pick.on=true;
+  if(!pick.panel){
+    const d=document.createElement("div");d.id="pickPanel";d.className="card";
+    d.innerHTML=`<div class="ph"><b>Lấy tọa độ</b><button id="pickExit">Thoát</button></div>
+      <p>Bấm lên mặt đất để lấy tọa độ theo pixel sơ đồ. Mã của mọi điểm đang hiện trên bản đồ. Bấm 2 lần ở 2 góc đối nhau để có khung tòa nhà mới.</p>
+      <div class="pr"><span class="k">Tọa độ</span><code id="pkXY">—</code><button>Chép</button></div>
+      <div class="pr"><span class="k">Gần điểm</span><code id="pkNear">—</code></div>
+      <div class="pr"><span class="k">Điểm mới</span><code id="pkNode">—</code><button>Chép</button></div>
+      <div class="pr"><span class="k">Khung nhà</span><code id="pkRect">Bấm thêm 1 góc nữa</code><button>Chép</button></div>
+      <div id="pkProb"></div>`;
+    $("app").appendChild(d);pick.panel=d;
+    $("pickExit").onclick=()=>{location.hash="";};
+    d.querySelectorAll(".pr button").forEach(b=>b.onclick=()=>copyText(b.previousElementSibling.textContent,b));
+    pick.idLabels=Object.values(N).map(n=>{const L=addLabel(n.id,new THREE.Vector3(wx(n.x),1.2,wz(n.y)),"nid");return L;});
+  }
+  const pb=$("pkProb");pb.innerHTML="";
+  const h=document.createElement("p");h.className="ok";
+  h.textContent=PROBLEMS.length?`Dữ liệu có ${PROBLEMS.length} lỗi:`:"Dữ liệu không có lỗi.";
+  if(PROBLEMS.length)h.className="bad";pb.appendChild(h);
+  if(PROBLEMS.length){const ul=document.createElement("ul");PROBLEMS.forEach(t=>{const li=document.createElement("li");li.textContent=t;ul.appendChild(li);});pb.appendChild(ul);}
+  pick.panel.hidden=false;pick.idLabels.forEach(L=>L.hidden=false);
+  setView("top");
+}
+function exitPick(){
+  if(!pick.on)return;pick.on=false;if(pick.panel)pick.panel.hidden=true;pick.idLabels.forEach(L=>L.hidden=true);
+  pick.marks.forEach(m=>scene.remove(m));pick.marks=[];pick.pts=[];setView("tilt");
+}
+function pickAt(e){
+  const r=renderer.domElement.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+  ray.setFromCamera(mv,camera);const hit=new THREE.Vector3();
+  if(!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),hit))return;
+  const px=Math.round(hit.x*S+OX),py=Math.round(hit.z*S+OZ);
+  pick.pts.push([px,py]);if(pick.pts.length>2)pick.pts.shift();
+  const m=new THREE.Mesh(new THREE.ConeGeometry(.8,2.4,12),pickMat);m.rotation.x=Math.PI;m.position.set(hit.x,1.3,hit.z);m.renderOrder=12;scene.add(m);
+  pick.marks.push(m);if(pick.marks.length>2)scene.remove(pick.marks.shift());
+  $("pkXY").textContent=`"x": ${px}, "y": ${py}`;
+  let near=null,bd=25;Object.values(N).forEach(n=>{const d=Math.hypot(n.x-px,n.y-py);if(d<bd){bd=d;near=n;}});
+  $("pkNear").textContent=near?`${near.id} (cách ${Math.round(bd)} px)`:"không có điểm nào trong 25 px";
+  $("pkNode").textContent=`{"id": "diem_moi", "type": "door", "x": ${px}, "y": ${py}, "name": "Tên cửa"}`;
+  if(pick.pts.length===2){const [a,b]=pick.pts;$("pkRect").textContent=`"rect": [${Math.min(a[0],b[0])}, ${Math.min(a[1],b[1])}, ${Math.max(a[0],b[0])}, ${Math.max(a[1],b[1])}]`;}
+}
+function route(){
+  if(location.hash==="#qr")showQr();else $("qrView").hidden=true;
+  if(location.hash==="#toado")enterPick();else exitPick();
+}
+addEventListener("hashchange",route);
+
+// ================= KHỞI ĐỘNG =================
+applyTheme();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(PREVIEW){const b=document.createElement("div");b.className="previewBadge";b.textContent="Bản xem thử từ trang quản trị, chưa lưu";document.getElementById("app").appendChild(b);}
+(function boot(){
+  const {start,to,h}=readParams();let sid="cong_chinh";
+  if(start){
+    if(N[start]&&N[start].type!=="jct") sid=start;
+    else if(start in OLD_IDS&&OLD_IDS[start]===null) toast("Tòa C đã ngừng sử dụng. Vị trí xuất phát được đặt tại Cổng chính, bạn có thể đổi ở ô phía trên.",6000);
+    else if(OLD_IDS[start]||N[start]) toast("Mã QR này không gắn với cửa hay cổng nào. Vui lòng chọn vị trí của bạn ở ô phía trên.",6000);
+    else toast("Không nhận ra mã QR. Vị trí xuất phát đang là Cổng chính, bạn có thể đổi ở ô phía trên.",6000);
+    // ghi nhận lượt quét (mỗi phiên một lần)
+    try{const k="logged_"+sid;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");
+      fetch(LOG_URL+"?location="+encodeURIComponent(N[sid].name)+"&id="+encodeURIComponent(sid),{mode:"no-cors",keepalive:true}).catch(()=>{});}}catch(e){}
+  }
+  setStart(sid,sid===start?h:null);
+  if(to){const p=PLACE_BY_ID[to]||PLACES.find(p=>p.doors.includes(to));if(p){q.value=p.name;showRoute(p,null);}}
+  route();
+})();
+
+const v=new THREE.Vector3();let last=performance.now(),flow=0;
+function loop(now){
+  requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(anim){let k=reduce?1:Math.min(1,(now-anim.t0)/900);k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    controls.target.lerpVectors(anim.ft,anim.target,k);camera.position.lerpVectors(anim.fp,anim.pos,k);if(k>=1)anim=null;}
+  if(chevrons.length){flow=(flow+dt*(reduce?0:6))%5;chevrons.forEach((c,i)=>{const r=pointAt((i*5+flow)%routeLen);c.position.x=r.p.x;c.position.z=r.p.z;c.rotation.y=r.ang;});}
+  const pulse=1+.25*Math.sin(now/300);[startPin,destPin].forEach(p=>{if(p.visible)p.children[2].scale.setScalar(reduce?1:pulse);});
+  if(compass.on&&compass.follow&&!anim){
+    const d=facingVec(facing),t=controls.target,off=camera.position.clone().sub(t),hd=Math.hypot(off.x,off.z);
+    const want=new THREE.Vector3(t.x-d.x*hd,camera.position.y,t.z-d.y*hd);camera.position.lerp(want,.12);
+  }
+  controls.update();renderer.render(scene,camera);
+  const W=app.clientWidth,H=app.clientHeight,dist=camera.position.distanceTo(controls.target);
+  labelEls.forEach(L=>{if(L.hidden){L.el.style.display="none";return;}v.copy(L.pos).project(camera);
+    const off=v.z>1||v.x<-1.1||v.x>1.1||v.y<-1.1||v.y>1.1,far=L.el.classList.contains("small")&&dist>240;
+    L.el.style.display=off||far?"none":"";if(!off){L.el.style.left=(v.x*.5+.5)*W+"px";L.el.style.top=(-v.y*.5+.5)*H+"px";}});
+}
+requestAnimationFrame(loop);
+
+// dùng cho kiểm thử
+window.__nav={N,E,PLACES,dijkstra,pathTo,buildSteps,search};
+})();
+</script>
+
+</body>
+</html>
