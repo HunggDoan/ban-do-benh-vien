@@ -170,6 +170,26 @@ Khi đặt hoặc kéo điểm, trang **tự gióng thẳng hàng** với các �
 - **Khôi phục bản cũ.** Thẻ **Lịch sử** → **Mở bản này** → kiểm tra → **Lưu**. Mỗi lần lưu đều ghi người sửa, giờ sửa và mô tả.
 - **Không có mạng tới GitHub.** Bấm **Tải file** để tải `map_data.json` về, chép vào `public/` trong dự án, rồi commit và push.
 
+### 5.5. Sửa giao diện trang chủ (thẻ Giao diện)
+
+Người bệnh mở link hoặc quét QR sẽ thấy trang chủ: tên bệnh viện, ảnh đầu trang, ô tìm kiếm, khung giới thiệu màu, các ô khoa phòng phổ biến, dịch vụ nhanh và thanh điều hướng dưới đáy (Trang chủ · Bản đồ · Quét QR · Thông báo · Thông tin). Mọi chữ và ảnh ở đây sửa trong thẻ **Giao diện** của trang quản trị:
+
+| Mục | Sửa được gì |
+|---|---|
+| Tên bệnh viện, logo, màu chủ đạo | Tên, dòng giới thiệu, logo (ảnh vuông), màu nút và khung giới thiệu |
+| Ảnh đầu trang | Ảnh tòa nhà/khuôn viên, ảnh ngang tỉ lệ khoảng 2,3 : 1 |
+| Khung giới thiệu | Tiêu đề, dòng phụ, chữ trên nút, hình minh họa bên phải |
+| Ô khoa / phòng phổ biến | Tên, biểu tượng, màu, từ khóa tìm (không dấu). Nên để 4 hoặc 8 ô |
+| Dịch vụ nhanh | Tên, dòng phụ, biểu tượng, việc làm khi bấm (quét QR, tìm kiếm, lịch sử, bản đồ tổng quan, gọi điện, mở trang web, tìm theo từ khóa) |
+| Thông báo | Tiêu đề, ngày, nội dung, ảnh kèm. Người bệnh thấy chấm đỏ khi có thông báo mới |
+| Thông tin liên hệ | Đường dây nóng, số cấp cứu, địa chỉ, giờ làm việc, trang web, ghi chú |
+
+Lần đầu mở thẻ này, nếu file dữ liệu chưa có phần giao diện thì bấm **Bắt đầu chỉnh giao diện** để nạp nội dung mặc định.
+
+**Ảnh:** bấm *Chọn ảnh…*, trang tự thu nhỏ ảnh (tối đa 1400 px) cho nhẹ. Ảnh chưa lên mạng ngay mà được tải lên thư mục `public/img/` của kho GitHub khi bấm **Lưu lên GitHub**. Trước đó vẫn bấm *Xem thử trang người bệnh* để xem được. Muốn dùng ảnh có sẵn trên mạng thì dán đường link vào ô bên dưới.
+
+**Quét QR trong trang:** nút Quét QR ở giữa thanh đáy mở camera điện thoại (trình duyệt sẽ hỏi quyền camera). Quét mã ở cổng, cửa tòa nhà là trang tự đặt lại vị trí "Bạn đang ở". Không cho phép camera thì người bệnh vẫn chọn được ảnh chụp mã QR hoặc chọn vị trí thủ công.
+
 ## 6. Khi sửa code Flutter
 
 1. Sửa code trong `lib/`, chạy thử bằng `flutter run -d chrome`. Bản chạy thử đọc dữ liệu từ `public/map_data.json` trên máy.

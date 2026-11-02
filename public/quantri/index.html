@@ -8,7 +8,15 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}body{margin:0;font-size:14px}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}body{margin:0;font-size:14px}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}.imgfld{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:start}
+.imgprev{width:120px;height:76px;border-radius:8px;border:1px dashed var(--line);display:grid;place-items:center;overflow:hidden;background:var(--hover);font-size:11px;color:var(--muted);text-align:center;padding:4px}
+.imgprev.round{width:76px;height:76px}
+.imgprev img{width:100%;height:100%;object-fit:cover;display:block}
+.imgprev.round img{object-fit:contain;background:#fff}
+.imgact{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ncard{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
+input[type=color]{width:52px!important;height:32px;padding:2px;border:1px solid var(--line);border-radius:6px;background:none}
+</style>
 <style>
 /* Layout: thanh trên cùng; dưới là [công cụ | bản đồ 2D để sửa | bảng thuộc tính có thẻ] */
 :root{
@@ -221,7 +229,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
   <h2>Lưu lên GitHub</h2>
   <div id="saveSummary"></div>
   <label class="f"><span class="fl">Mô tả thay đổi</span><textarea id="saveMsg" rows="3"></textarea><small>Dòng này hiện trong lịch sử, giúp người khác biết bạn đã sửa gì.</small></label>
-  <label class="f"><span class="fl">Người sửa</span><input id="saveWho" placeholder="ví dụ: Hưng – CNTT"></label>
+  <label class="f"><span class="fl">Người sửa</span><input id="saveWho" placeholder="ví dụ: Hùng – CNTT"></label>
   <div id="saveOut" hidden></div>
   <div class="dlg-acts" id="saveActs">
     <button id="saveCancel">Đóng</button>
@@ -241,7 +249,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     <label class="f"><span class="fl">Đường dẫn file dữ liệu</span><input id="gPath" class="mono" placeholder="public/map_data.json"></label>
   </div>
   <label class="f"><span class="fl">Mã truy cập (fine-grained token)</span><input id="gToken" type="password" class="mono" autocomplete="off" placeholder="github_pat_…"><small>Tạo trong GitHub → Settings → Developer settings → Fine-grained tokens. Chỉ chọn kho này, quyền <b>Contents: Read and write</b>.</small></label>
-  <label class="f"><span class="fl">Tên người sửa (ghi vào lịch sử)</span><input id="gWho" placeholder="ví dụ: Hưng – CNTT"></label>
+  <label class="f"><span class="fl">Tên người sửa (ghi vào lịch sử)</span><input id="gWho" placeholder="ví dụ: Hùng – CNTT"></label>
   <div id="gOut" hidden></div>
   <div class="dlg-acts">
     <button id="gForget" class="danger">Xóa token khỏi máy này</button>
@@ -265,7 +273,7 @@ const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.par
           set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},
           del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const NODE_ID_RE=/^[a-z0-9_]+$/, PLACE_ID_RE=/^[A-Za-z0-9_]+$/;
-const KEY_ORDER=["_huong_dan","config","nodes","edges","places","buildings","gates","gateFacing","oldIds","quickSearches","decor"];
+const KEY_ORDER=["_huong_dan","config","nodes","edges","places","buildings","gates","gateFacing","oldIds","quickSearches","ui","decor"];
 const TYPE_LABEL={gate:"Cổng",door:"Cửa",junction:"Ngã rẽ"};
 const KIND_OPTS=[["clinic","Khám, điều trị"],["emergency","Cấp cứu"],["support","Hậu cần, dịch vụ"],["parking","Mái để xe"]];
 const DIRS=[[0,"↑ Lên trên (về phía Tòa E)"],[45,"↗ Chéo lên phải"],[90,"→ Sang phải (về phía Tòa D)"],[135,"↘ Chéo xuống phải"],[180,"↓ Xuống dưới (về phía đường)"],[225,"↙ Chéo xuống trái"],[270,"← Sang trái (về phía Tòa F)"],[315,"↖ Chéo lên trái"]];
@@ -368,7 +376,7 @@ function serialize(o){
   const L=["{"],ks=Object.keys(o);
   ks.forEach((k,i)=>{const v=o[k],c=i<ks.length-1?",":"";
     if(Array.isArray(v)&&v.length&&v[0]&&typeof v[0]==="object"&&!Array.isArray(v[0])){L.push(`  ${JSON.stringify(k)}: [`);v.forEach((x,j)=>L.push("    "+JSON.stringify(x)+(j<v.length-1?",":"")));L.push("  ]"+c);}
-    else if(k==="decor"&&v&&typeof v==="object"){const dk=Object.keys(v);L.push(`  "decor": {`);
+    else if((k==="decor"||k==="ui")&&v&&typeof v==="object"&&!Array.isArray(v)){const dk=Object.keys(v);L.push(`  ${JSON.stringify(k)}: {`);
       dk.forEach((d,j)=>{const w=v[d],cc=j<dk.length-1?",":"";
         if(Array.isArray(w)&&w.length&&w[0]&&typeof w[0]==="object"&&!Array.isArray(w[0])){L.push(`    ${JSON.stringify(d)}: [`);w.forEach((x,m)=>L.push("      "+JSON.stringify(x)+(m<w.length-1?",":"")));L.push("    ]"+cc);}
         else L.push(`    ${JSON.stringify(d)}: ${JSON.stringify(w)}${cc}`);});
@@ -876,7 +884,7 @@ document.addEventListener("keyup",e=>{if(e.key===" "){spaceDown=false;cv.style.c
 // =====================================================================
 // BẢNG BÊN PHẢI
 // =====================================================================
-const TABS=[["obj","Đối tượng"],["places","Khoa phòng"],["list","Danh sách"],["check","Kiểm tra"],["other","Khác"],["hist","Lịch sử"]];
+const TABS=[["obj","Đối tượng"],["places","Khoa phòng"],["list","Danh sách"],["check","Kiểm tra"],["ui","Giao diện"],["other","Khác"],["hist","Lịch sử"]];
 function refreshTabs(){
   const t=$("#tabs");t.innerHTML="";
   TABS.forEach(([id,l])=>{
@@ -888,7 +896,7 @@ function refreshTabs(){
 }
 function refreshPanel(){
   refreshTabs();const body=$("#tabBody"),sc=body.scrollTop;body.innerHTML="";
-  ({obj:tabObj,places:tabPlaces,list:tabList,check:tabCheck,other:tabOther,hist:tabHist})[activeTab](body);
+  ({obj:tabObj,places:tabPlaces,list:tabList,check:tabCheck,ui:tabUi,other:tabOther,hist:tabHist})[activeTab](body);
   body.scrollTop=sc;
 }
 function select(s){SEL=s;if(s&&activeTab!=="obj"&&activeTab!=="places")activeTab="obj";if(s&&activeTab==="places"&&s.k!=="node")activeTab="obj";refreshPanel();render();}
@@ -1100,6 +1108,7 @@ function tableEd(rows,cols,o){
     tb.append(h("tr",null,cols.map(c=>{
       let el;const val=c.get?c.get(r):r[c.k];
       if(c.t==="check"){el=h("input",{type:"checkbox",id:`${o.id}-${i}-${c.k}`,"aria-label":c.l});el.checked=!!val;el.addEventListener("change",()=>o.set(i,c.k,el.checked));}
+      else if(c.t==="color"){el=h("input",{type:"color",id:`${o.id}-${i}-${c.k}`,"aria-label":c.l});el.value=val||"#1b5cff";el.addEventListener("change",()=>o.set(i,c.k,el.value));}
       else if(c.t==="select")el=pick(c.opts(),val??"",v=>o.set(i,c.k,v),{id:`${o.id}-${i}-${c.k}`,aria:c.l});
       else el=inp(val,v=>o.set(i,c.k,v),{type:c.t==="number"?"number":"text",id:`${o.id}-${i}-${c.k}`,aria:c.l,ph:c.ph,cls:c.mono?"mono":null});
       return h("td",{style:c.w?`width:${c.w}`:null},el);}),
@@ -1154,6 +1163,85 @@ function tabOther(body){
     h("div",{class:"f"},ta),h("div",{class:"bar"},h("button",{onclick:()=>{try{const j=JSON.parse(ta.value);mutate("Sửa JSON trực tiếp",()=>{D=toInternal(j);});toast("Đã áp dụng.");}catch(e){toast("JSON chưa đúng cú pháp: "+e.message,6000);}}},"Áp dụng"),h("button",{onclick:()=>{ta.value=current();}},"Lấy lại nội dung hiện tại"))]));
 }
 
+
+// ---- thẻ Giao diện (trang chủ của người bệnh: chữ, ảnh, ô khoa phòng, dịch vụ nhanh, thông báo, thông tin liên hệ)
+const UI_ICONS=[["steth","Khám bệnh (ống nghe)"],["er","Cấp cứu"],["lab","Xét nghiệm"],["scan","Chẩn đoán hình ảnh"],["pharm","Nhà thuốc"],["baby","Nhi"],["mother","Sản phụ khoa"],["car","Gửi xe"],["tooth","Răng hàm mặt"],["eye","Mắt"],["heart","Tim mạch"],["ear","Tai mũi họng"],["bone","Chấn thương, xương"],["wc","Nhà vệ sinh"],["lift","Thang máy"],["money","Thanh toán"],["desk","Quầy tiếp đón"],["food","Nhà ăn"],["shield","Bảo vệ"],["pin","Vị trí"],["route","Đường đi"],["history","Lịch sử"],["map","Bản đồ"],["phone","Điện thoại"],["info","Thông tin"],["link","Liên kết"],["clock","Giờ giấc"],["bell","Thông báo"]];
+const UI_ACTIONS=[["qr","Mở máy quét QR"],["search","Mở ô tìm kiếm"],["history","Lịch sử tìm kiếm"],["overview","Bản đồ tổng quan"],["notices","Trang Thông báo"],["info","Trang Thông tin"],["all","Danh sách tất cả khoa phòng"],["query","Tìm theo từ khóa (ghi ở cột Giá trị)"],["call","Gọi điện (ghi số ở cột Giá trị)"],["link","Mở trang web (ghi link ở cột Giá trị)"]];
+const PENDING_IMG=new Map(); // đường dẫn ảnh mới chọn (vd. img/hero-xxx.jpg) -> {b64,dataUrl}, tải lên GitHub khi bấm Lưu
+try{Object.entries(LS.get("mapEditor.pendingImgs",{})).forEach(([k,v])=>PENDING_IMG.set(k,v));}catch(e){}
+function savePending(){try{LS.set("mapEditor.pendingImgs",Object.fromEntries(PENDING_IMG));}catch(e){toast("Ảnh quá lớn để giữ trong bản nháp. Hãy bấm Lưu sớm.");}}
+const imgUrl=p=>!p?"":PENDING_IMG.has(p)?PENDING_IMG.get(p).dataUrl:/^(https?:|data:|\/)/.test(p)?p:"../"+p;
+function resizeImage(file,max,png){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const s=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));
+  const c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);const x=c.getContext("2d");if(!png){x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);}
+  x.drawImage(im,0,0,c.width,c.height);const dataUrl=c.toDataURL(png?"image/png":"image/jpeg",.85);URL.revokeObjectURL(im.src);res({dataUrl,b64:dataUrl.split(",")[1]});};
+  im.onerror=()=>rej(new Error("Không đọc được ảnh."));im.src=URL.createObjectURL(file);});}
+function imgField(label,value,onSet,o){
+  const prev=h("div",{class:"imgprev"+(o.round?" round":"")},value?h("img",{src:imgUrl(value),alt:""}):h("span",null,o.empty||"Đang dùng hình mặc định"));
+  const file=h("input",{type:"file",accept:"image/*",hidden:true});
+  file.addEventListener("change",async()=>{const f=file.files[0];file.value="";if(!f)return;
+    try{const r=await resizeImage(f,o.max||1400,o.png);const kb=Math.round(r.b64.length*.75/1024);
+      const path=`img/${o.name}-${Date.now().toString(36)}.${o.png?"png":"jpg"}`;PENDING_IMG.set(path,r);savePending();onSet(path);
+      toast(`Đã chọn ảnh (${kb} KB). Ảnh sẽ được tải lên khi bấm Lưu lên GitHub.`);}catch(e){toast(e.message);}});
+  const url=inp(value,v=>onSet(v),{id:"f-img-"+o.name,ph:"hoặc dán đường link ảnh https://…",cls:"mono"});
+  return fld(label,h("div",{class:"imgfld"},prev,h("div",{class:"imgact"},
+    h("div",{class:"bar"},h("button",{onclick:()=>file.click()},value?"Đổi ảnh…":"Chọn ảnh…"),value?h("button",{onclick:()=>onSet("")},"Bỏ ảnh"):null),url,file)),o.help);
+}
+function uiObj(){if(!D.ui)D.ui={};const u=D.ui;u.banner=u.banner||{};u.info=u.info||{};u.tiles=u.tiles||[];u.services=u.services||[];u.notices=u.notices||[];return u;}
+const UI_DEFAULT={"hospitalName": "Bệnh viện Sản Nhi Nghệ An", "tagline": "Bản đồ chỉ đường cho người bệnh", "logo": "", "heroImage": "", "primaryColor": "#1b5cff", "banner": {"title": "Tìm đường đi trong bệnh viện", "subtitle": "Nhanh chóng · Chính xác · Dễ dàng", "button": "Bắt đầu", "image": ""}, "tilesTitle": "Khoa / Phòng phổ biến", "tiles": [{"label": "Khoa Khám bệnh", "icon": "steth", "color": "#2563eb", "query": "kham benh"}, {"label": "Cấp cứu", "icon": "er", "color": "#e5484d", "query": "cap cuu"}, {"label": "Xét nghiệm", "icon": "lab", "color": "#16a34a", "query": "xet nghiem"}, {"label": "Chẩn đoán hình ảnh", "icon": "scan", "color": "#f97316", "query": "chan doan hinh anh"}, {"label": "Nhà thuốc", "icon": "pharm", "color": "#059669", "query": "nha thuoc"}, {"label": "Khoa Nhi", "icon": "baby", "color": "#7c3aed", "query": "nhi"}, {"label": "Sản phụ khoa", "icon": "mother", "color": "#db2777", "query": "san"}, {"label": "Gửi xe", "icon": "car", "color": "#0891b2", "query": "gui xe"}], "servicesTitle": "Dịch vụ nhanh", "services": [{"label": "Định vị vị trí của tôi", "sub": "Quét mã QR gần bạn để biết bạn đang ở đâu", "icon": "pin", "action": "qr"}, {"label": "Tìm đường đi", "sub": "Đến khoa, phòng bạn cần", "icon": "route", "action": "search"}, {"label": "Lịch sử tìm kiếm", "sub": "Xem lại các nơi đã tìm", "icon": "history", "action": "history"}, {"label": "Bản đồ tổng quan", "sub": "Xem toàn bộ bệnh viện", "icon": "map", "action": "overview"}], "notices": [{"title": "Bản đồ chỉ đường trên điện thoại", "date": "02/11/2026", "body": "Quét mã QR dán ở cổng, cửa các tòa nhà để biết bạn đang đứng ở đâu, rồi gõ tên khoa phòng cần đến. Bản đồ sẽ vẽ đường đi và hướng dẫn từng bước."}], "info": {"address": "Phường Hưng Dũng, TP Vinh, Nghệ An"}};
+function tabUi(body){
+  if(!D.ui){body.append(h("h3",null,"Giao diện trang chủ"),h("p",{class:"muted"},"File dữ liệu chưa có phần giao diện, trang người bệnh đang dùng nội dung mặc định. Bấm nút dưới để nạp nội dung mặc định vào đây rồi sửa theo ý."),
+    h("div",{class:"bar"},h("button",{class:"primary",onclick:()=>mutate("Nạp giao diện mặc định",()=>{D.ui=JSON.parse(JSON.stringify(UI_DEFAULT));})},"Bắt đầu chỉnh giao diện")));return;}
+  const u=uiObj();
+  const setU=(path,v)=>mutate("Sửa giao diện",()=>{const o=uiObj();const k=path.split(".");let t=o;for(let i=0;i<k.length-1;i++)t=t[k[i]]=t[k[i]]||{};if(v===""||v==null)delete t[k[k.length-1]];else t[k[k.length-1]]=v;},{keepPanel:true});
+  const setUr=(path,v)=>{setU(path,v);refreshPanel();};
+  body.append(h("p",{class:"muted"},"Chữ và ảnh trên trang chủ người bệnh thấy khi quét mã QR. Sửa xong bấm ",h("b",null,"Xem thử trang người bệnh")," để kiểm tra, rồi ",h("b",null,"Lưu lên GitHub"),"."));
+  body.append(det("ui-gen","Tên bệnh viện, logo, màu chủ đạo",[
+    fld("Tên bệnh viện",inp(u.hospitalName,v=>setU("hospitalName",v),{id:"f-ui-name",ph:"Bệnh viện Sản Nhi Nghệ An"})),
+    fld("Dòng giới thiệu ngắn",inp(u.tagline,v=>setU("tagline",v),{id:"f-ui-tag",ph:"Bản đồ chỉ đường cho người bệnh"})),
+    fld("Màu chủ đạo",(()=>{const c=h("input",{type:"color",id:"f-ui-color"});c.value=u.primaryColor||"#1b5cff";c.addEventListener("change",()=>setU("primaryColor",c.value));return c;})(),"Màu nút, thanh điều hướng và khung giới thiệu."),
+    imgField("Logo",u.logo,v=>setUr("logo",v),{name:"logo",max:256,png:true,round:true,empty:"Dấu cộng mặc định",help:"Ảnh vuông, nền trong suốt càng tốt."})]));
+  body.append(det("ui-hero","Ảnh đầu trang",[imgField("Ảnh tòa nhà hoặc khuôn viên",u.heroImage,v=>setUr("heroImage",v),{name:"hero",max:1400,help:"Ảnh ngang, tỉ lệ khoảng 2,3 : 1 (ví dụ 1400 × 600). Ô tìm kiếm nằm đè lên mép dưới ảnh."})]));
+  body.append(det("ui-ban","Khung giới thiệu màu (banner)",[
+    fld("Tiêu đề",inp(u.banner.title,v=>setU("banner.title",v),{id:"f-ui-bt",ph:"Tìm đường đi trong bệnh viện"})),
+    fld("Dòng phụ",inp(u.banner.subtitle,v=>setU("banner.subtitle",v),{id:"f-ui-bs",ph:"Nhanh chóng · Chính xác · Dễ dàng"})),
+    fld("Chữ trên nút",inp(u.banner.button,v=>setU("banner.button",v),{id:"f-ui-bb",ph:"Bắt đầu"}),"Để trống thì không hiện nút."),
+    imgField("Hình bên phải",u.banner.image,v=>setUr("banner.image",v),{name:"banner",max:800,png:true,help:"Hình minh họa (nhân vật, bản đồ…), nền trong suốt. Để trống thì dùng hình bản đồ mặc định."})]));
+  const icons=()=>UI_ICONS;
+  body.append(det("ui-tiles","Ô khoa / phòng phổ biến",[
+    fld("Tiêu đề mục",inp(u.tilesTitle,v=>setU("tilesTitle",v),{id:"f-ui-tt",ph:"Khoa / Phòng phổ biến"})),
+    h("p",{class:"muted"},"Mỗi ô khi bấm sẽ tìm theo từ khóa (không dấu). Nên để 4 hoặc 8 ô cho đẹp hàng."),
+    tableEd(u.tiles,[{k:"label",l:"Tên hiện"},{k:"icon",l:"Biểu tượng",t:"select",opts:icons},{k:"color",l:"Màu",t:"color",w:"52px"},{k:"query",l:"Từ khóa tìm"}],{id:"uit",
+      set:(i,k,v)=>mutate("Sửa ô khoa phòng",()=>{uiObj().tiles[i][k]=v;},{keepPanel:true}),
+      del:i=>mutate("Xóa ô khoa phòng",()=>{uiObj().tiles.splice(i,1);}),
+      move:(i,d)=>mutate("Đổi thứ tự ô",()=>{const a=uiObj().tiles;[a[i],a[i+d]]=[a[i+d],a[i]];}),
+      add:()=>mutate("Thêm ô khoa phòng",()=>{uiObj().tiles.push({label:"Ô mới",icon:"steth",color:"#1b5cff",query:""});})})]));
+  body.append(det("ui-svc","Dịch vụ nhanh",[
+    fld("Tiêu đề mục",inp(u.servicesTitle,v=>setU("servicesTitle",v),{id:"f-ui-st",ph:"Dịch vụ nhanh"})),
+    tableEd(u.services,[{k:"label",l:"Tên"},{k:"sub",l:"Dòng phụ"},{k:"icon",l:"Biểu tượng",t:"select",opts:icons},{k:"action",l:"Khi bấm",t:"select",opts:()=>UI_ACTIONS},{k:"value",l:"Giá trị"}],{id:"uis",
+      set:(i,k,v)=>mutate("Sửa dịch vụ nhanh",()=>{uiObj().services[i][k]=v;},{keepPanel:true}),
+      del:i=>mutate("Xóa dịch vụ nhanh",()=>{uiObj().services.splice(i,1);}),
+      move:(i,d)=>mutate("Đổi thứ tự dịch vụ",()=>{const a=uiObj().services;[a[i],a[i+d]]=[a[i+d],a[i]];}),
+      add:()=>mutate("Thêm dịch vụ nhanh",()=>{uiObj().services.push({label:"Dịch vụ mới",sub:"",icon:"info",action:"search"});})})]));
+  const nwrap=h("div");
+  u.notices.forEach((n,i)=>{const set=(k,v)=>mutate("Sửa thông báo",()=>{const x=uiObj().notices[i];if(v==="")delete x[k];else x[k]=v;},{keepPanel:true});
+    nwrap.append(h("div",{class:"ncard"},
+      h("div",{class:"row2"},fld("Tiêu đề",inp(n.title,v=>set("title",v),{id:`f-n-${i}-t`})),fld("Ngày",inp(n.date,v=>set("date",v),{id:`f-n-${i}-d`,ph:"02/11/2026"}))),
+      fld("Nội dung",txa(n.body,v=>set("body",v),{id:`f-n-${i}-b`,rows:3})),
+      imgField("Ảnh kèm (không bắt buộc)",n.image,v=>{set("image",v);refreshPanel();},{name:"thongbao",max:1200}),
+      h("div",{class:"bar"},h("button",{disabled:i===0||null,onclick:()=>mutate("Đổi thứ tự thông báo",()=>{const a=uiObj().notices;[a[i],a[i-1]]=[a[i-1],a[i]];})},"↑ Lên"),
+        h("button",{class:"danger",onclick:()=>mutate("Xóa thông báo",()=>{uiObj().notices.splice(i,1);})},"Xóa thông báo"))));});
+  body.append(det("ui-not","Thông báo",[h("p",{class:"muted"},"Hiện ở mục Thông báo, kèm chấm đỏ báo tin mới. Thông báo trên cùng hiện trước."),
+    u.notices.length?nwrap:h("p",{class:"muted"},"Chưa có thông báo nào."),
+    h("div",{class:"bar"},h("button",{onclick:()=>mutate("Thêm thông báo",()=>{const d=new Date();uiObj().notices.unshift({title:"Thông báo mới",date:d.toLocaleDateString("vi-VN"),body:""});openState["ui-not"]=true;})},"＋ Thêm thông báo"))]));
+  const I=u.info,setI=(k,v)=>setU("info."+k,v);
+  body.append(det("ui-info","Thông tin liên hệ",[
+    h("div",{class:"row2"},fld("Đường dây nóng",inp(I.hotline,v=>setI("hotline",v),{id:"f-i-hot",ph:"0238 …"})),fld("Số cấp cứu",inp(I.emergency,v=>setI("emergency",v),{id:"f-i-em",ph:"115 hoặc số của khoa"}))),
+    fld("Địa chỉ",inp(I.address,v=>setI("address",v),{id:"f-i-addr"})),
+    fld("Giờ làm việc",inp(I.hours,v=>setI("hours",v),{id:"f-i-hours",ph:"Thứ 2 – Thứ 6: 7h00 – 17h00"})),
+    fld("Trang web",inp(I.website,v=>setI("website",v),{id:"f-i-web",cls:"mono",ph:"https://…"})),
+    fld("Ghi chú thêm",txa(I.note,v=>setI("note",v),{id:"f-i-note",rows:3}),"Hiện ở cuối trang Thông tin.")]));
+}
+
 // ---- thẻ Lịch sử
 let histCache=null;
 function tabHist(body){
@@ -1198,7 +1286,7 @@ function updateStatus(){
   const c=ghCfg();$("#bSave").textContent=ghReady(c)?"Lưu lên GitHub":"Lưu lên GitHub…";
   $("#srcInfo").textContent=`Dữ liệu từ ${baseSrc}${baseSha?" · "+baseSha.slice(0,7):""}`;
 }
-function writePreview(){try{localStorage.setItem("mapEditor.preview",current());}catch(e){toast("Trình duyệt không cho lưu bản xem thử.");}}
+function writePreview(){try{localStorage.setItem("mapEditor.preview",current());const im={};const t=current();PENDING_IMG.forEach((v,k)=>{if(t.includes(k))im[k]=v.dataUrl;});localStorage.setItem("mapEditor.previewImgs",JSON.stringify(im));}catch(e){toast("Trình duyệt không cho lưu bản xem thử (có thể do ảnh quá lớn).");}}
 $("#bPreview").addEventListener("click",writePreview);
 $("#bUndo").onclick=undo;$("#bRedo").onclick=redo;
 $("#bExport").onclick=()=>{
@@ -1276,7 +1364,7 @@ function diffSummary(){
   cmp("Khối nhà",b.buildings,c.buildings,x=>x.id,x=>x.label||x.id);
   const sk=s=>[s.a,s.b].sort().join("|");
   cmp("Đoạn đường",b.segs,c.segs.map(s=>Object.assign({},s,s.a>s.b?{a:s.b,b:s.a}:{})),sk,s=>`${nodeLabel(s.a)} – ${nodeLabel(s.b)}`);
-  const other=[["config","cấu hình"],["gates","khung cổng"],["gateFacing","hướng nhìn"],["oldIds","mã QR cũ"],["quickSearches","nút tìm nhanh"],["decor","trang trí bản đồ"]].filter(([k])=>JSON.stringify(b[k])!==JSON.stringify(c[k])).map(x=>x[1]);
+  const other=[["config","cấu hình"],["gates","khung cổng"],["gateFacing","hướng nhìn"],["oldIds","mã QR cũ"],["quickSearches","nút tìm nhanh"],["ui","giao diện trang chủ"],["decor","trang trí bản đồ"]].filter(([k])=>JSON.stringify(b[k])!==JSON.stringify(c[k])).map(x=>x[1]);
   if(other.length)lines.push({label:"Khác",text:"sửa "+other.join(", "),n:other.length});
   return lines;
 }
@@ -1310,7 +1398,15 @@ async function doSave(force){
         return;
       }
     }
-    const text=current(),res=await ghPut(c,text,remote.sha,msg);
+    const text=current();
+    // tải các ảnh mới chọn lên trước, rồi mới lưu file dữ liệu
+    const dir=c.path.includes("/")?c.path.slice(0,c.path.lastIndexOf("/")+1):"";
+    for(const [p,v] of [...PENDING_IMG]){ if(!text.includes(JSON.stringify(p)))continue;
+      go.textContent="Đang tải ảnh…";
+      await gh(c,`contents/${encPath(dir+p)}`,{method:"PUT",body:JSON.stringify({message:`Thêm ảnh giao diện ${p}`+(who?`\n\nNgười sửa: ${who}`:""),content:v.b64,branch:c.branch})});
+      PENDING_IMG.delete(p);savePending();}
+    go.textContent="Đang lưu…";
+    const res=await ghPut(c,text,remote.sha,msg);
     setBase(text,res.content.sha,"GitHub");LS.del(DRAFT_KEY);histCache=null;afterChange();
     setOut(out,"ok",`Đã lưu. Trang người bệnh sẽ cập nhật sau khoảng 1–2 phút, khi Netlify đăng xong. <a href="${esc(res.commit.html_url)}" target="_blank" rel="noopener">Xem lần lưu này trên GitHub</a>`);
     go.textContent="Đã lưu";

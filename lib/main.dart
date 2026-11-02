@@ -507,8 +507,9 @@ class _HospitalMapScreenState extends State<HospitalMapScreen> {
                       if (_results.isNotEmpty) _choose(_results.first);
                     },
                     onTap: () {
-                      if (_searchCtl.text.trim().isNotEmpty)
+                      if (_searchCtl.text.trim().isNotEmpty) {
                         _onQuery(_searchCtl.text);
+                      }
                     },
                   ),
                 ),

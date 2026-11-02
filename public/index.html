@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#c5d3cb">
+<meta name="theme-color" content="#f2f5fa">
 <!-- Trang chỉ đường cho người bệnh. Dữ liệu đọc từ map_data.json cùng thư mục. Không cần sửa file này khi đổi khoa, thêm tòa hay thêm đường. -->
 <title>Bản đồ Bệnh viện Sản Nhi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -134,6 +134,115 @@ ol.steps .tx b{font-weight:600}
   #views{top:auto;bottom:calc(50% + 10px);transform:none}
 }
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+/* ================= TRANG CHỦ KIỂU ỨNG DỤNG =================
+   Lớp phủ #home nằm trên bản đồ; thanh #tabbar luôn ở đáy; các trang phụ (#page) và máy quét QR (#scan) phủ toàn màn hình. */
+:root{--pri:#1b5cff;--pri-2:#0f46d8;--pri-soft:#e8efff;--h-bg:#f2f5fa;--h-card:#ffffff;--h-ink:#0f1b2d;--h-mute:#5b6b82;--h-line:#e3e8f0;--tab-h:66px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pri-soft:#1d2b4a;--h-bg:#0e1420;--h-card:#161e2c;--h-ink:#e8eef8;--h-mute:#94a3ba;--h-line:#263247}}
+:root[data-theme="dark"]{--pri-soft:#1d2b4a;--h-bg:#0e1420;--h-card:#161e2c;--h-ink:#e8eef8;--h-mute:#94a3ba;--h-line:#263247}
+#home,#page{position:absolute;inset:0;z-index:10;background:var(--h-bg);color:var(--h-ink);overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--tab-h) + 24px + env(safe-area-inset-bottom,0px))}
+#page{z-index:11}
+.hwrap{max-width:520px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hhead{display:flex;align-items:center;gap:10px;padding-top:14px;padding-bottom:10px}
+.hlogo{width:40px;height:40px;border-radius:12px;background:var(--pri);color:#fff;display:grid;place-items:center;flex:none;overflow:hidden}
+.hlogo img{width:100%;height:100%;object-fit:contain;background:#fff}
+.hname{flex:1;min-width:0}
+.hname b{display:block;font-size:16.5px;line-height:1.25;font-weight:700}
+.hname small{display:block;font-size:12px;color:var(--h-mute);margin-top:1px}
+.hbell{position:relative;width:42px;height:42px;border-radius:12px;border:0;background:var(--h-card);display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(15,27,45,.06)}
+.badge{position:absolute;top:4px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#e5484d;color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--h-card)}
+.hero{position:relative;border-radius:20px;overflow:hidden;height:170px;background:linear-gradient(180deg,#cfe0ff,#eaf1ff)}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hsearch{position:relative;margin:-28px 12px 0;display:flex;align-items:center;gap:10px;background:var(--h-card);border-radius:16px;padding:0 8px 0 14px;height:54px;box-shadow:0 8px 24px rgba(15,27,45,.12);border:0;width:calc(100% - 24px);text-align:left;color:var(--h-mute);font-size:14.5px}
+.hsearch span{flex:1}
+.hsearch .mic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--h-mute)}
+.hloc{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--pri-soft);border:0;width:100%;text-align:left}
+.hloc i{width:12px;height:12px;border-radius:50%;background:var(--pri);box-shadow:0 0 0 4px color-mix(in srgb,var(--pri) 25%,transparent);flex:none}
+.hloc span{flex:1;min-width:0;font-size:13px;color:var(--h-ink)}
+.hloc span small{display:block;color:var(--h-mute);font-size:11.5px}
+.hloc span b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hloc em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--pri)}
+.hbanner{position:relative;display:flex;align-items:stretch;margin-top:14px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,var(--pri),var(--pri-2));color:#fff;min-height:150px;border:0;width:100%;text-align:left;padding:0}
+.hbanner .tx{flex:1;padding:18px 0 16px 18px;display:flex;flex-direction:column;gap:6px;z-index:1}
+.hbanner h2{margin:0;font-size:21px;line-height:1.25;font-weight:700;text-wrap:balance}
+.hbanner p{margin:0;font-size:12.5px;opacity:.92}
+.hbanner .go{margin-top:auto;align-self:flex-start;background:#fff;color:var(--pri);font-weight:700;font-size:13px;padding:8px 14px;border-radius:10px}
+.hbanner .im{width:44%;flex:none;display:flex;align-items:flex-end;justify-content:center}
+.hbanner .im img{width:100%;height:100%;object-fit:cover}
+.hbanner .im svg{width:100%;height:auto;max-height:150px}
+.hsec{margin-top:16px;background:var(--h-card);border-radius:18px;padding:14px 14px 10px;box-shadow:0 2px 10px rgba(15,27,45,.05)}
+.hsec h3{margin:0 0 12px;font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.hsec h3 button{border:0;background:none;color:var(--pri);font-size:13px;font-weight:600;padding:4px 0}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 4px}
+.htile{display:flex;flex-direction:column;align-items:center;gap:7px;border:0;background:none;padding:2px;font-size:12px;line-height:1.3;text-align:center;color:var(--h-ink)}
+.htile i{width:54px;height:54px;border-radius:16px;display:grid;place-items:center}
+.htile i svg{width:26px;height:26px}
+.hlist button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:11px 0;border-top:1px solid var(--h-line);text-align:left;color:var(--h-ink)}
+.hlist button:first-child{border-top:0}
+.hlist i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none}
+.hlist i svg{width:21px;height:21px}
+.hlist span{flex:1;min-width:0}
+.hlist b{display:block;font-size:14.5px;font-weight:600}
+.hlist small{display:block;font-size:12.5px;color:var(--h-mute);margin-top:1px}
+.hlist .chev{color:var(--h-mute);flex:none}
+.hfoot{margin-top:16px;font-size:11.5px;color:var(--h-mute);text-align:center}
+/* trang phụ */
+.phead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;background:var(--h-bg);padding-top:12px;padding-bottom:10px}
+.phead h2{flex:1;margin:0;font-size:17px;text-align:center}
+.pback{width:40px;height:40px;border-radius:12px;border:0;background:var(--h-card);display:grid;place-items:center;flex:none}
+.pcard{background:var(--h-card);border-radius:16px;padding:14px;margin-top:10px;box-shadow:0 2px 10px rgba(15,27,45,.05)}
+.pcard h4{margin:0 0 4px;font-size:15px}
+.pcard p{margin:0;font-size:14px;line-height:1.55;color:var(--h-ink);white-space:pre-line}
+.pcard small{color:var(--h-mute);font-size:12px}
+.pcard img{width:100%;border-radius:12px;margin-bottom:10px;display:block}
+.pempty{text-align:center;color:var(--h-mute);padding:40px 10px;font-size:14px;line-height:1.6}
+.prow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--h-line)}
+.prow:first-child{border-top:0}
+.prow i{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--pri-soft);color:var(--pri);flex:none}
+.prow span{flex:1;min-width:0;font-size:14px;line-height:1.45}
+.prow span small{display:block;color:var(--h-mute);font-size:12px}
+.prow a{color:var(--pri);font-weight:700;text-decoration:none}
+.pbtn{border:1px solid var(--h-line);background:var(--h-card);color:var(--h-ink);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600}
+.dirgrp{margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--h-mute)}
+.dirlist button{display:block;width:100%;text-align:left;border:0;background:var(--h-card);border-radius:12px;padding:11px 14px;margin-top:6px;color:var(--h-ink);font-size:14px}
+.dirlist button small{display:block;color:var(--h-mute);font-size:12px;margin-top:1px}
+/* thanh điều hướng đáy */
+#tabbar{position:absolute;left:0;right:0;bottom:0;z-index:15;background:var(--h-card);border-top:1px solid var(--h-line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);box-shadow:0 -4px 18px rgba(15,27,45,.06)}
+#tabbar .in{max-width:520px;margin:0 auto;height:var(--tab-h);display:grid;grid-template-columns:repeat(5,1fr);align-items:center}
+#tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--h-mute);position:relative;padding:6px 0}
+#tabbar button svg{width:23px;height:23px}
+#tabbar button[aria-current="page"]{color:var(--pri);font-weight:700}
+#tabbar .qr{margin-top:-26px}
+#tabbar .qr span.c{width:58px;height:58px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px color-mix(in srgb,var(--pri) 45%,transparent);border:4px solid var(--h-card)}
+#tabbar .qr span.c svg{width:27px;height:27px}
+#tabbar .badge{top:0;right:calc(50% - 20px)}
+#tabbar.hide{display:none}
+#panel,#views,#sheet,#labels{--accent:var(--pri)}
+/* khi đang ở bản đồ: chừa chỗ cho thanh đáy */
+body.with-tabs #toast{bottom:calc(var(--tab-h) + 16px + env(safe-area-inset-bottom,0px))}
+body.with-tabs .previewBadge{bottom:calc(var(--tab-h) + 8px + env(safe-area-inset-bottom,0px))}
+.mapback{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--accent);font-weight:600;font-size:13px;padding:0 0 4px}
+@media (max-width:720px){body.with-tabs #sheet{bottom:calc(var(--tab-h) + 10px + env(safe-area-inset-bottom,0px));max-height:calc(48% - var(--tab-h))}}
+/* máy quét QR */
+#scan{position:absolute;inset:0;z-index:40;background:#05070c;color:#fff;display:flex;flex-direction:column}
+#scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#scan .top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding-top:max(14px,env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#scan .top b{font-size:16px}
+#scan .top button{width:42px;height:42px;border-radius:12px;border:0;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center}
+#scan .frame{position:relative;z-index:2;margin:auto;width:min(68vw,300px);aspect-ratio:1;max-width:100%}
+#scan .frame::before{content:"";position:absolute;inset:0;border-radius:20px;box-shadow:0 0 0 2000px rgba(5,7,12,.55)}
+#scan .frame i{position:absolute;width:42px;height:42px;border:5px solid #fff}
+#scan .frame i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:18px 0 0 0}
+#scan .frame i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 18px 0 0}
+#scan .frame i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 18px}
+#scan .frame i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 18px 0}
+#scan .frame .line{position:absolute;left:8%;right:8%;height:3px;border-radius:2px;background:var(--pri);box-shadow:0 0 12px var(--pri);animation:scanline 2.2s ease-in-out infinite}
+@keyframes scanline{0%,100%{top:10%}50%{top:88%}}
+@media (prefers-reduced-motion:reduce){#scan .frame .line{animation:none;top:50%}}
+#scan .msg{position:relative;z-index:2;text-align:center;font-size:14px;line-height:1.5;padding:16px 24px 0;min-height:60px}
+#scan .bot{position:relative;z-index:2;display:flex;justify-content:space-around;align-items:center;padding:18px 16px calc(22px + env(safe-area-inset-bottom,0px))}
+#scan .bot button{border:0;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px}
+#scan .bot button span.c{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center}
 </style>
 </head>
 <body>
@@ -142,6 +251,7 @@ ol.steps .tx b{font-weight:600}
   <div id="labels"></div>
   <div id="panel">
     <div class="card search">
+      <button class="mapback" id="mapHome"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg>Trang chủ</button>
       <div class="row start">
         <span class="pin" aria-hidden="true"></span>
         <label for="startSel">Bạn đang ở</label>
@@ -174,6 +284,20 @@ ol.steps .tx b{font-weight:600}
   </div>
   <div id="toast" hidden role="status"></div>
   <div id="qrView" hidden></div>
+  <div id="home" hidden></div>
+  <div id="page" hidden></div>
+  <nav id="tabbar" aria-label="Điều hướng chính"></nav>
+  <div id="scan" hidden>
+    <video id="scanVideo" playsinline muted></video>
+    <div class="top"><button id="scanClose" aria-label="Đóng máy quét"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button><b>Quét QR định vị</b><span style="width:42px"></span></div>
+    <div class="frame"><i></i><i></i><i></i><i></i><span class="line"></span></div>
+    <p class="msg" id="scanMsg"></p>
+    <div class="bot">
+      <button id="scanAlbum"><span class="c"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 9"/></svg></span>Ảnh</button>
+      <button id="scanManual"><span class="c"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>Chọn thủ công</button>
+    </div>
+    <input type="file" id="scanFile" accept="image/*" hidden>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -573,6 +697,7 @@ function closeSheet(){sheet.hidden=true;panel.classList.remove("routing");curren
 function collapseBtn(){const b=btn("Thu gọn",()=>{const c=sheet.dataset.collapsed!=="true";sheet.dataset.collapsed=c;b.textContent=c?"Xem các bước":"Thu gọn";requestAnimationFrame(updateOffset);});return b;}
 
 function showRoute(place,dept,quiet){
+  if(!quiet)remember(place,dept);
   const wasCollapsed=sheet.dataset.collapsed;
   const res=dijkstra(startId);
   let best=null;place.doors.forEach(d=>{if(isFinite(res.dist[d])&&(!best||res.dist[d]<res.dist[best]))best=d;});
@@ -768,6 +893,207 @@ function route(){
 }
 addEventListener("hashchange",route);
 
+// ================= TRANG CHỦ, THANH ĐIỀU HƯỚNG, QUÉT QR =================
+// Chữ, ảnh, các ô khoa phòng và thông báo lấy từ mục "ui" trong map_data.json (sửa ở trang quản trị, thẻ Giao diện).
+const UI_DEF={hospitalName:"Bệnh viện Sản Nhi Nghệ An",tagline:"Bản đồ chỉ đường cho người bệnh",logo:"",heroImage:"",primaryColor:"#1b5cff",
+  banner:{title:"Tìm đường đi trong bệnh viện",subtitle:"Nhanh chóng · Chính xác · Dễ dàng",button:"Bắt đầu",image:""},
+  tilesTitle:"Khoa / Phòng phổ biến",tiles:[],servicesTitle:"Dịch vụ nhanh",services:[],notices:[],info:{}};
+const UI=Object.assign({},UI_DEF,D.ui||{});UI.banner=Object.assign({},UI_DEF.banner,(D.ui||{}).banner||{});UI.info=Object.assign({},(D.ui||{}).info||{});
+if(!UI.tiles||!UI.tiles.length)UI.tiles=[{label:"Khoa Khám bệnh",icon:"steth",color:"#2563eb",query:"kham benh"},{label:"Cấp cứu",icon:"er",color:"#e5484d",query:"cap cuu"},
+  {label:"Xét nghiệm",icon:"lab",color:"#16a34a",query:"xet nghiem"},{label:"Chẩn đoán hình ảnh",icon:"scan",color:"#f97316",query:"chan doan hinh anh"},
+  {label:"Nhà thuốc",icon:"pharm",color:"#059669",query:"nha thuoc"},{label:"Khoa Nhi",icon:"baby",color:"#7c3aed",query:"nhi"},
+  {label:"Sản phụ khoa",icon:"mother",color:"#db2777",query:"san"},{label:"Gửi xe",icon:"car",color:"#0891b2",query:"gui xe"}];
+if(!UI.services||!UI.services.length)UI.services=[{label:"Định vị vị trí của tôi",sub:"Quét mã QR gần bạn để biết bạn đang ở đâu",icon:"pin",action:"qr"},
+  {label:"Tìm đường đi",sub:"Đến khoa, phòng bạn cần",icon:"route",action:"search"},{label:"Lịch sử tìm kiếm",sub:"Xem lại các nơi đã tìm",icon:"history",action:"history"},
+  {label:"Bản đồ tổng quan",sub:"Xem toàn bộ bệnh viện",icon:"map",action:"overview"}];
+// đổi màu chủ đạo
+try{if(/^#[0-9a-f]{6}$/i.test(UI.primaryColor||"")){const r=document.documentElement.style;r.setProperty("--pri",UI.primaryColor);
+  const n=parseInt(UI.primaryColor.slice(1),16),dk=c=>Math.max(0,Math.round(c*.8));r.setProperty("--pri-2","#"+[n>>16,(n>>8)&255,n&255].map(dk).map(x=>x.toString(16).padStart(2,"0")).join(""));}}catch(e){}
+const PIMG=(()=>{if(!PREVIEW)return{};try{return JSON.parse(localStorage.getItem("mapEditor.previewImgs")||"{}");}catch(e){return{};}})();
+const imgSrc=p=>p?(PIMG[p]||p):"";
+const IC={
+ steth:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3v6a4 4 0 0 0 8 0V3M10 13v2a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="11" r="2"/></svg>',
+ er:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h2l2-3 3 5 3-9 2 7h6"/><path d="M12 2v5M9.5 4.5h5"/></svg>',
+ lab:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3M7 15h10"/></svg>',
+ scan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3"/></svg>',
+ pharm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M9 3h6v2H9zM12 9v7M8.5 12.5h7"/></svg>',
+ baby:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M10.5 8h.01M13.5 8h.01M5 21a7 7 0 0 1 14 0"/></svg>',
+ mother:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="5" r="2.5"/><path d="M8 21v-6l-1-4a4 4 0 0 1 4-3h1a4 4 0 0 1 4 4 3 3 0 0 1-3 3h-1v6"/></svg>',
+ car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 16V11l2-5h10l2 5v5zM3 16h18v3H3z"/><circle cx="7.5" cy="13" r="1"/><circle cx="16.5" cy="13" r="1"/></svg>',
+ tooth:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 3c-2.5 0-4 2-4 4.5 0 3 1.5 4 2 7S6 21 8 21s2-4 4-4 2 4 4 4 2.5-3.5 3-6.5 2-4 2-7C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"/></svg>',
+ eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+ heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/></svg>',
+ ear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9a6 6 0 1 1 12 0c0 4-4 5-4 8a3 3 0 0 1-6 0"/><path d="M10 9a2 2 0 1 1 4 0"/></svg>',
+ bone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 6a2.5 2.5 0 1 0-3 3l9 9a2.5 2.5 0 1 0 3 3 2.5 2.5 0 1 0 2-5l-9-9a2.5 2.5 0 1 0-2-1z"/></svg>',
+ wc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="4.5" r="1.8"/><circle cx="17" cy="4.5" r="1.8"/><path d="M5 9h4v6H8v6H6v-6H5zM15 9h4l1.5 7H18v5h-2v-5h-2.5z"/></svg>',
+ lift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m9 10 3-3 3 3M9 14l3 3 3-3"/></svg>',
+ money:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>',
+ desk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10h18v3H3zM5 13v7M19 13v7M8 5h8v5H8z"/></svg>',
+ food:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3v8a2 2 0 0 0 4 0V3M8 11v10M16 21V3c-2 1-3 4-3 8h3"/></svg>',
+ shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>',
+ pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+ route:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/></svg>',
+ history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
+ map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></svg>',
+ phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>',
+ info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+ link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg>',
+ clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg>',
+ home:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg>',
+ qr:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M13 13h3v3"/></svg>',
+ search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+ mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+ chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>',
+ back:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg>',
+ close:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ album:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 9"/></svg>',
+ list:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>'
+};
+const ico=(k)=>IC[k]||IC.pin;
+const escH=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SVG_HERO=`<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice" width="100%" height="100%"><defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd4ff"/><stop offset="1" stop-color="#eef4ff"/></linearGradient></defs>
+<rect width="400" height="170" fill="url(#hs)"/><circle cx="340" cy="38" r="20" fill="#fff" opacity=".7"/>
+<rect x="0" y="140" width="400" height="30" fill="#d7e3d4"/>
+<g fill="#ffffff" stroke="#9fb3d6" stroke-width="1.5"><rect x="40" y="70" width="90" height="72"/><rect x="140" y="38" width="120" height="104"/><rect x="270" y="80" width="95" height="62"/></g>
+<g fill="#7fb0ff" opacity=".85">${Array.from({length:6},(_,r)=>Array.from({length:7},(_,c)=>`<rect x="${150+c*16}" y="${48+r*15}" width="10" height="9"/>`).join("")).join("")}${Array.from({length:4},(_,r)=>Array.from({length:5},(_,c)=>`<rect x="${50+c*16}" y="${80+r*15}" width="10" height="9"/>`).join("")).join("")}${Array.from({length:3},(_,r)=>Array.from({length:5},(_,c)=>`<rect x="${280+c*16}" y="${90+r*15}" width="10" height="9"/>`).join("")).join("")}</g>
+<rect x="186" y="16" width="28" height="28" rx="5" fill="#e5484d"/><path d="M200 22v16M192 30h16" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+<g fill="#5fae6a"><circle cx="20" cy="135" r="14"/><circle cx="380" cy="134" r="15"/><circle cx="135" cy="138" r="9"/><circle cx="268" cy="138" r="9"/></g></svg>`;
+const SVG_BANNER=`<svg viewBox="0 0 180 150"><g transform="translate(18 30) skewY(-8)"><rect width="120" height="92" rx="10" fill="#fff" opacity=".95"/>
+<path d="M12 70 C40 40 60 75 82 38 S110 30 112 18" fill="none" stroke="#1b5cff" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9"/>
+<rect x="10" y="10" width="34" height="22" rx="4" fill="#cfe1ff"/><rect x="70" y="56" width="40" height="26" rx="4" fill="#d6f0dc"/><rect x="50" y="12" width="20" height="16" rx="3" fill="#ffe0cc"/></g>
+<g transform="translate(26 60)"><path d="M14 0a14 14 0 0 1 14 14c0 11-14 24-14 24S0 25 0 14A14 14 0 0 1 14 0z" fill="#e5484d"/><circle cx="14" cy="14" r="5" fill="#fff"/></g>
+<g transform="translate(116 14)"><path d="M14 0a14 14 0 0 1 14 14c0 11-14 24-14 24S0 25 0 14A14 14 0 0 1 14 0z" fill="#e5484d"/><circle cx="14" cy="14" r="5" fill="#fff"/></g></svg>`;
+
+const home=$("home"),page=$("page"),tabbar=$("tabbar"),scanV=$("scan");
+const LSx={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const noticeKey=n=>(n.date||"")+"|"+(n.title||"");
+function unseen(){const s=new Set(LSx.get("seenNotices",[]));return (UI.notices||[]).filter(n=>!s.has(noticeKey(n))).length;}
+function startName(){const n=N[startId];return n?n.name:"Chưa xác định";}
+let screen="home";
+function setScreen(s){screen=s;
+  home.hidden=s!=="home";page.hidden=!["notices","info","history","all"].includes(s);
+  document.body.classList.toggle("with-tabs",true);
+  tabbar.querySelectorAll("button[data-s]").forEach(b=>{const on=b.dataset.s===s||(b.dataset.s==="map"&&s==="map");b.toggleAttribute("aria-current",false);if(on)b.setAttribute("aria-current","page");});
+  if(s==="home")renderHome();
+  if(s==="map"){requestAnimationFrame(()=>{resize();});}
+  renderBadges();
+}
+function renderBadges(){const n=unseen();document.querySelectorAll(".nbadge").forEach(b=>{b.hidden=!n;b.textContent=n>9?"9+":n;});}
+function renderHome(){
+  const logo=UI.logo?`<img src="${escH(imgSrc(UI.logo))}" alt="">`:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+  const hero=UI.heroImage?`<img src="${escH(imgSrc(UI.heroImage))}" alt="${escH(UI.hospitalName)}">`:SVG_HERO;
+  const bim=UI.banner.image?`<img src="${escH(imgSrc(UI.banner.image))}" alt="">`:SVG_BANNER;
+  home.innerHTML=`<div class="hwrap">
+    <div class="hhead"><div class="hlogo">${logo}</div><div class="hname"><b>${escH(UI.hospitalName)}</b><small>${escH(UI.tagline||"")}</small></div>
+      <button class="hbell" id="hBell" aria-label="Thông báo">${ico("bell").replace("<svg ",'<svg width="22" height="22" ')}<span class="badge nbadge" hidden></span></button></div>
+    <div class="hero">${hero}</div>
+    <button class="hsearch" id="hSearch">${ico("search").replace("<svg ",'<svg width="20" height="20" ')}<span>Tìm khoa, phòng, dịch vụ…</span>${("webkitSpeechRecognition" in window||"SpeechRecognition" in window)?`<i class="mic" id="hMic" role="button" aria-label="Tìm bằng giọng nói">${ico("mic").replace("<svg ",'<svg width="20" height="20" ')}</i>`:""}</button>
+    <button class="hloc" id="hLoc"><i></i><span><small>Bạn đang ở</small><b>${escH(startName())}</b></span><em>Quét QR</em></button>
+    <button class="hbanner" id="hBanner"><div class="tx"><h2>${escH(UI.banner.title)}</h2><p>${escH(UI.banner.subtitle||"")}</p>${UI.banner.button?`<span class="go">${escH(UI.banner.button)}</span>`:""}</div><div class="im">${bim}</div></button>
+    <section class="hsec"><h3>${escH(UI.tilesTitle||"Khoa / Phòng phổ biến")}<button id="hAll">Xem tất cả ${IC.chev.replace('width="18" height="18"','width="14" height="14" style="vertical-align:-2px"')}</button></h3><div class="hgrid" id="hGrid"></div></section>
+    <section class="hsec"><h3>${escH(UI.servicesTitle||"Dịch vụ nhanh")}</h3><div class="hlist" id="hList"></div></section>
+    <p class="hfoot">Bản đồ chỉ mang tính hướng dẫn. Cần hỗ trợ, hãy hỏi nhân viên hoặc quầy hướng dẫn gần nhất.</p></div>`;
+  const g=$("hGrid");UI.tiles.forEach(t=>{const b=document.createElement("button");b.className="htile";const c=t.color||"#1b5cff";
+    b.innerHTML=t.image?`<i style="background:color-mix(in srgb,${c} 14%,transparent)"><img src="${escH(imgSrc(t.image))}" alt="" style="width:34px;height:34px;object-fit:contain"></i>${escH(t.label)}`:`<i style="background:color-mix(in srgb,${c} 14%,transparent);color:${c}">${ico(t.icon)}</i>${escH(t.label)}`;
+    b.onclick=()=>runQuery(t.label,t.query||t.label);g.appendChild(b);});
+  const l=$("hList");UI.services.forEach(s=>{const b=document.createElement("button");const c=s.color||"var(--pri)";
+    b.innerHTML=`<i style="background:color-mix(in srgb,${c} 12%,transparent);color:${c}">${ico(s.icon)}</i><span><b>${escH(s.label)}</b>${s.sub?`<small>${escH(s.sub)}</small>`:""}</span><span class="chev">${IC.chev}</span>`;
+    b.onclick=()=>doAction(s);l.appendChild(b);});
+  $("hSearch").onclick=e=>{if(e.target.closest("#hMic"))return;openSearch();};
+  if($("hMic"))$("hMic").onclick=e=>{e.stopPropagation();voice();};
+  $("hLoc").onclick=openScan;$("hBanner").onclick=()=>openSearch();$("hAll").onclick=()=>openPage("all");$("hBell").onclick=()=>openPage("notices");
+  renderBadges();
+}
+function openSearch(){setScreen("map");q.value="";results.hidden=true;setTimeout(()=>q.focus(),60);}
+function runQuery(label,query){setScreen("map");q.value=label;const r=search(query);if(r.length===1)choose(r[0]);else renderResults(r,label);}
+function doAction(s){const a=s.action||"search";
+  if(a==="qr")openScan();else if(a==="search")openSearch();else if(a==="history")openPage("history");else if(a==="notices")openPage("notices");else if(a==="info")openPage("info");
+  else if(a==="all")openPage("all");else if(a==="overview"){setScreen("map");closeSheet();$("vAll").click();}
+  else if(a==="query")runQuery(s.label,s.value||s.label);
+  else if(a==="call"&&s.value){location.href="tel:"+String(s.value).replace(/[^\d+]/g,"");}
+  else if(a==="link"&&s.value){window.open(s.value,"_blank","noopener");}}
+function voice(){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return;try{const r=new R();r.lang="vi-VN";r.interimResults=false;
+  r.onresult=e=>{const t=e.results[0][0].transcript;setScreen("map");q.value=t;renderResults(search(t),t);};r.onerror=()=>toast("Không nghe rõ. Bạn hãy thử lại hoặc gõ tên khoa phòng.");r.start();toast("Đang nghe… hãy nói tên khoa hoặc phòng.",3000);}catch(e){}}
+// lịch sử tìm kiếm
+function remember(place,dept){if(!place)return;const h=LSx.get("recent",[]).filter(x=>!(x.p===place.id&&x.d===(dept?dept.n:null)));
+  h.unshift({p:place.id,d:dept?dept.n:null,t:Date.now()});LSx.set("recent",h.slice(0,15));}
+// các trang phụ
+function openPage(kind){setScreen(kind);const title={notices:"Thông báo",info:"Thông tin bệnh viện",history:"Lịch sử tìm kiếm",all:"Tất cả khoa, phòng"}[kind];
+  page.innerHTML=`<div class="hwrap"><div class="phead"><button class="pback" id="pBack" aria-label="Về trang chủ">${IC.back}</button><h2>${title}</h2><span style="width:40px"></span></div><div id="pBody"></div></div>`;
+  $("pBack").onclick=()=>setScreen("home");const B=$("pBody");page.scrollTop=0;
+  if(kind==="notices"){const list=UI.notices||[];
+    if(!list.length)B.innerHTML=`<div class="pempty">Hiện chưa có thông báo nào.</div>`;
+    list.forEach(n=>{const c=document.createElement("div");c.className="pcard";c.innerHTML=`${n.image?`<img src="${escH(imgSrc(n.image))}" alt="">`:""}<h4>${escH(n.title)}</h4>${n.date?`<small>${escH(n.date)}</small>`:""}<p style="margin-top:6px">${escH(n.body||"")}</p>`;B.appendChild(c);});
+    LSx.set("seenNotices",list.map(noticeKey));renderBadges();}
+  if(kind==="info"){const I=UI.info||{};const c=document.createElement("div");c.className="pcard";
+    const row=(icon,label,val,html)=>val?`<div class="prow"><i>${ico(icon)}</i><span><small>${label}</small>${html||escH(val)}</span></div>`:"";
+    const tel=I.hotline?`<a href="tel:${escH(String(I.hotline).replace(/[^\d+]/g,""))}">${escH(I.hotline)}</a>`:"";
+    c.innerHTML=row("phone","Đường dây nóng",I.hotline,tel)+row("phone","Cấp cứu",I.emergency,I.emergency?`<a href="tel:${escH(String(I.emergency).replace(/[^\d+]/g,""))}">${escH(I.emergency)}</a>`:"")+row("pin","Địa chỉ",I.address)+row("clock","Giờ làm việc",I.hours)+row("link","Trang web",I.website,I.website?`<a href="${escH(I.website)}" target="_blank" rel="noopener">${escH(I.website.replace(/^https?:\/\//,""))}</a>`:"");
+    if(!c.innerHTML)c.innerHTML=`<div class="pempty">Phòng CNTT chưa nhập thông tin liên hệ.</div>`;B.appendChild(c);
+    if(I.note){const d=document.createElement("div");d.className="pcard";d.innerHTML=`<p>${escH(I.note)}</p>`;B.appendChild(d);}
+    const d2=document.createElement("div");d2.className="pcard";d2.innerHTML=`<div class="prow"><i>${ico("pin")}</i><span><small>Vị trí của bạn trên bản đồ</small>${escH(startName())}</span><button class="pbtn" id="iScan">Quét QR</button></div>`;B.appendChild(d2);$("iScan").onclick=openScan;}
+  if(kind==="history"){const h=LSx.get("recent",[]).filter(x=>PLACE_BY_ID[x.p]);
+    if(!h.length){B.innerHTML=`<div class="pempty">Bạn chưa tìm nơi nào trên máy này.</div>`;return;}
+    const c=document.createElement("div");c.className="pcard";
+    h.forEach(x=>{const p=PLACE_BY_ID[x.p],d=x.d?p.depts.find(y=>y.n===x.d):null;const r=document.createElement("div");r.className="prow";r.style.cursor="pointer";
+      r.innerHTML=`<i>${ico("history")}</i><span>${escH(d?d.n:p.name)}<small>${escH(d?((d.f?"Tầng "+d.f+" · ":"")+p.name):(p.note||""))} · ${new Date(x.t).toLocaleDateString("vi-VN")}</small></span>${IC.chev}`;
+      r.onclick=()=>{setScreen("map");q.value=d?d.n:p.name;showRoute(p,d);};c.appendChild(r);});
+    B.appendChild(c);const clr=document.createElement("button");clr.className="pbtn";clr.style.marginTop="12px";clr.textContent="Xóa lịch sử";clr.onclick=()=>{LSx.set("recent",[]);openPage("history");};B.appendChild(clr);}
+  if(kind==="all"){PLACES.filter(p=>p.depts.length||p.a).forEach(p=>{const gp=document.createElement("div");gp.className="dirgrp";gp.textContent=p.name;B.appendChild(gp);const wrap=document.createElement("div");wrap.className="dirlist";
+      const items=p.depts.length?p.depts:[null];const seen=new Set();
+      items.forEach(d=>{const k=d?d.n:p.name;if(seen.has(k))return;seen.add(k);const b=document.createElement("button");b.innerHTML=`${escH(d?d.n:p.name)}<small>${d&&d.f?"Tầng "+d.f:escH(p.note||"")}</small>`;
+        b.onclick=()=>{setScreen("map");q.value=d?d.n:p.name;showRoute(p,d);};wrap.appendChild(b);});B.appendChild(wrap);});}
+}
+// thanh đáy
+tabbar.innerHTML=`<div class="in">
+  <button data-s="home">${IC.home}<span>Trang chủ</span></button>
+  <button data-s="map">${IC.map}<span>Bản đồ</span></button>
+  <button class="qr" data-a="scan"><span class="c">${IC.qr}</span><span>Quét QR</span></button>
+  <button data-s="notices">${IC.bell}<span>Thông báo</span><span class="badge nbadge" hidden></span></button>
+  <button data-s="info">${IC.info}<span>Thông tin</span></button></div>`;
+tabbar.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(b.dataset.a==="scan")openScan();else if(b.dataset.s==="home")setScreen("home");else if(b.dataset.s==="map")setScreen("map");else openPage(b.dataset.s);});
+$("mapHome").onclick=()=>setScreen("home");
+
+// ---- quét mã QR ngay trong trang
+let scanStream=null,scanTimer=null,detector=null;
+function loadJsQR(){return new Promise(res=>{if(window.jsQR)return res(true);const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s);});}
+async function decodeFrame(src,w,h){
+  if(detector){try{const r=await detector.detect(src);if(r&&r[0])return r[0].rawValue;}catch(e){}}
+  if(window.jsQR){const c=decodeFrame.c||(decodeFrame.c=document.createElement("canvas"));const s=Math.min(1,640/Math.max(w,h));c.width=Math.round(w*s);c.height=Math.round(h*s);
+    const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(src,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height);const r=jsQR(d.data,c.width,c.height,{inversionAttempts:"dontInvert"});if(r)return r.data;}
+  return null;}
+function scanMsg(t){$("scanMsg").innerHTML=t;}
+async function openScan(){
+  scanV.hidden=false;scanMsg("Hướng camera vào mã QR dán ở cổng, cửa tòa nhà hoặc sảnh thang máy để xác định vị trí của bạn.");
+  try{if("BarcodeDetector" in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes("qr_code"))detector=new BarcodeDetector({formats:["qr_code"]});}}catch(e){detector=null;}
+  if(!detector)await loadJsQR();
+  const v=$("scanVideo");
+  try{scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});v.srcObject=scanStream;await v.play();}
+  catch(e){scanMsg("Không mở được camera. Hãy cho phép trang dùng camera, hoặc bấm <b>Ảnh</b> để chọn ảnh chụp mã QR, hoặc <b>Chọn thủ công</b>.");return;}
+  const loop=async()=>{if(!scanStream)return;if(v.readyState>=2){const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t){onCode(t);return;}}scanTimer=setTimeout(loop,220);};loop();
+}
+function closeScan(){scanV.hidden=true;clearTimeout(scanTimer);if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}}
+function onCode(text){
+  let start=null,h=null,to=null;
+  try{const u=new URL(text,location.href);start=u.searchParams.get("start");h=u.searchParams.get("h");to=u.searchParams.get("to");
+    if(!start&&u.hash){const hs=decodeURIComponent(u.hash.slice(1));const i=hs.indexOf("?");if(i>=0){const sp=new URLSearchParams(hs.slice(i+1));start=sp.get("start");h=sp.get("h");to=sp.get("to");}}}catch(e){}
+  if(start&&!N[start]&&OLD_IDS[start])start=OLD_IDS[start];
+  if(!start||!N[start]||N[start].type==="jct"){scanMsg("Mã QR này không phải mã vị trí của bệnh viện. Hãy quét mã dán ở cổng, cửa tòa nhà hoặc sảnh thang máy.");
+    if(scanStream)scanTimer=setTimeout(async function again(){const v=$("scanVideo");const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t&&t!==text){onCode(t);return;}if(scanStream)scanTimer=setTimeout(again,260);},1200);return;}
+  closeScan();const hv=parseFloat(h);setStart(start,isFinite(hv)?((hv%360)+360)%360:null);
+  try{fetch(LOG_URL+"?location="+encodeURIComponent(N[start].name)+"&id="+encodeURIComponent(start)+"&src=web",{mode:"no-cors",keepalive:true}).catch(()=>{});}catch(e){}
+  toast("Đã xác định vị trí: "+N[start].name,4000);
+  if(to){const p=PLACE_BY_ID[to];if(p){setScreen("map");q.value=p.name;showRoute(p,null);return;}}
+  if(current){setScreen("map");}else if(screen==="home")renderHome();
+}
+$("scanClose").onclick=closeScan;
+$("scanManual").onclick=()=>{closeScan();setScreen("map");startSel.focus();toast("Chọn vị trí của bạn ở ô “Bạn đang ở” phía trên.",4000);};
+$("scanFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!detector)await loadJsQR();
+  const img=new Image();img.onload=async()=>{const t=await decodeFrame(img,img.naturalWidth,img.naturalHeight);URL.revokeObjectURL(img.src);if(t)onCode(t);else scanMsg("Không đọc được mã QR trong ảnh này. Hãy chụp gần hơn và rõ nét.");};
+  img.src=URL.createObjectURL(f);e.target.value="";};
+$("scanAlbum").onclick=()=>$("scanFile").click();
+
 // ================= KHỞI ĐỘNG =================
 applyTheme();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme);
@@ -787,6 +1113,7 @@ if(PREVIEW){const b=document.createElement("div");b.className="previewBadge";b.t
   setStart(sid,sid===start?h:null);
   if(to){const p=PLACE_BY_ID[to]||PLACES.find(p=>p.doors.includes(to));if(p){q.value=p.name;showRoute(p,null);}}
   route();
+  setScreen((to||location.hash==="#qr"||location.hash==="#toado")?"map":"home");
 })();
 
 const v=new THREE.Vector3();let last=performance.now(),flow=0;
