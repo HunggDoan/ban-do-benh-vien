@@ -1063,7 +1063,6 @@ function renderHome(){
     </section>
     <div class="hres" id="hRes" hidden role="listbox" aria-label="Kết quả tìm kiếm"></div>
     <div id="hBody">
-    ${located?`<button class="hloc" id="hLoc"><i></i><span><small>Bạn đang ở</small><b>${escH(startName())}</b></span><em>Quét lại</em></button>`:""}
     <section class="hsec"><h3>${escH(UI.tilesTitle||"Khoa / Phòng phổ biến")}<button id="hAll">Xem tất cả ${IC.chev.replace('width="18" height="18"','width="14" height="14" style="vertical-align:-2px"')}</button></h3><div class="hgrid" id="hGrid"></div></section>
     <section class="hsec"><h3>${escH(UI.servicesTitle||"Dịch vụ nhanh")}</h3><div class="hlist" id="hList"></div></section>
     <p class="hfoot">Bản đồ chỉ mang tính hướng dẫn. Cần hỗ trợ, hãy hỏi nhân viên hoặc quầy hướng dẫn gần nhất.</p></div></div>`;
@@ -1079,7 +1078,6 @@ function renderHome(){
   $("hqx").onclick=()=>{hq.value="";homeSearch();hq.focus();};
   if($("hMic"))$("hMic").onclick=()=>voice();
   if($("hGo"))$("hGo").onclick=()=>openPage("maps");
-  if($("hLoc"))$("hLoc").onclick=openScan;
   $("hAll").onclick=()=>openPage("all");$("hBell").onclick=()=>openPage("notices");
   if(keep.trim())homeSearch();
   renderBadges();
@@ -1163,22 +1161,58 @@ tabbar.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(b.dataset.a==="sc
 $("mapHome").onclick=()=>setScreen("home");
 
 // ---- quét mã QR ngay trong trang
-let scanStream=null,scanTimer=null,detector=null;
-function loadJsQR(){return new Promise(res=>{if(window.jsQR)return res(true);const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s);});}
-async function decodeFrame(src,w,h){
-  if(detector){try{const r=await detector.detect(src);if(r&&r[0])return r[0].rawValue;}catch(e){}}
-  if(window.jsQR){const c=decodeFrame.c||(decodeFrame.c=document.createElement("canvas"));const s=Math.min(1,640/Math.max(w,h));c.width=Math.round(w*s);c.height=Math.round(h*s);
-    const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(src,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height);const r=jsQR(d.data,c.width,c.height,{inversionAttempts:"dontInvert"});if(r)return r.data;}
-  return null;}
+let scanStream=null,scanTimer=null,detector=null,detTried=false,scanBusy=false;
+// Đọc mã QR: Android/Chrome dùng bộ đọc có sẵn của máy (rất nhanh); iPhone dùng jsQR, chỉ đọc vùng khung ngắm giữa màn hình cho nhanh.
+async function getDetector(){if(detTried)return detector;detTried=true;
+  try{if("BarcodeDetector" in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes("qr_code"))detector=new BarcodeDetector({formats:["qr_code"]});}}catch(e){detector=null;}return detector;}
+let jsqrP=null;
+function loadJsQR(){if(window.jsQR)return Promise.resolve(true);if(jsqrP)return jsqrP;
+  jsqrP=new Promise(res=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";s.onload=()=>res(true);s.onerror=()=>{jsqrP=null;res(false);};document.head.appendChild(s);});return jsqrP;}
+// tải sẵn bộ đọc ngay khi mở trang, để bấm Quét QR là đọc được luôn
+setTimeout(async()=>{if(!(await getDetector()))loadJsQR();},1500);
+const dc=document.createElement("canvas"),dx=dc.getContext("2d",{willReadFrequently:true});
+let scanTick=0;
+function jsqrRegion(src,w,h,sx,sy,sw,sh,out){dc.width=out;dc.height=out;dx.imageSmoothingEnabled=true;dx.drawImage(src,sx,sy,sw,sh,0,0,out,out);
+  const d=dx.getImageData(0,0,out,out);const r=jsQR(d.data,out,out,{inversionAttempts:"dontInvert"});return r?r.data:null;}
+async function decodeFrame(src,w,h,full){
+  if(detector){try{const r=await detector.detect(src);if(r&&r[0])return r[0].rawValue;}catch(e){}if(!window.jsQR)return null;}
+  if(!window.jsQR)return null;
+  const m=Math.min(w,h);
+  if(full){ // ảnh chọn từ máy: thử cả ảnh rồi vùng giữa
+    const s=Math.min(1,1000/Math.max(w,h));dc.width=Math.round(w*s);dc.height=Math.round(h*s);dx.drawImage(src,0,0,dc.width,dc.height);
+    const d=dx.getImageData(0,0,dc.width,dc.height);const r=jsQR(d.data,dc.width,dc.height);if(r)return r.data;
+    return jsqrRegion(src,w,h,(w-m*.7)/2,(h-m*.7)/2,m*.7,m*.7,600);}
+  // camera: luân phiên vùng khung ngắm (70%) và vùng hẹp hơn (45%) để mã ở xa vẫn đủ nét
+  scanTick++;const k=scanTick%3===2?.45:.72,c=m*k;
+  return jsqrRegion(src,w,h,(w-c)/2,(h-c)/2,c,c,k<.5?420:520);}
 function scanMsg(t){$("scanMsg").innerHTML=t;}
 async function openScan(){
-  scanV.hidden=false;scanMsg("Hướng camera vào mã QR dán ở cổng, cửa tòa nhà hoặc sảnh thang máy để xác định vị trí của bạn.");
-  try{if("BarcodeDetector" in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes("qr_code"))detector=new BarcodeDetector({formats:["qr_code"]});}}catch(e){detector=null;}
-  if(!detector)await loadJsQR();
+  scanV.hidden=false;scanMsg("Đưa mã QR vào giữa khung. Giữ máy cách mã khoảng 20–40 cm.");
   const v=$("scanVideo");
-  try{scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});v.srcObject=scanStream;await v.play();}
-  catch(e){scanMsg("Không mở được camera. Hãy cho phép trang dùng camera, hoặc bấm <b>Ảnh</b> để chọn ảnh chụp mã QR, hoặc <b>Chọn thủ công</b>.");return;}
-  const loop=async()=>{if(!scanStream)return;if(v.readyState>=2){const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t){onCode(t);return;}}scanTimer=setTimeout(loop,220);};loop();
+  const camP=navigator.mediaDevices&&navigator.mediaDevices.getUserMedia?navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}}):Promise.reject(new Error("no cam"));
+  const [,stream]=await Promise.all([getDetector().then(d=>d?null:loadJsQR()),camP.catch(e=>null)]);
+  if(scanV.hidden){if(stream)stream.getTracks().forEach(t=>t.stop());return;}
+  if(!stream){scanMsg("Không mở được camera. Hãy cho phép trang dùng camera, hoặc bấm <b>Ảnh</b> để chọn ảnh chụp mã QR, hoặc <b>Chọn thủ công</b>.");return;}
+  scanStream=stream;v.srcObject=stream;
+  try{const tr=stream.getVideoTracks()[0],cap=tr.getCapabilities?tr.getCapabilities():{};const adv=[];
+    if(cap.focusMode&&cap.focusMode.includes("continuous"))adv.push({focusMode:"continuous"});
+    if(cap.zoom&&cap.zoom.max>=1.5)adv.push({zoom:Math.min(1.5,cap.zoom.max)}); // phóng nhẹ cho mã to hơn
+    if(adv.length)tr.applyConstraints({advanced:adv}).catch(()=>{});}catch(e){}
+  try{await v.play();}catch(e){}
+  if(!detector&&!window.jsQR){scanMsg("Không tải được bộ đọc mã. Kiểm tra mạng rồi thử lại, hoặc dùng ứng dụng Camera của máy để quét.");}
+  const loop=async()=>{if(!scanStream)return;
+    if(v.readyState>=2&&!scanBusy){scanBusy=true;let t=null;try{t=await decodeFrame(v,v.videoWidth,v.videoHeight);}catch(e){}scanBusy=false;if(t){onCode(t);return;}}
+    scanTimer=setTimeout(loop,detector?90:60);};
+  loop();
+}
+// sau khi biết vị trí: luôn chuyển sang bản đồ. Đã chọn nơi đến thì vẽ đường luôn, chưa chọn thì mời gõ nơi cần đến.
+function afterLocate(to){
+  const typed=$("hq")?$("hq").value.trim():"";
+  setScreen("map");
+  if(to){const p=PLACE_BY_ID[to];if(p){q.value=p.name;showRoute(p,null);return;}}
+  if(current){toast("Bạn đang ở "+N[startId].name+". Đường đi đã vẽ lại từ đây.",4000);return;}
+  if(typed){q.value=typed;renderResults(search(typed),typed);toast("Bạn đang ở "+N[startId].name+". Chọn nơi cần đến trong danh sách.",4000);return;}
+  toast("Bạn đang ở "+N[startId].name+". Gõ tên khoa, phòng cần đến ở ô tìm kiếm.",4500);
 }
 function closeScan(){scanV.hidden=true;clearTimeout(scanTimer);if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}}
 function onCode(text){
@@ -1191,14 +1225,13 @@ function onCode(text){
     if(scanStream)scanTimer=setTimeout(async function again(){const v=$("scanVideo");const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t&&t!==text){onCode(t);return;}if(scanStream)scanTimer=setTimeout(again,260);},1200);return;}
   closeScan();located=true;const hv=parseFloat(h);setStart(start,isFinite(hv)?((hv%360)+360)%360:null);
   try{fetch(LOG_URL+"?location="+encodeURIComponent(N[start].name)+"&id="+encodeURIComponent(start)+"&src=web",{mode:"no-cors",keepalive:true}).catch(()=>{});}catch(e){}
-  toast("Đã xác định vị trí: "+N[start].name,4000);
-  if(to){const p=PLACE_BY_ID[to];if(p){setScreen("map");q.value=p.name;showRoute(p,null);return;}}
-  if(current){setScreen("map");}else if(screen==="home")renderHome();
+  try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+  afterLocate(to);
 }
 $("scanClose").onclick=closeScan;
 $("scanManual").onclick=()=>{closeScan();setScreen("map");startSel.focus();toast("Chọn vị trí của bạn ở ô “Bạn đang ở” phía trên.",4000);};
-$("scanFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!detector)await loadJsQR();
-  const img=new Image();img.onload=async()=>{const t=await decodeFrame(img,img.naturalWidth,img.naturalHeight);URL.revokeObjectURL(img.src);if(t)onCode(t);else scanMsg("Không đọc được mã QR trong ảnh này. Hãy chụp gần hơn và rõ nét.");};
+$("scanFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;await getDetector();await loadJsQR();
+  const img=new Image();img.onload=async()=>{const t=await decodeFrame(img,img.naturalWidth,img.naturalHeight,true);URL.revokeObjectURL(img.src);if(t)onCode(t);else scanMsg("Không đọc được mã QR trong ảnh này. Hãy chụp gần hơn và rõ nét.");};
   img.src=URL.createObjectURL(f);e.target.value="";};
 $("scanAlbum").onclick=()=>$("scanFile").click();
 
@@ -1221,7 +1254,8 @@ if(PREVIEW){const b=document.createElement("div");b.className="previewBadge";b.t
   setStart(sid,sid===start?h:null);
   if(to){const p=PLACE_BY_ID[to]||PLACES.find(p=>p.doors.includes(to));if(p){q.value=p.name;showRoute(p,null);}}
   route();
-  setScreen((to||location.hash==="#qr"||location.hash==="#toado")?"map":"home");
+  setScreen((to||located||location.hash==="#qr"||location.hash==="#toado")?"map":"home");
+  if(located&&!to)toast("Bạn đang ở "+N[startId].name+". Gõ tên khoa, phòng cần đến ở ô tìm kiếm.",5000);
 })();
 
 const v=new THREE.Vector3();let last=performance.now(),flow=0;
