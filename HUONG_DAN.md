@@ -196,6 +196,20 @@ Lần đầu mở thẻ này, nếu file dữ liệu chưa có phần giao diệ
 
 **Quét QR trong trang:** nút Quét QR ở giữa thanh đáy mở camera điện thoại (trình duyệt sẽ hỏi quyền camera). Quét mã ở cổng, cửa tòa nhà là trang tự đặt lại vị trí "Bạn đang ở". Không cho phép camera thì người bệnh vẫn chọn được ảnh chụp mã QR hoặc chọn vị trí thủ công.
 
+## Đăng trang lên Cloudflare Pages (thay cho Netlify)
+
+Gói miễn phí của Netlify tính theo credit, mỗi lần lưu là trừ một ít nên nhanh hết. Cloudflare Pages miễn phí khoảng 500 lần đăng mỗi tháng, không giới hạn lượt xem.
+
+1. Vào `dash.cloudflare.com`, đăng ký miễn phí.
+2. **Workers & Pages** → **Create** → thẻ **Pages** → **Connect to Git** → chọn kho `ban-do-benh-vien`.
+3. Cài đặt: *Framework preset* `None`, *Build command* để trống, *Build output directory* `public`.
+4. **Save and Deploy**. Từ giờ mỗi lần bấm **Lưu lên GitHub** ở trang quản trị (hoặc `git push`), Cloudflare tự đăng lại sau khoảng 1 phút.
+5. Vào trang quản trị → thẻ **Khác** → **Tên miền trang web**, sửa thành link mới (ví dụ `https://bando-sannhinghean.pages.dev`), rồi lưu.
+
+File `public/_headers` là cài đặt bộ nhớ đệm cho Cloudflare (giống phần `[[headers]]` trong `netlify.toml`).
+
+**In mã QR:** mở `link-trang/#qr`. Trang có hai phần: mã cho cổng, cửa các tòa (bản đồ bệnh viện) và mã cho cửa, sảnh thang máy từng tầng nhà F (dạng `/nhaf/?start=f2-p12`). Nếu tên miền trên mã khác trang đang mở, trang sẽ hiện cảnh báo màu vàng, hãy sửa tên miền trước khi in.
+
 ## 6. Khi sửa code Flutter
 
 1. Sửa code trong `lib/`, chạy thử bằng `flutter run -d chrome`. Bản chạy thử đọc dữ liệu từ `public/map_data.json` trên máy.

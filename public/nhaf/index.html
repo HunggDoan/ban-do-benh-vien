@@ -830,6 +830,8 @@ new MutationObserver(applyTheme).observe(document.documentElement,{attributes:tr
 resize();applyTheme();camera.position.set(-14,40,40);controls.target.set(0,0,3);
 const mh=location.hash.match(/^#qr-([a-z0-9-]+)$/);if(mh&&STARTS.some(s=>s.id===mh[1]))startId=mh[1];
 setStart(startId,true);setFloor(curStart().f);renderHome();
+// mã QR mới dạng nhaf/?start=f2-p12 (vẫn nhận kiểu cũ #qr-f2-p12)
+{const st=new URLSearchParams(location.search).get("start");if(st&&STARTS.some(s=>s.id===st)){startId=st;setStart(st,true);setFloor(curStart().f);renderHome();}}
 // mở từ trang chủ: ?to=<tầng>-<số phòng> chỉ đường luôn, ?q=<chữ> tìm sẵn
 {const sp=new URLSearchParams(location.search);const to=(sp.get("to")||"").match(/^(\d+)-(\d+)$/);
  if(to&&FLOORS[+to[1]]&&FLOORS[+to[1]].rooms[+to[2]])setTimeout(()=>planTo(+to[1],FLOORS[+to[1]].rooms[+to[2]]),50);

@@ -105,6 +105,8 @@ ol.steps .tx b{font-weight:600}
 #qrView{position:absolute;inset:0;z-index:30;background:var(--bg);overflow:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 #qrView h1{font-size:20px;margin:0 0 4px}
 #qrView p{margin:0 0 16px;color:var(--muted);font-size:14px}
+#qrView h2.qrsec{font-size:16px;margin:22px 0 10px}
+#qrView a.test{display:block;text-decoration:none}
 .qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
 .qrgrid .card{padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;box-shadow:none}
 .qrgrid .qr{background:#fff;padding:8px;border-radius:6px}
@@ -339,7 +341,7 @@ try{
 }
 catch(e){document.getElementById("app").innerHTML='<div style="padding:24px;font:16px/1.5 system-ui">Không tải được dữ liệu bản đồ (map_data.json). Vui lòng tải lại trang.<br><small>'+String(e)+'</small></div>';return;}
 // ================= CẤU HÌNH =================
-const DOMAIN = D.config.domain;
+const DOMAIN = String(D.config.domain||location.origin).replace(/\/+$/,""); // tên miền in trên mã QR, sửa ở trang quản trị → Khác
 const LOG_URL = D.config.logUrl;
 const M_PER_PX = D.config.metersPerPixel;   // 1 pixel sơ đồ ≈ bao nhiêu mét
 const WALK_MPS = D.config.walkingSpeed;     // tốc độ đi bộ, m/giây
@@ -843,7 +845,10 @@ function showQr(){
   const v=$("qrView");v.hidden=false;if(v.dataset.done)return;v.dataset.done=1;
   v.innerHTML=`<div class="qrhead"><div><h1>Mã QR các điểm xuất phát</h1>
     <p>Với mỗi tấm biển, chọn mũi tên chỉ hướng mà <b>người đứng quét mã đang nhìn</b>, tức hướng từ người tới tấm biển. Mũi tên tính theo sơ đồ: ↑ về phía Tòa E · ↓ về phía đường Tôn Thất Tùng · → về phía Tòa D, Khoa Nhiệt đới · ← về phía Tòa F, B2.</p></div>
-    <button class="back" id="qrBack">Về bản đồ</button></div><div class="qrgrid" id="qrg"></div>`;
+    <button class="back" id="qrBack">Về bản đồ</button></div><div id="qrWarn"></div><h2 class="qrsec">Bản đồ bệnh viện · cổng và cửa các tòa</h2><div class="qrgrid" id="qrg"></div>
+    <h2 class="qrsec">Bản đồ nhà F · cửa và sảnh thang máy từng tầng</h2><div class="qrgrid" id="qrgF"><p style="opacity:.7">Đang tải danh sách điểm của nhà F…</p></div>`;
+  try{const dh=new URL(DOMAIN).host;if(!/^(localhost|127\.)/.test(location.hostname)&&dh!==location.host)
+    $("qrWarn").innerHTML=`<p style="margin:0 0 14px;padding:10px 14px;border-radius:10px;background:#fff4d6;color:#7a4b00;font-size:14px;line-height:1.5">Mã QR đang dùng tên miền <b>${DOMAIN}</b>, khác trang bạn đang mở (<b>${location.origin}</b>). Nếu đã chuyển sang nơi đăng mới, hãy vào trang quản trị → thẻ <b>Khác</b> → <b>Tên miền trang web</b> để sửa trước khi in.</p>`;}catch(e){}
   $("qrBack").onclick=()=>{location.hash="";};
   const saved=loadH();
   const go=()=>{Object.values(N).filter(n=>n.type!=="jct").forEach(n=>{
@@ -858,7 +863,13 @@ function showQr(){
     DIRS.forEach(([deg,ar])=>{const x=document.createElement("button");x.textContent=ar;x.dataset.h=deg;x.setAttribute("aria-label","Hướng "+deg+" độ");
       x.onclick=()=>{h=deg;saved[n.id]=deg;saveH(saved);draw();};pick.appendChild(x);});
     test.onclick=()=>{location.hash="";if(compass.on)stopCompass();setStart(n.id,h);};
-    c.append(box,b,pick,code,test);$("qrg").appendChild(c);draw();});};
+    c.append(box,b,pick,code,test);$("qrg").appendChild(c);draw();});
+    fetch("nhaf/phong.json").then(r=>r.json()).then(j=>{const g=$("qrgF");g.innerHTML="";(j.diem||[]).forEach(x=>{
+      const c=document.createElement("div");c.className="card";const box=document.createElement("div");box.className="qr";const b=document.createElement("b");b.textContent="Nhà F · "+x.ten;
+      const url=`${DOMAIN}/nhaf/?start=${x.id}`;const code=document.createElement("code");code.textContent="/nhaf/?start="+x.id;
+      const test=document.createElement("a");test.className="test";test.textContent="Xem thử trên bản đồ nhà F";test.href="nhaf/?start="+x.id;test.style.textAlign="center";
+      try{new QRCode(box,{text:url,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});}catch(e){box.textContent=url;}
+      c.append(box,b,code,test);g.appendChild(c);});}).catch(()=>{$("qrgF").innerHTML="<p>Không tải được danh sách điểm của nhà F.</p>";});};
   if(window.QRCode)go();else{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";s.onload=go;s.onerror=go;document.head.appendChild(s);}
 }
 // ================= LẤY TỌA ĐỘ (nội bộ: thêm #toado vào cuối đường link) =================
@@ -1174,6 +1185,7 @@ function onCode(text){
   let start=null,h=null,to=null;
   try{const u=new URL(text,location.href);start=u.searchParams.get("start");h=u.searchParams.get("h");to=u.searchParams.get("to");
     if(!start&&u.hash){const hs=decodeURIComponent(u.hash.slice(1));const i=hs.indexOf("?");if(i>=0){const sp=new URLSearchParams(hs.slice(i+1));start=sp.get("start");h=sp.get("h");to=sp.get("to");}}}catch(e){}
+  try{const u=new URL(text,location.href);if(/\/nhaf\/?$/.test(u.pathname)&&u.searchParams.get("start")){closeScan();location.href="nhaf/?start="+encodeURIComponent(u.searchParams.get("start"));return;}}catch(e){}
   if(start&&!N[start]&&OLD_IDS[start])start=OLD_IDS[start];
   if(!start||!N[start]||N[start].type==="jct"){scanMsg("Mã QR này không phải mã vị trí của bệnh viện. Hãy quét mã dán ở cổng, cửa tòa nhà hoặc sảnh thang máy.");
     if(scanStream)scanTimer=setTimeout(async function again(){const v=$("scanVideo");const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t&&t!==text){onCode(t);return;}if(scanStream)scanTimer=setTimeout(again,260);},1200);return;}

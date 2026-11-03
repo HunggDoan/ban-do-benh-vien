@@ -504,7 +504,7 @@ function validateAll(){
     const t=norm(q.query).split(" ").filter(Boolean);if(!t.length||!hay.some(x=>t.every(w=>x.includes(w))))warn(`Nút tìm nhanh "${q.label}" không ra kết quả nào.`,{k:"other"});
   });
   ["metersPerPixel","walkingSpeed","mapUpBearing"].forEach(k=>{if(!isFinite(+D.config[k]))err(`Cấu hình "${k}" chưa có giá trị số.`,{k:"other"});});
-  if(!D.config.domain)err("Cấu hình chưa có tên miền trang web.",{k:"other"});
+  if(D.config.domain&&!/^https?:\/\/[^/]+$/.test(D.config.domain))err("Tên miền trang web phải có dạng https://ten-trang.pages.dev, không có dấu / ở cuối.",{k:"other"});
   V={errors:E,warnings:W,bad};
 }
 
@@ -1123,7 +1123,7 @@ function det(id,title,content){const d=h("details",{open:openState[id]||null},h(
 function tabOther(body){
   const cfg=D.config,setC=(k,v,num)=>mutate("Sửa cấu hình",()=>{cfg[k]=num?(v==null?null:+v):v;},{keepPanel:true});
   body.append(det("cfg","Cấu hình chung",[
-    fld("Tên miền trang web",inp(cfg.domain,v=>setC("domain",v),{id:"f-c-dom",cls:"mono"}),"Dùng để tạo mã QR."),
+    fld("Tên miền trang web",inp(cfg.domain,v=>setC("domain",v),{id:"f-c-dom",cls:"mono"}),"Dùng để tạo mã QR. Ví dụ https://bando-sannhinghean.pages.dev (không có dấu / ở cuối). Để trống thì lấy theo trang đang mở."),
     fld("Link Google Sheet ghi lượt quét",inp(cfg.logUrl,v=>setC("logUrl",v),{id:"f-c-log",cls:"mono"})),
     h("div",{class:"row2"},fld("Mét mỗi pixel sơ đồ",inp(cfg.metersPerPixel,v=>setC("metersPerPixel",v,1),{type:"number",step:"0.001",id:"f-c-mpp"})),fld("Tốc độ đi bộ (m/giây)",inp(cfg.walkingSpeed,v=>setC("walkingSpeed",v,1),{type:"number",step:"0.1",id:"f-c-ws"}))),
     fld("Hướng la bàn của phía trên sơ đồ (độ)",inp(cfg.mapUpBearing,v=>setC("mapUpBearing",v,1),{type:"number",id:"f-c-bear"}),"Dùng cho nút La bàn. Hiện là 209° (Nam–Tây Nam).")]));
