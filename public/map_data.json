@@ -1,6 +1,6 @@
 {
   "_huong_dan": "Dữ liệu bản đồ dùng chung cho trang người bệnh, app Flutter và trang quản trị (/quantri/). Nên sửa bằng trang quản trị: trang tự kiểm tra lỗi và lưu lịch sử trên GitHub. Tọa độ tính theo pixel sơ đồ gốc (x sang phải, y xuống dưới).",
-  "config": {"metersPerPixel":0.085,"walkingSpeed":1,"mapUpBearing":209,"domain":"https://bando-sannhinghean.netlify.app","logUrl":"https://script.google.com/macros/s/AKfycbxaN6B_DAqWCwzFhRiGtkUvDF_N11gyGdwL-PO8pZH3O1jxHmCGh9gZJRC0rWIEC7P8/exec"},
+  "config": {"metersPerPixel":0.085,"walkingSpeed":1,"mapUpBearing":209,"domain":"https://ban-do-benh-vien.pages.dev","logUrl":"https://script.google.com/macros/s/AKfycbxaN6B_DAqWCwzFhRiGtkUvDF_N11gyGdwL-PO8pZH3O1jxHmCGh9gZJRC0rWIEC7P8/exec"},
   "nodes": [
     {"id":"cong_chinh","type":"gate","x":1154,"y":1448,"name":"Cổng chính"},
     {"id":"cong_nhan_vien","type":"gate","x":398,"y":1060,"name":"Cổng nhân viên"},
