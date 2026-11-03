@@ -151,25 +151,49 @@ ol.steps .tx b{font-weight:600}
 .hname small{display:block;font-size:12px;color:var(--h-mute);margin-top:1px}
 .hbell{position:relative;width:42px;height:42px;border-radius:12px;border:0;background:var(--h-card);display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(15,27,45,.06)}
 .badge{position:absolute;top:4px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#e5484d;color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--h-card)}
-.hero{position:relative;border-radius:20px;overflow:hidden;height:170px;background:linear-gradient(180deg,#cfe0ff,#eaf1ff)}
-.hero img{width:100%;height:100%;object-fit:cover;display:block}
-.hsearch{position:relative;margin:-28px 12px 0;display:flex;align-items:center;gap:10px;background:var(--h-card);border-radius:16px;padding:0 8px 0 14px;height:54px;box-shadow:0 8px 24px rgba(15,27,45,.12);border:0;width:calc(100% - 24px);text-align:left;color:var(--h-mute);font-size:14.5px}
-.hsearch span{flex:1}
-.hsearch .mic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--h-mute)}
+.hhero{position:relative;border-radius:22px;overflow:hidden;background:linear-gradient(140deg,var(--pri) 0%,var(--pri-2) 100%);color:#fff;padding:18px 14px 14px;box-shadow:0 10px 28px color-mix(in srgb,var(--pri) 30%,transparent)}
+.hhero .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.hhero .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,color-mix(in srgb,var(--pri) 78%,transparent),color-mix(in srgb,var(--pri-2) 92%,transparent))}
+.hhero .top{position:relative;display:flex;gap:8px;align-items:flex-end;min-height:128px}
+.hhero .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;padding:0 0 6px 4px;align-self:stretch}
+.hhero h2{margin:0;font-size:22px;line-height:1.22;font-weight:700;text-wrap:balance}
+.hhero p{margin:0;font-size:12.5px;opacity:.9}
+.hhero .go{margin-top:auto;align-self:flex-start;border:0;background:#fff;color:var(--pri);font-weight:700;font-size:13px;padding:8px 14px;border-radius:10px;display:inline-flex;gap:6px;align-items:center}
+.hhero .im{width:46%;max-width:210px;flex:none;align-self:flex-end;margin-right:-4px}
+.hhero .im img{width:100%;height:auto;max-height:140px;object-fit:contain;display:block}
+.hhero .im svg{width:100%;height:auto;display:block}
+.hsearch{position:relative;margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--h-card);border-radius:14px;padding:0 6px 0 14px;height:52px;color:var(--h-mute);box-shadow:0 6px 18px rgba(5,20,60,.18)}
+.hsearch input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:15px;color:var(--h-ink);height:100%}
+.hsearch input::placeholder{color:var(--h-mute)}
+.hsearch button{width:38px;height:38px;border-radius:10px;border:0;background:none;display:grid;place-items:center;color:var(--h-mute);flex:none}
+.hsearch:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,#fff 55%,transparent),0 6px 18px rgba(5,20,60,.18)}
+.hres{margin-top:10px;background:var(--h-card);border-radius:16px;box-shadow:0 8px 24px rgba(15,27,45,.10);overflow:hidden}
+.hres .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 4px;font-size:12px;color:var(--h-mute);font-weight:600}
+.hres button.it{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:10px 14px;border-top:1px solid var(--h-line);text-align:left;color:var(--h-ink)}
+.hres button.it:first-of-type{border-top:0}
+.hres button.it:active{background:var(--pri-soft)}
+.hres i{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--pri-soft);color:var(--pri)}
+.hres i svg{width:19px;height:19px}
+.hres span.t{flex:1;min-width:0}
+.hres b{display:block;font-size:14.5px;font-weight:600;line-height:1.3}
+.hres small{display:block;font-size:12px;color:var(--h-mute);margin-top:2px}
+.hres .tagF{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:6px;background:#fff1e6;color:#c2410c;margin-right:4px;vertical-align:1px}
+.hres .empty{padding:14px;font-size:13.5px;color:var(--h-mute);line-height:1.5}
 .hloc{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--pri-soft);border:0;width:100%;text-align:left}
 .hloc i{width:12px;height:12px;border-radius:50%;background:var(--pri);box-shadow:0 0 0 4px color-mix(in srgb,var(--pri) 25%,transparent);flex:none}
 .hloc span{flex:1;min-width:0;font-size:13px;color:var(--h-ink)}
 .hloc span small{display:block;color:var(--h-mute);font-size:11.5px}
 .hloc span b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hloc em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--pri)}
-.hbanner{position:relative;display:flex;align-items:stretch;margin-top:14px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,var(--pri),var(--pri-2));color:#fff;min-height:150px;border:0;width:100%;text-align:left;padding:0}
-.hbanner .tx{flex:1;padding:18px 0 16px 18px;display:flex;flex-direction:column;gap:6px;z-index:1}
-.hbanner h2{margin:0;font-size:21px;line-height:1.25;font-weight:700;text-wrap:balance}
-.hbanner p{margin:0;font-size:12.5px;opacity:.92}
-.hbanner .go{margin-top:auto;align-self:flex-start;background:#fff;color:var(--pri);font-weight:700;font-size:13px;padding:8px 14px;border-radius:10px}
-.hbanner .im{width:44%;flex:none;display:flex;align-items:flex-end;justify-content:center}
-.hbanner .im img{width:100%;height:100%;object-fit:cover}
-.hbanner .im svg{width:100%;height:auto;max-height:150px}
+/* chọn bản đồ */
+.mapcard{display:block;width:100%;border:0;padding:0;margin-top:14px;background:var(--h-card);border-radius:18px;overflow:hidden;text-align:left;color:var(--h-ink);box-shadow:0 4px 16px rgba(15,27,45,.08)}
+.mapcard .pic{height:150px;background:var(--pri-soft);display:block}
+.mapcard .pic img,.mapcard .pic svg{width:100%;height:100%;object-fit:cover;display:block}
+.mapcard .row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.mapcard .row>span:first-child{flex:1;min-width:0}
+.mapcard b{display:block;font-size:16px;font-weight:700}
+.mapcard small{display:block;font-size:12.5px;color:var(--h-mute);margin-top:2px}
+.mapcard .go{width:36px;height:36px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;flex:none}
 .hsec{margin-top:16px;background:var(--h-card);border-radius:18px;padding:14px 14px 10px;box-shadow:0 2px 10px rgba(15,27,45,.05)}
 .hsec h3{margin:0 0 12px;font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
 .hsec h3 button{border:0;background:none;color:var(--pri);font-size:13px;font-weight:600;padding:4px 0}
@@ -668,7 +692,7 @@ function setStart(id,h){
   else fitStart();
 }
 function fitStart(){const d=facingVec(facing),p=startPin.position;fit([p,new THREE.Vector3(p.x+d.x*30,0,p.z+d.y*30)],d,40);}
-startSel.onchange=()=>setStart(startSel.value,null);
+startSel.onchange=()=>{located=true;setStart(startSel.value,null);};
 
 // tìm kiếm
 const chips=$("chips");
@@ -972,56 +996,126 @@ function unseen(){const s=new Set(LSx.get("seenNotices",[]));return (UI.notices|
 function startName(){const n=N[startId];return n?n.name:"Chưa xác định";}
 let screen="home";
 function setScreen(s){screen=s;
-  home.hidden=s!=="home";page.hidden=!["notices","info","history","all"].includes(s);
+  home.hidden=s!=="home";page.hidden=!["notices","info","history","all","maps"].includes(s);
   document.body.classList.toggle("with-tabs",true);
-  tabbar.querySelectorAll("button[data-s]").forEach(b=>{const on=b.dataset.s===s||(b.dataset.s==="map"&&s==="map");b.toggleAttribute("aria-current",false);if(on)b.setAttribute("aria-current","page");});
+  tabbar.querySelectorAll("button[data-s]").forEach(b=>{const on=b.dataset.s===s||(b.dataset.s==="map"&&(s==="map"||s==="maps"));b.toggleAttribute("aria-current",false);if(on)b.setAttribute("aria-current","page");});
   if(s==="home")renderHome();
   if(s==="map"){requestAnimationFrame(()=>{resize();});}
   renderBadges();
 }
 function renderBadges(){const n=unseen();document.querySelectorAll(".nbadge").forEach(b=>{b.hidden=!n;b.textContent=n>9?"9+":n;});}
+// ---- phòng của nhà F (bản đồ chi tiết riêng ở nhaf/)
+const MAPS={main:Object.assign({title:"Bản đồ bệnh viện",sub:"Toàn khuôn viên, các tòa nhà và cổng"},((UI.maps||{}).main)||{}),
+  f:Object.assign({title:"Bản đồ nhà F (nhà 10 tầng)",sub:"Chi tiết từng tầng, từng phòng"},((UI.maps||{}).f)||{})};
+let FROOMS=[];
+fetch("nhaf/phong.json").then(r=>r.ok?r.json():null).then(j=>{if(!j)return;
+  FROOMS=(j.phong||[]).map(x=>({n:x.n,f:x.f,to:x.to,c:x.c,h:norm(x.n+" nha f toa f tang "+x.f)}));
+  if(j.tang)MAPS.f.floors=j.tang.length;if(screen==="home"&&$("hq")&&$("hq").value.trim())homeSearch();}).catch(()=>{});
+const F_ALIAS=[[/lay mau|thu mau/,"xet nghiem mau"],[/chup phim|x quang|xquang/,"x quang"],[/nho rang|nha khoa/,"rang"],[/thanh toan|thu ngan|dong tien|vien phi/,"thanh toan"],
+  [/mua thuoc|nha thuoc/,"thuoc"],[/dang ky|lam thu tuc|tiep don/,"thu tuc"],[/toilet|nha ve sinh|wc/,"ve sinh"],[/tmh/,"tai mui hong"]];
+function searchF(v){const nq=norm(v);if(!nq)return[];const toks=nq.split(" ");let alt=null;F_ALIAS.forEach(([re,t])=>{if(re.test(nq))alt=t;});
+  return FROOMS.map(x=>{const nt=norm(x.n);let r=-1;
+    if(toks.every(t=>x.h.includes(t)))r=nt.startsWith(nq)?0:nt.includes(nq)?1:2;else if(alt&&nt.includes(alt))r=2;
+    return {x,r};}).filter(o=>o.r>=0).sort((a,b)=>a.r-b.r||a.x.f-b.x.f||a.x.n.localeCompare(b.x.n,"vi",{numeric:true}));}
+function openF(x){location.href="nhaf/"+(x?("?to="+encodeURIComponent(x.to)):"");}
+let located=false; // chỉ hiện “Bạn đang ở” sau khi đã quét mã QR
+const SVG_HERO2=`<svg viewBox="0 0 210 140" aria-hidden="true"><g opacity=".22" fill="#fff"><circle cx="176" cy="26" r="16"/></g>
+<g stroke="#bcd0ff" stroke-width="1.2"><rect x="10" y="62" width="56" height="70" rx="3" fill="#ffffff"/><rect x="72" y="28" width="74" height="104" rx="3" fill="#ffffff"/><rect x="152" y="70" width="50" height="62" rx="3" fill="#ffffff"/></g>
+<g fill="#8fb4ff">${Array.from({length:6},(_,r)=>Array.from({length:4},(_,c)=>`<rect x="${80+c*16}" y="${40+r*14}" width="10" height="8" rx="1"/>`).join("")).join("")}${Array.from({length:4},(_,r)=>Array.from({length:3},(_,c)=>`<rect x="${17+c*16}" y="${72+r*14}" width="10" height="8" rx="1"/>`).join("")).join("")}${Array.from({length:3},(_,r)=>Array.from({length:3},(_,c)=>`<rect x="${158+c*14}" y="${80+r*14}" width="9" height="8" rx="1"/>`).join("")).join("")}</g>
+<rect x="98" y="112" width="22" height="20" rx="2" fill="#cfdcff"/>
+<rect x="97" y="8" width="24" height="24" rx="5" fill="#e5484d"/><path d="M109 13v14M102 20h14" stroke="#fff" stroke-width="4.2" stroke-linecap="round"/>
+<g fill="#4fb36a"><circle cx="6" cy="128" r="10"/><circle cx="68" cy="130" r="7"/><circle cx="150" cy="130" r="7"/><circle cx="206" cy="128" r="9"/></g>
+<rect x="0" y="132" width="210" height="8" fill="#ffffff" opacity=".25"/></svg>`;
+const SVG_MAP1=`<svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice"><rect width="400" height="150" fill="#e6eefc"/><path d="M0 108 C90 96 150 128 240 112 S360 92 400 100 V150 H0z" fill="#d6e8d4"/>
+<path d="M30 140 L370 20" stroke="#fff" stroke-width="14"/><g fill="#fff" stroke="#9fb3d6" stroke-width="1.5"><rect x="60" y="34" width="70" height="44" rx="3"/><rect x="150" y="56" width="90" height="38" rx="3"/><rect x="260" y="30" width="60" height="56" rx="3"/><rect x="96" y="96" width="56" height="30" rx="3"/></g>
+<path d="M95 78 C120 110 180 100 205 94 S270 92 290 86" fill="none" stroke="#1b5cff" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 10"/>
+<g transform="translate(278 50)"><path d="M12 0a12 12 0 0 1 12 12c0 9-12 21-12 21S0 21 0 12A12 12 0 0 1 12 0z" fill="#e5484d"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></g><circle cx="95" cy="78" r="7" fill="#1b5cff" stroke="#fff" stroke-width="3"/></svg>`;
+const SVG_MAP2=`<svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice"><rect width="400" height="150" fill="#eaf0fb"/>
+${[0,1,2].map(i=>`<g transform="translate(${80+i*0} ${100-i*34})"><path d="M0 20 L120 0 L240 20 L120 40z" fill="${["#ffffff","#f4f7ff","#e9efff"][i]}" stroke="#a9bde3" stroke-width="1.5"/><path d="M40 18 L120 5 M80 26 L160 12 M120 34 L200 20" stroke="#c9d6ef" stroke-width="1.2"/></g>`).join("")}
+<path d="M110 118 L150 108 L190 114" fill="none" stroke="#1b5cff" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 9"/>
+<g transform="translate(176 28)"><path d="M12 0a12 12 0 0 1 12 12c0 9-12 21-12 21S0 21 0 12A12 12 0 0 1 12 0z" fill="#e5484d"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></g>
+<text x="330" y="44" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#5b6b82">Tầng 3</text><text x="330" y="78" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#5b6b82">Tầng 2</text><text x="330" y="112" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#5b6b82">Tầng 1</text></svg>`;
 function renderHome(){
   const logo=UI.logo?`<img src="${escH(imgSrc(UI.logo))}" alt="">`:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
-  const hero=UI.heroImage?`<img src="${escH(imgSrc(UI.heroImage))}" alt="${escH(UI.hospitalName)}">`:SVG_HERO;
-  const bim=UI.banner.image?`<img src="${escH(imgSrc(UI.banner.image))}" alt="">`:SVG_BANNER;
+  const bim=UI.banner.image?`<img src="${escH(imgSrc(UI.banner.image))}" alt="">`:SVG_HERO2;
+  const bg=UI.heroImage?`<div class="bg" style="background-image:url('${escH(imgSrc(UI.heroImage))}')"></div>`:"";
+  const keep=$("hq")?$("hq").value:"";
+  const hasMic=("webkitSpeechRecognition" in window||"SpeechRecognition" in window);
   home.innerHTML=`<div class="hwrap">
     <div class="hhead"><div class="hlogo">${logo}</div><div class="hname"><b>${escH(UI.hospitalName)}</b><small>${escH(UI.tagline||"")}</small></div>
       <button class="hbell" id="hBell" aria-label="Thông báo">${ico("bell").replace("<svg ",'<svg width="22" height="22" ')}<span class="badge nbadge" hidden></span></button></div>
-    <div class="hero">${hero}</div>
-    <button class="hsearch" id="hSearch">${ico("search").replace("<svg ",'<svg width="20" height="20" ')}<span>Tìm khoa, phòng, dịch vụ…</span>${("webkitSpeechRecognition" in window||"SpeechRecognition" in window)?`<i class="mic" id="hMic" role="button" aria-label="Tìm bằng giọng nói">${ico("mic").replace("<svg ",'<svg width="20" height="20" ')}</i>`:""}</button>
-    <button class="hloc" id="hLoc"><i></i><span><small>Bạn đang ở</small><b>${escH(startName())}</b></span><em>Quét QR</em></button>
-    <button class="hbanner" id="hBanner"><div class="tx"><h2>${escH(UI.banner.title)}</h2><p>${escH(UI.banner.subtitle||"")}</p>${UI.banner.button?`<span class="go">${escH(UI.banner.button)}</span>`:""}</div><div class="im">${bim}</div></button>
+    <section class="hhero">${bg}
+      <div class="top"><div class="tx"><h2>${escH(UI.banner.title)}</h2><p>${escH(UI.banner.subtitle||"")}</p>${UI.banner.button?`<button class="go" id="hGo">${escH(UI.banner.button)}</button>`:""}</div><div class="im">${bim}</div></div>
+      <div class="hsearch">${ico("search").replace("<svg ",'<svg width="20" height="20" ')}
+        <input id="hq" type="text" enterkeyhint="search" autocomplete="off" placeholder="${escH(UI.searchHint||"Tìm khoa, phòng, dịch vụ…")}" aria-label="Tìm khoa, phòng, dịch vụ">
+        <button id="hqx" aria-label="Xóa ô tìm" hidden>${IC.close}</button>${hasMic?`<button id="hMic" aria-label="Tìm bằng giọng nói">${ico("mic").replace("<svg ",'<svg width="20" height="20" ')}</button>`:""}</div>
+    </section>
+    <div class="hres" id="hRes" hidden role="listbox" aria-label="Kết quả tìm kiếm"></div>
+    <div id="hBody">
+    ${located?`<button class="hloc" id="hLoc"><i></i><span><small>Bạn đang ở</small><b>${escH(startName())}</b></span><em>Quét lại</em></button>`:""}
     <section class="hsec"><h3>${escH(UI.tilesTitle||"Khoa / Phòng phổ biến")}<button id="hAll">Xem tất cả ${IC.chev.replace('width="18" height="18"','width="14" height="14" style="vertical-align:-2px"')}</button></h3><div class="hgrid" id="hGrid"></div></section>
     <section class="hsec"><h3>${escH(UI.servicesTitle||"Dịch vụ nhanh")}</h3><div class="hlist" id="hList"></div></section>
-    <p class="hfoot">Bản đồ chỉ mang tính hướng dẫn. Cần hỗ trợ, hãy hỏi nhân viên hoặc quầy hướng dẫn gần nhất.</p></div>`;
+    <p class="hfoot">Bản đồ chỉ mang tính hướng dẫn. Cần hỗ trợ, hãy hỏi nhân viên hoặc quầy hướng dẫn gần nhất.</p></div></div>`;
   const g=$("hGrid");UI.tiles.forEach(t=>{const b=document.createElement("button");b.className="htile";const c=t.color||"#1b5cff";
     b.innerHTML=t.image?`<i style="background:color-mix(in srgb,${c} 14%,transparent)"><img src="${escH(imgSrc(t.image))}" alt="" style="width:34px;height:34px;object-fit:contain"></i>${escH(t.label)}`:`<i style="background:color-mix(in srgb,${c} 14%,transparent);color:${c}">${ico(t.icon)}</i>${escH(t.label)}`;
     b.onclick=()=>runQuery(t.label,t.query||t.label);g.appendChild(b);});
   const l=$("hList");UI.services.forEach(s=>{const b=document.createElement("button");const c=s.color||"var(--pri)";
     b.innerHTML=`<i style="background:color-mix(in srgb,${c} 12%,transparent);color:${c}">${ico(s.icon)}</i><span><b>${escH(s.label)}</b>${s.sub?`<small>${escH(s.sub)}</small>`:""}</span><span class="chev">${IC.chev}</span>`;
     b.onclick=()=>doAction(s);l.appendChild(b);});
-  $("hSearch").onclick=e=>{if(e.target.closest("#hMic"))return;openSearch();};
-  if($("hMic"))$("hMic").onclick=e=>{e.stopPropagation();voice();};
-  $("hLoc").onclick=openScan;$("hBanner").onclick=()=>openSearch();$("hAll").onclick=()=>openPage("all");$("hBell").onclick=()=>openPage("notices");
+  const hq=$("hq");hq.value=keep;
+  hq.addEventListener("input",()=>homeSearch());
+  hq.addEventListener("keydown",e=>{if(e.key==="Enter"){const f=$("hRes").querySelector("button.it");if(f)f.click();}if(e.key==="Escape"){hq.value="";homeSearch();hq.blur();}});
+  $("hqx").onclick=()=>{hq.value="";homeSearch();hq.focus();};
+  if($("hMic"))$("hMic").onclick=()=>voice();
+  if($("hGo"))$("hGo").onclick=()=>openPage("maps");
+  if($("hLoc"))$("hLoc").onclick=openScan;
+  $("hAll").onclick=()=>openPage("all");$("hBell").onclick=()=>openPage("notices");
+  if(keep.trim())homeSearch();
   renderBadges();
 }
-function openSearch(){setScreen("map");q.value="";results.hidden=true;setTimeout(()=>q.focus(),60);}
-function runQuery(label,query){setScreen("map");q.value=label;const r=search(query);if(r.length===1)choose(r[0]);else renderResults(r,label);}
+// tìm ngay trên trang chủ: gộp khoa phòng của bản đồ bệnh viện và của nhà F
+function homeSearch(query){
+  const hq=$("hq"),R=$("hRes");if(!hq||!R)return;const v=hq.value.trim();$("hqx").hidden=!v;
+  if(!v){R.hidden=true;R.innerHTML="";return;}
+  const q2=query||v;
+  const A=search(q2).map(it=>{const nt=norm(it.t),nq=norm(q2);return {k:"m",it,r:nt.startsWith(nq)?0:nt.includes(nq)?1:2};});
+  const B=searchF(q2).map(o=>({k:"f",x:o.x,r:o.r}));
+  const all=[...A,...B].sort((a,b)=>a.r-b.r||(a.k==="f"?1:0)-(b.k==="f"?1:0)).slice(0,30);
+  R.hidden=false;R.innerHTML="";
+  if(!all.length){R.innerHTML=`<div class="empty">Không tìm thấy “${escH(v)}”. Thử gõ ngắn hơn, ví dụ “sản”, “nhi”, “xét nghiệm”, hoặc hỏi quầy hướng dẫn gần nhất.</div>`;return;}
+  const hd=document.createElement("div");hd.className="hd";hd.innerHTML=`<span>${all.length>=30?"30+":all.length} nơi phù hợp</span><span>Bấm để xem đường đi</span>`;R.appendChild(hd);
+  all.forEach(o=>{const b=document.createElement("button");b.className="it";b.setAttribute("role","option");
+    if(o.k==="m"){b.innerHTML=`<i>${ico(o.it.d?"steth":"pin")}</i><span class="t"><b>${escH(o.it.t)}</b><small>${escH(o.it.s)}</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
+      b.onclick=()=>{setScreen("map");choose(o.it);};}
+    else{b.innerHTML=`<i style="background:#fff1e6;color:#c2410c">${ico({wc:"wc",pharm:"pharm",er:"er",money:"money",desk:"desk",lab:"lab",scan:"scan",baby:"baby",steth:"steth"}[o.x.c]||"pin")}</i><span class="t"><b>${escH(o.x.n)}</b><small><span class="tagF">Nhà F</span>Tầng ${o.x.f} · mở bản đồ nhà F</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
+      b.onclick=()=>{rememberF(o.x);openF(o.x);};}
+    R.appendChild(b);});
+}
+function rememberF(x){const h=LSx.get("recent",[]).filter(y=>y.fto!==x.to);h.unshift({fto:x.to,fn:x.n,ff:x.f,t:Date.now()});LSx.set("recent",h.slice(0,15));}
+function openSearch(){if(screen!=="home")setScreen("home");const hq=$("hq");if(hq){hq.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>hq.focus(),80);}}
+function runQuery(label,query){if(screen!=="home")setScreen("home");const hq=$("hq");hq.value=label;homeSearch(query);
+  const R=$("hRes");if(!R.hidden)R.scrollIntoView({block:"start",behavior:"smooth"});}
 function doAction(s){const a=s.action||"search";
   if(a==="qr")openScan();else if(a==="search")openSearch();else if(a==="history")openPage("history");else if(a==="notices")openPage("notices");else if(a==="info")openPage("info");
   else if(a==="all")openPage("all");else if(a==="overview"){setScreen("map");closeSheet();$("vAll").click();}
+  else if(a==="maps")openPage("maps");else if(a==="mapf")openF(null);
   else if(a==="query")runQuery(s.label,s.value||s.label);
   else if(a==="call"&&s.value){location.href="tel:"+String(s.value).replace(/[^\d+]/g,"");}
   else if(a==="link"&&s.value){window.open(s.value,"_blank","noopener");}}
 function voice(){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return;try{const r=new R();r.lang="vi-VN";r.interimResults=false;
-  r.onresult=e=>{const t=e.results[0][0].transcript;setScreen("map");q.value=t;renderResults(search(t),t);};r.onerror=()=>toast("Không nghe rõ. Bạn hãy thử lại hoặc gõ tên khoa phòng.");r.start();toast("Đang nghe… hãy nói tên khoa hoặc phòng.",3000);}catch(e){}}
+  r.onresult=e=>{const t=e.results[0][0].transcript;if(screen!=="home")setScreen("home");$("hq").value=t;homeSearch();};r.onerror=()=>toast("Không nghe rõ. Bạn hãy thử lại hoặc gõ tên khoa phòng.");r.start();toast("Đang nghe… hãy nói tên khoa hoặc phòng.",3000);}catch(e){}}
 // lịch sử tìm kiếm
 function remember(place,dept){if(!place)return;const h=LSx.get("recent",[]).filter(x=>!(x.p===place.id&&x.d===(dept?dept.n:null)));
   h.unshift({p:place.id,d:dept?dept.n:null,t:Date.now()});LSx.set("recent",h.slice(0,15));}
 // các trang phụ
-function openPage(kind){setScreen(kind);const title={notices:"Thông báo",info:"Thông tin bệnh viện",history:"Lịch sử tìm kiếm",all:"Tất cả khoa, phòng"}[kind];
+function openPage(kind){setScreen(kind);const title={notices:"Thông báo",info:"Thông tin bệnh viện",history:"Lịch sử tìm kiếm",all:"Tất cả khoa, phòng",maps:"Chọn bản đồ"}[kind];
   page.innerHTML=`<div class="hwrap"><div class="phead"><button class="pback" id="pBack" aria-label="Về trang chủ">${IC.back}</button><h2>${title}</h2><span style="width:40px"></span></div><div id="pBody"></div></div>`;
   $("pBack").onclick=()=>setScreen("home");const B=$("pBody");page.scrollTop=0;
+  if(kind==="maps"){
+    const card=(m,svg,fn)=>{const b=document.createElement("button");b.className="mapcard";
+      b.innerHTML=`<span class="pic">${m.image?`<img src="${escH(imgSrc(m.image))}" alt="">`:svg}</span><span class="row"><span><b>${escH(m.title)}</b><small>${escH(m.sub||"")}</small></span><span class="go">${IC.chev}</span></span>`;b.onclick=fn;return b;};
+    B.append(card(MAPS.main,SVG_MAP1,()=>setScreen("map")),card(MAPS.f,SVG_MAP2,()=>openF(null)));
+    const t=document.createElement("p");t.className="hfoot";t.textContent="Mẹo: gõ tên khoa phòng ở ô tìm kiếm trang chủ, trang sẽ tự mở đúng bản đồ có nơi đó.";B.appendChild(t);}
   if(kind==="notices"){const list=UI.notices||[];
     if(!list.length)B.innerHTML=`<div class="pempty">Hiện chưa có thông báo nào.</div>`;
     list.forEach(n=>{const c=document.createElement("div");c.className="pcard";c.innerHTML=`${n.image?`<img src="${escH(imgSrc(n.image))}" alt="">`:""}<h4>${escH(n.title)}</h4>${n.date?`<small>${escH(n.date)}</small>`:""}<p style="margin-top:6px">${escH(n.body||"")}</p>`;B.appendChild(c);});
@@ -1033,10 +1127,12 @@ function openPage(kind){setScreen(kind);const title={notices:"Thông báo",info:
     if(!c.innerHTML)c.innerHTML=`<div class="pempty">Phòng CNTT chưa nhập thông tin liên hệ.</div>`;B.appendChild(c);
     if(I.note){const d=document.createElement("div");d.className="pcard";d.innerHTML=`<p>${escH(I.note)}</p>`;B.appendChild(d);}
     const d2=document.createElement("div");d2.className="pcard";d2.innerHTML=`<div class="prow"><i>${ico("pin")}</i><span><small>Vị trí của bạn trên bản đồ</small>${escH(startName())}</span><button class="pbtn" id="iScan">Quét QR</button></div>`;B.appendChild(d2);$("iScan").onclick=openScan;}
-  if(kind==="history"){const h=LSx.get("recent",[]).filter(x=>PLACE_BY_ID[x.p]);
+  if(kind==="history"){const h=LSx.get("recent",[]).filter(x=>x.fto||PLACE_BY_ID[x.p]);
     if(!h.length){B.innerHTML=`<div class="pempty">Bạn chưa tìm nơi nào trên máy này.</div>`;return;}
     const c=document.createElement("div");c.className="pcard";
-    h.forEach(x=>{const p=PLACE_BY_ID[x.p],d=x.d?p.depts.find(y=>y.n===x.d):null;const r=document.createElement("div");r.className="prow";r.style.cursor="pointer";
+    h.forEach(x=>{if(x.fto){const r=document.createElement("div");r.className="prow";r.style.cursor="pointer";
+      r.innerHTML=`<i>${ico("history")}</i><span>${escH(x.fn)}<small>Nhà F · Tầng ${x.ff} · ${new Date(x.t).toLocaleDateString("vi-VN")}</small></span>${IC.chev}`;r.onclick=()=>openF({to:x.fto});c.appendChild(r);return;}
+      const p=PLACE_BY_ID[x.p],d=x.d?p.depts.find(y=>y.n===x.d):null;const r=document.createElement("div");r.className="prow";r.style.cursor="pointer";
       r.innerHTML=`<i>${ico("history")}</i><span>${escH(d?d.n:p.name)}<small>${escH(d?((d.f?"Tầng "+d.f+" · ":"")+p.name):(p.note||""))} · ${new Date(x.t).toLocaleDateString("vi-VN")}</small></span>${IC.chev}`;
       r.onclick=()=>{setScreen("map");q.value=d?d.n:p.name;showRoute(p,d);};c.appendChild(r);});
     B.appendChild(c);const clr=document.createElement("button");clr.className="pbtn";clr.style.marginTop="12px";clr.textContent="Xóa lịch sử";clr.onclick=()=>{LSx.set("recent",[]);openPage("history");};B.appendChild(clr);}
@@ -1052,7 +1148,7 @@ tabbar.innerHTML=`<div class="in">
   <button class="qr" data-a="scan"><span class="c">${IC.qr}</span><span>Quét QR</span></button>
   <button data-s="notices">${IC.bell}<span>Thông báo</span><span class="badge nbadge" hidden></span></button>
   <button data-s="info">${IC.info}<span>Thông tin</span></button></div>`;
-tabbar.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(b.dataset.a==="scan")openScan();else if(b.dataset.s==="home")setScreen("home");else if(b.dataset.s==="map")setScreen("map");else openPage(b.dataset.s);});
+tabbar.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(b.dataset.a==="scan")openScan();else if(b.dataset.s==="home")setScreen("home");else if(b.dataset.s==="map")openPage("maps");else openPage(b.dataset.s);});
 $("mapHome").onclick=()=>setScreen("home");
 
 // ---- quét mã QR ngay trong trang
@@ -1081,7 +1177,7 @@ function onCode(text){
   if(start&&!N[start]&&OLD_IDS[start])start=OLD_IDS[start];
   if(!start||!N[start]||N[start].type==="jct"){scanMsg("Mã QR này không phải mã vị trí của bệnh viện. Hãy quét mã dán ở cổng, cửa tòa nhà hoặc sảnh thang máy.");
     if(scanStream)scanTimer=setTimeout(async function again(){const v=$("scanVideo");const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t&&t!==text){onCode(t);return;}if(scanStream)scanTimer=setTimeout(again,260);},1200);return;}
-  closeScan();const hv=parseFloat(h);setStart(start,isFinite(hv)?((hv%360)+360)%360:null);
+  closeScan();located=true;const hv=parseFloat(h);setStart(start,isFinite(hv)?((hv%360)+360)%360:null);
   try{fetch(LOG_URL+"?location="+encodeURIComponent(N[start].name)+"&id="+encodeURIComponent(start)+"&src=web",{mode:"no-cors",keepalive:true}).catch(()=>{});}catch(e){}
   toast("Đã xác định vị trí: "+N[start].name,4000);
   if(to){const p=PLACE_BY_ID[to];if(p){setScreen("map");q.value=p.name;showRoute(p,null);return;}}
@@ -1102,7 +1198,7 @@ if(PREVIEW){const b=document.createElement("div");b.className="previewBadge";b.t
 (function boot(){
   const {start,to,h}=readParams();let sid="cong_chinh";
   if(start){
-    if(N[start]&&N[start].type!=="jct") sid=start;
+    if(N[start]&&N[start].type!=="jct"){sid=start;located=true;}
     else if(start in OLD_IDS&&OLD_IDS[start]===null) toast("Tòa C đã ngừng sử dụng. Vị trí xuất phát được đặt tại Cổng chính, bạn có thể đổi ở ô phía trên.",6000);
     else if(OLD_IDS[start]||N[start]) toast("Mã QR này không gắn với cửa hay cổng nào. Vui lòng chọn vị trí của bạn ở ô phía trên.",6000);
     else toast("Không nhận ra mã QR. Vị trí xuất phát đang là Cổng chính, bạn có thể đổi ở ô phía trên.",6000);

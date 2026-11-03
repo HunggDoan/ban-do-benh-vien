@@ -172,13 +172,13 @@ Khi đặt hoặc kéo điểm, trang **tự gióng thẳng hàng** với các �
 
 ### 5.5. Sửa giao diện trang chủ (thẻ Giao diện)
 
-Người bệnh mở link hoặc quét QR sẽ thấy trang chủ: tên bệnh viện, ảnh đầu trang, ô tìm kiếm, khung giới thiệu màu, các ô khoa phòng phổ biến, dịch vụ nhanh và thanh điều hướng dưới đáy (Trang chủ · Bản đồ · Quét QR · Thông báo · Thông tin). Mọi chữ và ảnh ở đây sửa trong thẻ **Giao diện** của trang quản trị:
+Người bệnh mở link hoặc quét QR sẽ thấy trang chủ: tên bệnh viện, khung màu xanh đầu trang (tiêu đề, hình minh họa và ô tìm kiếm chung một khung), các ô khoa phòng phổ biến, dịch vụ nhanh và thanh điều hướng dưới đáy (Trang chủ · Bản đồ · Quét QR · Thông báo · Thông tin). Mọi chữ và ảnh ở đây sửa trong thẻ **Giao diện** của trang quản trị:
 
 | Mục | Sửa được gì |
 |---|---|
 | Tên bệnh viện, logo, màu chủ đạo | Tên, dòng giới thiệu, logo (ảnh vuông), màu nút và khung giới thiệu |
-| Ảnh đầu trang | Ảnh tòa nhà/khuôn viên, ảnh ngang tỉ lệ khoảng 2,3 : 1 |
-| Khung giới thiệu | Tiêu đề, dòng phụ, chữ trên nút, hình minh họa bên phải |
+| Khung đầu trang màu xanh | Tiêu đề, dòng phụ, chữ trên nút (bấm mở phần chọn bản đồ), chữ gợi ý trong ô tìm, hình minh họa bên phải, ảnh nền cả khung (không bắt buộc) |
+| Hai bản đồ | Tên, dòng phụ và ảnh của *Bản đồ bệnh viện* và *Bản đồ nhà F (nhà 10 tầng)*, hiện khi bấm thẻ Bản đồ ở thanh đáy |
 | Ô khoa / phòng phổ biến | Tên, biểu tượng, màu, từ khóa tìm (không dấu). Nên để 4 hoặc 8 ô |
 | Dịch vụ nhanh | Tên, dòng phụ, biểu tượng, việc làm khi bấm (quét QR, tìm kiếm, lịch sử, bản đồ tổng quan, gọi điện, mở trang web, tìm theo từ khóa) |
 | Thông báo | Tiêu đề, ngày, nội dung, ảnh kèm. Người bệnh thấy chấm đỏ khi có thông báo mới |
@@ -187,6 +187,12 @@ Người bệnh mở link hoặc quét QR sẽ thấy trang chủ: tên bệnh v
 Lần đầu mở thẻ này, nếu file dữ liệu chưa có phần giao diện thì bấm **Bắt đầu chỉnh giao diện** để nạp nội dung mặc định.
 
 **Ảnh:** bấm *Chọn ảnh…*, trang tự thu nhỏ ảnh (tối đa 1400 px) cho nhẹ. Ảnh chưa lên mạng ngay mà được tải lên thư mục `public/img/` của kho GitHub khi bấm **Lưu lên GitHub**. Trước đó vẫn bấm *Xem thử trang người bệnh* để xem được. Muốn dùng ảnh có sẵn trên mạng thì dán đường link vào ô bên dưới.
+
+**Tìm kiếm trên trang chủ:** gõ vào ô tìm, kết quả hiện ngay bên dưới, gồm cả khoa phòng của bản đồ bệnh viện và các phòng của nhà F (có nhãn cam *Nhà F*). Bấm một kết quả: khoa phòng của bệnh viện mở bản đồ bệnh viện và vẽ đường đi; phòng của nhà F tự chuyển sang bản đồ nhà F và vẽ đường đi trong tòa.
+
+**Thanh "Bạn đang ở":** chỉ hiện trên trang chủ sau khi người bệnh đã quét mã QR (hoặc mở link QR có `?start=`). Chưa quét thì không hiện.
+
+**Bản đồ nhà F** nằm ở thư mục `public/nhaf/`: `index.html` là bản đồ 3D chi tiết (hiện có tầng 1 đến tầng 3), `phong.json` là danh sách phòng để trang chủ tìm được. Link mở thẳng một phòng có dạng `nhaf/?to=<tầng>-<số phòng>`; link `nhaf/?q=siêu âm` mở sẵn kết quả tìm.
 
 **Quét QR trong trang:** nút Quét QR ở giữa thanh đáy mở camera điện thoại (trình duyệt sẽ hỏi quyền camera). Quét mã ở cổng, cửa tòa nhà là trang tự đặt lại vị trí "Bạn đang ở". Không cho phép camera thì người bệnh vẫn chọn được ảnh chụp mã QR hoặc chọn vị trí thủ công.
 

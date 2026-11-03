@@ -14,3 +14,17 @@
   for = "/quantri/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+# Trang người bệnh và bản đồ nhà F luôn được kiểm tra bản mới, để sửa xong là điện thoại thấy ngay
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+[[headers]]
+  for = "/nhaf/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
