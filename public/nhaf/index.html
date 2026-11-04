@@ -254,15 +254,16 @@ const CORES=[
   {id:"tb2",type:"stair",name:"thang bộ N1 (góc mặt đường)",short:"Thang bộ N1",rects:[[30.6,-0.4,6.4,3.7]],entry:[33.6,4.4],face:180,route:false},
   {id:"tb3",type:"stair",name:"thang bộ N1 (phía sau)",short:"Thang bộ N1 sau",rects:[[24.75,32.75,5.25,3.5]],entry:[27.4,32.1],face:0,route:false}
 ];
-// điểm dán QR: mỗi tầng ở sảnh thang máy; tầng 1 thêm 2 cửa vào. h = hướng người đứng nhìn (0 = phía mặt đường, 90 = phía A3)
+// điểm dán QR: mỗi tầng ở sảnh thang máy; tầng 1 thêm 2 cửa vào. h = hướng người đứng nhìn (0 = nhìn về phía Tòa A3, 90 = nhìn ra mặt đường Tôn Thất Tùng, 180 = nhìn về mặt sau – phía hầm, 270 = nhìn về phía Tòa B2)
 const STARTS=[
-  {id:"f1-cong",f:0,u:18.6,v:1.4,h:180,name:"Cửa chính tầng 1 (đường Tôn Thất Tùng)"},
-  {id:"f1-capcuu",f:0,u:36.0,v:15.0,h:270,name:"Cửa sảnh cấp cứu tầng 1"}
+  {id:"f1-cong",f:0,u:18.6,v:1.4,h:180,name:"Cửa chính tầng 1 (phía Tòa A3)"},
+  {id:"f1-capcuu",f:0,u:36.0,v:15.0,h:270,name:"Cửa cấp cứu tầng 1 (mặt đường Tôn Thất Tùng)"},
+  {id:"f1-ham",f:0,u:3.2,v:30.5,h:0,name:"Lối lên xuống tầng hầm (mặt sau)"}
 ];
 [0,1,2].forEach(f=>{STARTS.push({id:`f${f+1}-p12`,f,u:8.2,v:2.1,h:90,name:`Sảnh thang máy P1·P2 · tầng ${f+1}`});
   STARTS.push({id:`f${f+1}-p34`,f,u:34.9,v:24.9,h:0,name:`Sảnh thang máy P3·P4 · tầng ${f+1}`});});
-const SIDES=[{u:18.5,v:-5,t:"Mặt đường Tôn Thất Tùng"},{u:42.5,v:18,t:"Phía tòa A3"},{u:18.5,v:41,t:"Phía tòa B2"},{u:-5.5,v:18,t:"Phía cửa hầm"}];
-const DOOR1=[{u:18.5,v:-1.6,t:"Cửa chính"},{u:39,v:15.2,t:"Cửa cấp cứu"},{u:3.2,v:38.5,t:"Lối xuống hầm"}];
+const SIDES=[{u:18.5,v:-7,t:"Phía Tòa A3"},{u:50,v:18,t:"Mặt đường Tôn Thất Tùng"},{u:18.5,v:42,t:"Mặt sau · phía xuống hầm"},{u:-5.5,v:18,t:"Phía Tòa B2"}];
+const DOOR1=[{u:18.5,v:-2.6,t:"Cửa chính · sảnh chờ"},{u:40.5,v:15.2,t:"Cửa cấp cứu"},{u:3.2,v:40.5,t:"Lối xuống tầng hầm"}];
 
 // ---------- màu vật liệu
 const COL={corridor:0xe6dccb,lobby:0xefd9b4,clinic:0xcfe1ef,ward:0xcfe8d6,wc:0xd4e3e8,office:0xdcc19b,store:0xcfcfca,hall:0xc9a074,other:0xe4e2dc,
@@ -442,8 +443,11 @@ FLOORS.forEach((F,i)=>{
   const furn=nb.mesh(VC); furn.castShadow=true; furn.receiveShadow=true; g.add(furn);
   // ngoài nhà (chỉ tầng 1)
   if(F.f===1){ const ob=new B();
-    ob.box(-12,-14,62,8,-.05,0.02,COL.road); for(let x=-10;x<48;x+=4) ob.box(x,-10.1,2,.15,0.02,0.03,COL.roadLine);
-    ob.box(-12,-6,62,5.2,-.05,0.05,COL.outdoor);
+    ob.box(46,-14,9,66,-.05,0.02,COL.road); for(let v=-12;v<50;v+=4) ob.box(50.4,v,.15,2,0.02,0.03,COL.roadLine);   // đường Tôn Thất Tùng
+    ob.box(37.6,-14,8.4,66,-.05,0.05,COL.outdoor);                                                                 // vỉa hè mặt đường
+    ob.box(-8,-14,45.6,13.3,-.05,0.05,COL.outdoor);                                                                // sân trước phía Tòa A3
+    ob.box(-8,-0.7,7.3,50,-.05,0.05,COL.outdoor);                                                                  // lối bên phía Tòa B2
+    ob.box(6.9,36.6,30.7,13,-.05,0.05,COL.outdoor); ob.box(31.2,29.7,6.4,7,-.05,0.05,COL.outdoor); ob.box(-0.7,39.9,7.6,9.7,-.05,0.05,COL.outdoor); // sân sau
     ob.box(14.8,-3.6,7.4,3.2,0,0.15,0xd8d2c6); ob.box(15.5,-4.4,6,0.8,0,0.08,0xd8d2c6);           // bậc cửa chính
     ob.box(37.6,10,5.5,9.5,0,0.12,0xd8d2c6);                                                     // sân đón cấp cứu
     ob.box(-2.6,7.3,2.1,2.6,0,0.12,0xd8d2c6); ob.box(7.3,36.6,2.8,2.6,0,0.12,0xd8d2c6); ob.box(32,29.6,3,2.2,0,0.12,0xd8d2c6);
@@ -659,6 +663,7 @@ function buildLabels(){LB.innerHTML="";labels=[];
     CORES.forEach(c=>{const r=c.rects;const xs=r.map(a=>a[0]),ys=r.map(a=>a[1]),xe=r.map(a=>a[0]+a[2]),ye=r.map(a=>a[1]+a[3]);
       labels.push({el:el("ico",iconLb(c.type,c.short)),u:(Math.min(...xs)+Math.max(...xe))/2,v:(Math.min(...ys)+Math.max(...ye))/2,fi:cur,y:3.4,pri:80});});
     if(state!=="nav")SIDES.forEach(s=>labels.push({el:el("side",esc(s.t)),u:s.u,v:s.v,fi:cur,y:.3,pri:85}));
+    if(o.F.f===1)DOOR1.forEach(d=>labels.push({el:el("ico",iconLb("desk",d.t).replace(SV.desk,SV.room||SV.desk)),u:d.u,v:d.v,fi:cur,y:1.2,pri:90}));
     o.F.rooms.forEach(r=>{const c=catOf(r.n);const big=["wc","pharm","er","money","desk","lab","scan"].includes(c);
       labels.push({el:el(big?"ico":"",big?iconLb(c,nice(r.n).replace(/^Vệ sinh công cộng/,"WC")):esc(nice(r.n))),u:r.u,v:r.v,fi:cur,y:1.6,pri:big?40:20,room:r});});}
   if(state!=="home"&&RT){const last=RT.steps[RT.steps.length-1];
