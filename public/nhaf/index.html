@@ -587,15 +587,15 @@ function arrowTex(bg,fg,arrow){const c=document.createElement("canvas");c.width=
   if(arrow){x.fillStyle=fg;x.beginPath();x.moveTo(20,16);x.lineTo(38,32);x.lineTo(20,48);x.lineTo(28,48);x.lineTo(46,32);x.lineTo(28,16);x.closePath();x.fill();}
   const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const TEX_BLUE=arrowTex("#1b5cff","#ffffff",true), TEX_DONE=arrowTex("#9aa8bd","#ffffff",false);
-const M_BLUE=new THREE.MeshBasicMaterial({map:TEX_BLUE,transparent:true,depthWrite:false});
-const M_DONE=new THREE.MeshBasicMaterial({map:TEX_DONE,transparent:true,opacity:.9,depthWrite:false});
-const M_EDGE=new THREE.MeshBasicMaterial({color:0x0b3bb3,transparent:true,opacity:.95,depthWrite:false});
-const M_GLOW=new THREE.MeshBasicMaterial({color:0x1b5cff,transparent:true,opacity:.22,depthWrite:false});
+const M_BLUE=new THREE.MeshBasicMaterial({map:TEX_BLUE,transparent:true,depthWrite:false,side:THREE.DoubleSide});
+const M_DONE=new THREE.MeshBasicMaterial({map:TEX_DONE,transparent:true,opacity:.9,depthWrite:false,side:THREE.DoubleSide});
+const M_EDGE=new THREE.MeshBasicMaterial({color:0x0b3bb3,transparent:true,opacity:.95,depthWrite:false,side:THREE.DoubleSide});
+const M_GLOW=new THREE.MeshBasicMaterial({color:0x1b5cff,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide});
 function ribbon(pts,y,w,mat,order){const p=[],uv=[],ix=[];let acc=0;
   for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];let dx=b[0]-a[0],dz=b[1]-a[1];const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;
     if(i>0)acc+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);const nx=-dz,nz=dx;
     p.push(U(pts[i][0])+nx*w,y,V(pts[i][1])+nz*w,U(pts[i][0])-nx*w,y,V(pts[i][1])-nz*w);uv.push(acc/0.75,1,acc/0.75,0);
-    if(i>0){const k=(i-1)*2;ix.push(k,k+1,k+2,k+1,k+3,k+2);}}
+    if(i>0){const k=(i-1)*2;ix.push(k,k+2,k+1,k+1,k+2,k+3);}}
   const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(p,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);
   const m=new THREE.Mesh(g,mat);m.renderOrder=order||5;return m;}
 function densify(pts){const o=[pts[0]];for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(L/0.4));for(let k=1;k<=n;k++)o.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n]);}
