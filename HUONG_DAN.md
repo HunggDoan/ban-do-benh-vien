@@ -196,6 +196,14 @@ Lần đầu mở thẻ này, nếu file dữ liệu chưa có phần giao diệ
 
 **Quét QR trong trang:** nút Quét QR ở giữa thanh đáy mở camera điện thoại (trình duyệt sẽ hỏi quyền camera). Quét mã ở cổng, cửa tòa nhà là trang tự đặt lại vị trí "Bạn đang ở". Không cho phép camera thì người bệnh vẫn chọn được ảnh chụp mã QR hoặc chọn vị trí thủ công.
 
+### 5.6. Định vị GPS (chấm vị trí đi theo người bệnh)
+
+Trên bản đồ bệnh viện, sau khi chọn nơi đến, bấm **Đi theo GPS** (hoặc nút **GPS** bên phải bản đồ). Chấm xanh đi theo người bệnh, bám vào vạch chỉ đường. Thanh xanh trên cùng báo "Đi thẳng 30 m rồi rẽ trái tại …", bấm 🔈 để máy đọc to. Đi lệch quá xa thì trang báo và có nút **Tìm lại đường từ đây**. Chưa chọn nơi đến mà bật GPS thì trang tự lấy cổng/cửa gần nhất làm điểm xuất phát.
+
+GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà vẫn dùng mã QR.
+
+**Điểm mốc GPS** (trang quản trị → thẻ **Khác** → **Định vị GPS**): mỗi điểm là một cổng/cửa trên bản đồ kèm vĩ độ, kinh độ thật. Mở trang quản trị trên điện thoại, đứng đúng chỗ, bấm **Lấy vị trí của tôi**. Cần ít nhất 2 điểm; nên 3–5 điểm rải ở các góc. Từ điểm thứ 3 trang báo mỗi điểm lệch bao nhiêu mét; điểm lệch trên 8 m nên đo lại.
+
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
 Gói miễn phí của Netlify tính theo credit, mỗi lần lưu là trừ một ít nên nhanh hết. Cloudflare Pages miễn phí khoảng 500 lần đăng mỗi tháng, không giới hạn lượt xem.

@@ -249,6 +249,19 @@ body.with-tabs #toast{bottom:calc(var(--tab-h) + 16px + env(safe-area-inset-bott
 body.with-tabs .previewBadge{bottom:calc(var(--tab-h) + 8px + env(safe-area-inset-bottom,0px))}
 .mapback{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--accent);font-weight:600;font-size:13px;padding:0 0 4px}
 @media (max-width:720px){body.with-tabs #sheet{bottom:calc(var(--tab-h) + 10px + env(safe-area-inset-bottom,0px));max-height:calc(48% - var(--tab-h))}}
+/* thanh chỉ dẫn GPS */
+#gpsBar{position:absolute;z-index:16;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));top:max(10px,env(safe-area-inset-top,0px));max-width:520px;margin:0 auto;
+  display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px;border-radius:16px;background:var(--pri,#1b5cff);color:#fff;box-shadow:0 10px 26px rgba(10,30,80,.3)}
+#gpsBar .gi{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:28px;font-weight:700;line-height:1}
+#gpsBar .gt b{display:block;font-size:16.5px;line-height:1.3;font-weight:700}
+#gpsBar .gt small{display:block;font-size:12.5px;opacity:.9;margin-top:2px;line-height:1.4}
+#gpsBar .gb{display:flex;gap:6px}
+#gpsBar .gb button{width:38px;height:38px;border-radius:10px;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:16px}
+#gpsBar .gx{grid-column:1/-1}
+#gpsBar .gx button{width:100%;border:0;border-radius:10px;background:#fff;color:var(--pri,#1b5cff);font-weight:700;padding:10px;font-size:14px}
+body.gps-on #panel.routing .card.search{display:none!important}
+body.gps-on #panel{top:calc(max(10px,env(safe-area-inset-top,0px)) + 96px)}
+#views button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 /* máy quét QR */
 #scan{position:absolute;inset:0;z-index:40;background:#05070c;color:#fff;display:flex;flex-direction:column}
 #scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -307,6 +320,7 @@ body.with-tabs .previewBadge{bottom:calc(var(--tab-h) + 8px + env(safe-area-inse
     <button id="vTop" aria-pressed="false">Từ trên</button>
     <button id="vAll">Toàn cảnh</button>
     <button id="vCompass" aria-pressed="false">La bàn</button>
+    <button id="vGps" aria-pressed="false">GPS</button>
   </div>
   <div id="toast" hidden role="status"></div>
   <div id="qrView" hidden></div>
@@ -589,6 +603,7 @@ const youLbl=addLabel("Bạn đang ở đây",new THREE.Vector3(),"you"),destLbl
 youLbl.hidden=destLbl.hidden=true;
 let chevrons=[],routePts=[],routeLen=0;
 function drawRoute(ids){
+  routeIdsNow=ids;if(gps.on)gpsRoute(ids);
   while(routeGroup.children.length)routeGroup.remove(routeGroup.children[0]);chevrons=[];
   routePts=ids.map(id=>new THREE.Vector3(wx(N[id].x),.2,wz(N[id].y)));routeLen=0;
   for(let i=0;i<routePts.length-1;i++){
@@ -603,7 +618,7 @@ function pointAt(d){
     if(d<=l){const t=d/l;return {p:new THREE.Vector3(a.x+(b.x-a.x)*t,0,a.z+(b.z-a.z)*t),ang:-Math.atan2(b.z-a.z,b.x-a.x)};}d-=l;}
   const b=routePts[routePts.length-1];return {p:b.clone(),ang:0};
 }
-function clearRouteGfx(){while(routeGroup.children.length)routeGroup.remove(routeGroup.children[0]);chevrons=[];routePts=[];destPin.visible=false;destLbl.hidden=true;}
+function clearRouteGfx(){routeIdsNow=[];if(gps.on){gps.route=null;}while(routeGroup.children.length)routeGroup.remove(routeGroup.children[0]);chevrons=[];routePts=[];destPin.visible=false;destLbl.hidden=true;}
 
 // ---- màu theo giao diện sáng/tối ----
 const TINT={clinic:"--clinic",emergency:"--emergency",support:"--support",park:"--park",roof:"--roof",accent:"--accent",route:"--route",start:"--start"};
@@ -743,7 +758,7 @@ function showRoute(place,dept,quiet){
   const ol=document.createElement("ol");ol.className="steps";
   steps.forEach(s=>{const li=document.createElement("li");li.innerHTML=`<span class="ic ${s.ic==="go"?"go":s.ic==="end"?"end":s.ic==="floor"?"floor":""}">${ICON[s.ic]}</span><span class="tx">${s.t}</span>`;ol.appendChild(li);});
   sBody.appendChild(ol);
-  const cb=collapseBtn();sActions.append(cb,btn("Xem toàn tuyến",()=>fitRoute(route)),btn("Đóng",closeSheet));
+  const cb=collapseBtn();if(GPS_FIT&&navigator.geolocation&&!gps.on)sActions.append(btn("Đi theo GPS",gpsStart,"primary"));sActions.append(cb,btn("Xem toàn tuyến",()=>fitRoute(route)),btn("Đóng",closeSheet));
   drawRoute(route.ids);
   const dn=N[best];destPin.position.set(wx(dn.x),0,wz(dn.y));destPin.visible=true;destLbl.pos.set(wx(dn.x),10.6,wz(dn.y));destLbl.hidden=false;
   destLbl.el.textContent=dept?`${place.name}${dept.f?" · Tầng "+dept.f:""}`:place.name;
@@ -836,6 +851,126 @@ function stopCompass(){
 }
 vC.onclick=()=>{if(compass.on&&!compass.follow){compass.follow=true;return;}compass.on?stopCompass():startCompass();};
 renderer.domElement.addEventListener("pointerdown",()=>{compass.follow=false;});
+$("vGps").onclick=()=>{gps.on?gpsStop():gpsStart();};
+
+// ================= ĐỊNH VỊ GPS (ngoài trời, trong khuôn viên) =================
+// Khớp GPS với sơ đồ bằng các điểm mốc (config.gpsAnchors: mã điểm + vĩ độ, kinh độ), sửa ở trang quản trị → Khác → Định vị GPS.
+const GPS_ANCHORS=(D.config.gpsAnchors&&D.config.gpsAnchors.length)?D.config.gpsAnchors:[
+  {id:"cong_chinh",lat:18.68217807,lng:105.70269547},{id:"cua_e",lat:18.68159841,lng:105.70205837},
+  {id:"cong_sau_bac",lat:18.68160691,lng:105.7017953},{id:"cua_nhiet_doi",lat:18.68212816,lng:105.70206408},
+  {id:"cua_f_duong",lat:18.68197088,lng:105.70282726}];
+function gpsFitOf(anchors,nodeOf){
+  const P=anchors.map(a=>({a,n:nodeOf(a.id)})).filter(o=>o.n&&isFinite(+o.a.lat)&&isFinite(+o.a.lng));
+  if(P.length<2)return null;
+  const lat0=P.reduce((s,o)=>s+ +o.a.lat,0)/P.length,lng0=P.reduce((s,o)=>s+ +o.a.lng,0)/P.length,R=6378137,k=Math.PI/180;
+  const en=(lat,lng)=>[(lng-lng0)*k*R*Math.cos(lat0*k),(lat-lat0)*k*R];
+  // số phức: z = Đông + i·Bắc (mét), w = x − i·y (pixel sơ đồ, y hướng xuống) ; w = a·z + b
+  const Z=P.map(o=>en(+o.a.lat,+o.a.lng)),W=P.map(o=>[o.n.x,-o.n.y]);
+  const mz=[0,0],mw=[0,0];Z.forEach(z=>{mz[0]+=z[0]/P.length;mz[1]+=z[1]/P.length;});W.forEach(w=>{mw[0]+=w[0]/P.length;mw[1]+=w[1]/P.length;});
+  let nr=0,ni=0,dd=0;Z.forEach((z,i)=>{const zx=z[0]-mz[0],zy=z[1]-mz[1],wx_=W[i][0]-mw[0],wy_=W[i][1]-mw[1];nr+=wx_*zx+wy_*zy;ni+=wy_*zx-wx_*zy;dd+=zx*zx+zy*zy;});
+  if(!dd)return null;const ar=nr/dd,ai=ni/dd,br=mw[0]-(ar*mz[0]-ai*mz[1]),bi=mw[1]-(ar*mz[1]+ai*mz[0]);
+  const pxPerM=Math.hypot(ar,ai);
+  const toPx0=(lat,lng)=>{const z=en(lat,lng);return [ar*z[0]-ai*z[1]+br,-(ar*z[1]+ai*z[0]+bi)];};
+  const res=P.map((o,i)=>{const p=toPx0(+o.a.lat,+o.a.lng);return Math.hypot(p[0]-o.n.x,p[1]-o.n.y)/pxPerM;});
+  // sơ đồ vẽ tay nên hơi méo: nắn thêm cho khớp đúng tại từng điểm mốc, càng xa điểm mốc càng ít nắn
+  const C=P.map(o=>{const b=toPx0(+o.a.lat,+o.a.lng);return {b,r:[o.n.x-b[0],o.n.y-b[1]]};}),L=40*pxPerM;
+  const toPx=(lat,lng)=>{const b=toPx0(lat,lng);if(P.length<3)return b;let sx=0,sy=0,sw=0;
+    C.forEach(c=>{const d2=(b[0]-c.b[0])**2+(b[1]-c.b[1])**2,w=Math.exp(-d2/(L*L*4))/(d2+L*L*.04);sx+=w*c.r[0];sy+=w*c.r[1];sw+=w;});
+    if(!sw)return b;const k=sw/(sw+1/(L*L*4));return [b[0]+sx/sw*k,b[1]+sy/sw*k];};
+  const up=[ai/(ar*ar+ai*ai),ar/(ar*ar+ai*ai)]; // hướng "phía trên sơ đồ" tính theo Đông/Bắc
+  return {toPx,pxPerM,mpp:1/pxPerM,bearing:((Math.atan2(up[0],up[1])*180/Math.PI)+360)%360,res,center:[lat0,lng0]};
+}
+const GPS_FIT=gpsFitOf(GPS_ANCHORS,id=>N[id]);
+const gps={on:false,watch:null,me:null,acc:0,follow:true,route:null,lastS:0,off:0,voice:false,said:{},arrived:false,started:0};
+// chấm vị trí GPS
+const gpsDot=new THREE.Group();gpsDot.visible=false;scene.add(gpsDot);
+{const ring=new THREE.Mesh(new THREE.CircleGeometry(1,40),new THREE.MeshBasicMaterial({color:0x1b5cff,transparent:true,opacity:.16,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.3;ring.renderOrder=12;
+ const halo=new THREE.Mesh(new THREE.CircleGeometry(1.9,32),new THREE.MeshBasicMaterial({color:0xffffff,depthWrite:false}));halo.rotation.x=-Math.PI/2;halo.position.y=.34;halo.renderOrder=13;
+ const dot=new THREE.Mesh(new THREE.CircleGeometry(1.35,32),new THREE.MeshBasicMaterial({color:0x1b5cff,depthWrite:false}));dot.rotation.x=-Math.PI/2;dot.position.y=.36;dot.renderOrder=14;
+ gpsDot.add(ring,halo,dot);}
+const gpsLbl=addLabel("Bạn",new THREE.Vector3(),"you");gpsLbl.hidden=true;
+// thanh chỉ dẫn khi đi theo GPS
+const gBar=document.createElement("div");gBar.id="gpsBar";gBar.hidden=true;gBar.innerHTML=`<div class="gi" id="gIc"></div><div class="gt"><b id="gT">Đang tìm tín hiệu GPS…</b><small id="gS">Hãy đứng ở chỗ thoáng, không bị mái che.</small></div>
+  <div class="gb"><button id="gVoice" aria-pressed="false" aria-label="Đọc chỉ dẫn">🔈</button><button id="gFollow" aria-label="Về vị trí của tôi" hidden>◎</button><button id="gStop" aria-label="Dừng định vị">✕</button></div>
+  <div class="gx" id="gX" hidden></div>`;app.appendChild(gBar);
+const TURN_IC={left:"↰",right:"↱",back:"↶",go:"↑",end:"⚑",wait:"⌖"};
+function m2px(m){return m*(GPS_FIT?GPS_FIT.pxPerM:1/M_PER_PX);}
+function gpsRoute(ids){ // dựng tuyến (pixel) + các chỗ rẽ
+  if(!ids||ids.length<1){gps.route=null;return;}
+  const P=ids.map(id=>[N[id].x,N[id].y]),cum=[0];for(let i=1;i<P.length;i++)cum.push(cum[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1])*M_PER_PX);
+  const turns=[];for(let i=1;i<P.length-1;i++){const a=[P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]],b=[P[i+1][0]-P[i][0],P[i+1][1]-P[i][1]];
+    const ang=Math.atan2(a[0]*b[1]-a[1]*b[0],a[0]*b[0]+a[1]*b[1])*180/Math.PI;if(Math.abs(ang)<35)continue;
+    const n=N[ids[i]];turns.push({s:cum[i],dir:Math.abs(ang)>150?"back":ang>0?"right":"left",at:n.type!=="jct"?n.name:(n.lm&&n.lm!==n.id?n.lm:""),k:i});}
+  gps.route={ids,P,cum,turns,total:cum[cum.length-1],dest:current?(current.dept?current.dept.n:current.place.name):N[ids[ids.length-1]].name};
+  gps.lastS=0;gps.off=0;gps.said={};gps.arrived=false;
+}
+function snapRoute(x,y){const R=gps.route;let best=null;
+  for(let i=0;i<R.P.length-1;i++){const a=R.P[i],b=R.P[i+1],dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy||1;let t=((x-a[0])*dx+(y-a[1])*dy)/L2;t=Math.max(0,Math.min(1,t));
+    const px=a[0]+dx*t,py=a[1]+dy*t,d=Math.hypot(x-px,y-py)*M_PER_PX,s=R.cum[i]+(R.cum[i+1]-R.cum[i])*t;
+    const score=d+(s<gps.lastS-15?25:0);if(!best||score<best.score)best={x:px,y:py,d,s,score};}
+  if(R.P.length===1)best={x:R.P[0][0],y:R.P[0][1],d:Math.hypot(x-R.P[0][0],y-R.P[0][1])*M_PER_PX,s:0};
+  return best;}
+function say(t){if(!gps.voice||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/<[^>]+>/g,""));u.lang="vi-VN";u.rate=1;speechSynthesis.speak(u);}catch(e){}}
+function gBarSet(ic,t,s,extra){$("gIc").textContent=TURN_IC[ic]||ic;$("gT").innerHTML=t;$("gS").innerHTML=s||"";const X=$("gX");if(extra){X.hidden=false;X.innerHTML="";X.append(extra);}else X.hidden=true;}
+function nearestNode(x,y){let b=null,bd=Infinity;Object.values(N).forEach(n=>{const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;b=n;}});return b;}
+function gpsReroute(){if(!gps.me)return;const n=nearestNode(gps.me.x,gps.me.y);if(!n)return;
+  if(![...startSel.options].some(o=>o.value===n.id)){const o=document.createElement("option");o.value=n.id;o.textContent="Vị trí theo GPS (gần "+(n.type==="jct"?(n.lm||"lối đi"):n.name)+")";startSel.appendChild(o);}
+  setStart(n.id,null);toast("Đã vẽ lại đường từ chỗ bạn đang đứng.",3000);}
+function onFix(p){
+  const c=p.coords;gps.acc=c.accuracy||99;
+  if(gps.acc>45){if(!gps.me)gBarSet("wait","Đang chờ GPS rõ hơn…",`Sai số hiện tại khoảng ${Math.round(gps.acc)} m. Hãy ra chỗ thoáng, không bị mái che.`);return;}
+  const [x,y]=GPS_FIT.toPx(c.latitude,c.longitude);
+  // làm mượt để chấm không nhảy
+  if(gps.raw){const k=gps.acc<12?.6:.4;gps.raw=[gps.raw[0]+(x-gps.raw[0])*k,gps.raw[1]+(y-gps.raw[1])*k];}else gps.raw=[x,y];
+  const far=Math.hypot(gps.raw[0]-N[GPS_ANCHORS[0].id].x,gps.raw[1]-N[GPS_ANCHORS[0].id].y)*M_PER_PX;
+  if(far>350){gpsDot.visible=false;gpsLbl.hidden=true;gBarSet("wait","Bạn đang ở ngoài khuôn viên bệnh viện",`Cách cổng chính khoảng ${Math.round(far)} m. Định vị bằng GPS chỉ dùng khi đã vào trong khuôn viên.`);return;}
+  let mx=gps.raw[0],my=gps.raw[1];
+  if(!current&&!gps.route){ // chưa chọn nơi đến: lấy chỗ gần nhất làm điểm xuất phát
+    if(!gps.me){const n=nearestNode(mx,my);if(n&&n.type!=="jct"){setStart(n.id,null);located=true;}}
+    gBarSet("go","Đã định vị được bạn",`Sai số khoảng ${Math.round(gps.acc)} m. Gõ tên khoa, phòng cần đến ở ô tìm kiếm phía trên.`);}
+  else if(gps.route){const sn=snapRoute(mx,my),R=gps.route,lim=Math.max(30,gps.acc*1.5);
+    if(sn.d<=lim){gps.off=0;mx=sn.x;my=sn.y;gps.lastS=Math.max(sn.s,gps.lastS-8);}else gps.off++;
+    const s=gps.lastS,left=Math.max(0,R.total-s);
+    if(gps.off>=4){const b=document.createElement("button");b.textContent="Tìm lại đường từ đây";b.onclick=gpsReroute;
+      gBarSet("wait","Bạn đang đi lệch khỏi đường",`Cách đường chỉ dẫn khoảng ${Math.round(sn.d)} m.`,b);if(!gps.said.off){gps.said.off=1;say("Bạn đang đi lệch khỏi đường");}}
+    else if(left<10){gBarSet("end",`Bạn đã tới <b>${escH(R.dest)}</b>`,current&&current.dept&&current.dept.f>1?`Vào tòa rồi lên tầng ${current.dept.f}.`:"Hỏi quầy hướng dẫn nếu cần hỗ trợ thêm.");
+      if(!gps.arrived){gps.arrived=true;say("Bạn đã tới "+R.dest);try{navigator.vibrate&&navigator.vibrate([80,60,80]);}catch(e){}}}
+    else{gps.said.off=0;const nt=R.turns.find(t=>t.s>s+3);
+      if(nt){const d=nt.s-s,w={left:"rẽ trái",right:"rẽ phải",back:"quay lại"}[nt.dir],at=nt.at?` tại ${escH(nt.at)}`:"";
+        if(d<=12){gBarSet(nt.dir,`${w[0].toUpperCase()+w.slice(1)}${at}`,`Còn ${fmtM(left)} tới ${escH(R.dest)}`);if(!gps.said["n"+nt.k]){gps.said["n"+nt.k]=1;say(w+(nt.at?" tại "+nt.at:""));}}
+        else{gBarSet("go",`Đi thẳng ${fmtM(d)} rồi ${w}`,`${nt.at?"Tới "+escH(nt.at)+" · ":""}còn ${fmtM(left)} tới ${escH(R.dest)}`);if(d<35&&!gps.said["f"+nt.k]){gps.said["f"+nt.k]=1;say(`Khoảng ${Math.round(d/5)*5} mét nữa, ${w}`);}}}
+      else gBarSet("go",`Đi thẳng ${fmtM(left)}`,`là tới ${escH(R.dest)}`);}}
+  gps.me={x:mx,y:my};
+  gpsDot.visible=true;gpsDot.children[0].scale.setScalar(Math.max(1.6,m2px(gps.acc)/S));gpsLbl.hidden=false;
+  if(!gps.first){gps.first=1;gps.follow=true;}
+}
+function gpsStart(){
+  if(!GPS_FIT){toast("Chưa có điểm mốc GPS. Phòng CNTT cần nhập ở trang quản trị → Khác → Định vị GPS.",5000);return;}
+  if(!navigator.geolocation){toast("Máy này không hỗ trợ định vị.",4000);return;}
+  if(gps.on)return;gps.on=true;gps.me=null;gps.raw=null;gps.first=0;gps.follow=true;
+  gpsRoute(current&&routeIdsNow.length?routeIdsNow:null);
+  gBar.hidden=false;document.body.classList.add("gps-on");gBarSet("wait","Đang tìm tín hiệu GPS…","Lần đầu điện thoại sẽ hỏi quyền vị trí, hãy bấm Cho phép.");
+  if(sheet&&!sheet.hidden&&sheet.dataset.collapsed!=="true"){sheet.dataset.collapsed="true";requestAnimationFrame(updateOffset);}
+  try{gps.watch=navigator.geolocation.watchPosition(onFix,e=>{
+    if(e.code===1){gBarSet("wait","Chưa được phép dùng vị trí",/iPhone|iPad/.test(navigator.userAgent)?"Vào Cài đặt → Quyền riêng tư → Dịch vụ định vị → Safari, chọn “Khi dùng ứng dụng”, rồi bấm lại.":"Bấm biểu tượng ổ khóa cạnh đường link → Quyền → Vị trí → Cho phép, rồi bấm lại.");gpsStopWatch();}
+    else gBarSet("wait","Chưa lấy được vị trí","Hãy bật Định vị (GPS) trên điện thoại và ra chỗ thoáng.");},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});}catch(e){}
+  $("vGps").setAttribute("aria-pressed","true");
+  [...sActions.querySelectorAll("button")].forEach(b=>{if(b.textContent==="Đi theo GPS")b.remove();});
+}
+function gpsStopWatch(){if(gps.watch!=null){try{navigator.geolocation.clearWatch(gps.watch);}catch(e){}gps.watch=null;}}
+function gpsStop(){if(!gps.on)return;gps.on=false;gpsStopWatch();gBar.hidden=true;document.body.classList.remove("gps-on");gpsDot.visible=false;gpsLbl.hidden=true;gps.me=null;gps.route=null;
+  youLbl.hidden=!startPin.visible;try{speechSynthesis.cancel();}catch(e){}if($("vGps"))$("vGps").setAttribute("aria-pressed","false");}
+let routeIdsNow=[];
+$("gStop").onclick=gpsStop;
+$("gVoice").onclick=()=>{gps.voice=!gps.voice;$("gVoice").textContent=gps.voice?"🔊":"🔈";$("gVoice").setAttribute("aria-pressed",gps.voice);if(gps.voice)say("Đã bật đọc chỉ dẫn");};
+$("gFollow").onclick=()=>{gps.follow=true;$("gFollow").hidden=true;};
+renderer.domElement.addEventListener("pointerdown",()=>{if(gps.on&&gps.me){gps.follow=false;$("gFollow").hidden=false;}});
+// gọi mỗi khung hình: chấm GPS trượt mượt, camera đi theo
+const gpsCur=new THREE.Vector3();
+function gpsTick(){if(!gps.on||!gps.me)return;const t=new THREE.Vector3(wx(gps.me.x),0,wz(gps.me.y));
+  if(!gpsDot.userData.init){gpsCur.copy(t);gpsDot.userData.init=1;}else gpsCur.lerp(t,reduce?1:.12);
+  youLbl.hidden=true;gpsDot.position.set(gpsCur.x,0,gpsCur.z);gpsLbl.pos.set(gpsCur.x,6,gpsCur.z);
+  if(gps.follow&&!anim){const d=gpsCur.clone().sub(controls.target);d.y=0;if(d.lengthSq()>.0004){const k=reduce?1:.08;controls.target.addScaledVector(d,k);camera.position.addScaledVector(d,k);}}}
 
 // ================= MÃ QR (nội bộ: thêm #qr vào cuối đường link) =================
 const DIRS=[[0,"↑"],[45,"↗"],[90,"→"],[135,"↘"],[180,"↓"],[225,"↙"],[270,"←"],[315,"↖"]];
@@ -1269,7 +1404,7 @@ function loop(now){
     const d=facingVec(facing),t=controls.target,off=camera.position.clone().sub(t),hd=Math.hypot(off.x,off.z);
     const want=new THREE.Vector3(t.x-d.x*hd,camera.position.y,t.z-d.y*hd);camera.position.lerp(want,.12);
   }
-  controls.update();renderer.render(scene,camera);
+  gpsTick();controls.update();renderer.render(scene,camera);
   const W=app.clientWidth,H=app.clientHeight,dist=camera.position.distanceTo(controls.target);
   labelEls.forEach(L=>{if(L.hidden){L.el.style.display="none";return;}v.copy(L.pos).project(camera);
     const off=v.z>1||v.x<-1.1||v.x>1.1||v.y<-1.1||v.y>1.1,far=L.el.classList.contains("small")&&dist>240;
@@ -1278,7 +1413,7 @@ function loop(now){
 requestAnimationFrame(loop);
 
 // dùng cho kiểm thử
-window.__nav={N,E,PLACES,dijkstra,pathTo,buildSteps,search};
+window.__nav={N,E,PLACES,dijkstra,pathTo,buildSteps,search,gps,GPS_FIT};
 })();
 </script>
 
