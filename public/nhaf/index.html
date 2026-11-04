@@ -174,9 +174,10 @@ ol.steps .m{font-size:12px;color:var(--mute);white-space:nowrap}
 button:focus-visible,.pt:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 @media (max-width:899px){
   #ui{justify-content:flex-start}
-  #topArea{order:1} #mapctl{order:2;position:static;transform:none;flex-direction:row;align-self:flex-end;margin:auto 0 10px}
-  #sheet{order:3;max-height:42vh} #floors{flex-direction:row}
-  #floors button{width:40px;height:38px} .ctl{width:42px;height:42px}
+  #topArea{order:1} #mapctl{order:2;position:static;transform:none;flex-direction:column;align-self:flex-end;margin:auto 0;gap:8px}
+  #sheet{order:3;max-height:40vh} #floors{flex-direction:column;gap:4px;padding:5px}
+  #floors button{width:42px;height:38px} .ctl{width:42px;height:42px}
+  #ui.planmode #sheet,#ui.navmode #sheet{max-height:36vh}
   .brand p{display:none}
 }
 /* hộp chọn vị trí */
@@ -705,17 +706,11 @@ $("picker").addEventListener("click",e=>{if(e.target.id==="picker")$("picker").h
 // ---------- màn hình
 let state="home";
 const SB=$("sheetBody");
-function show(s){state=s;$("homeCard").hidden=!(s==="home"||s==="search");$("planCard").hidden=s!=="plan";$("navCard").hidden=s!=="nav";
+function show(s){state=s;$("sheet").hidden=(s==="home");$("homeCard").hidden=!(s==="home"||s==="search");$("planCard").hidden=s!=="plan";$("navCard").hidden=s!=="nav";
   $("ui").classList.toggle("navmode",s==="nav");$("ui").classList.toggle("planmode",s==="plan");layout();buildLabels();}
 const TILES=[["er","Cấp cứu",()=>goName(/SẢNH CẤP CỨU/)],["desk","Làm thủ tục",()=>goName(/THỦ TỤC/)],["lab","Xét nghiệm",()=>doSearch("Xét nghiệm")],["scan","Chẩn đoán hình ảnh",()=>doSearch("Chụp")],
   ["pharm","Nhà thuốc",()=>goName(/QUẦY THUỐC/)],["money","Thanh toán",()=>goName(/THANH TOÁN/)],["wc","WC gần nhất",()=>goNearest("wc")],["lift","Thang máy gần nhất",()=>goNearest("lift")]];
-function renderHome(){show("home");SB.innerHTML="";
-  const h=document.createElement("div");h.className="h3";h.innerHTML=`Đi nhanh tới<small>Từ ${esc(curStart().name.replace(/ \(.*\)/,""))}</small>`;SB.appendChild(h);
-  const g=document.createElement("div");g.className="tiles";
-  TILES.forEach(([c,t,fn])=>{const b=document.createElement("button");b.className="tile";b.innerHTML=`<i style="background:color-mix(in srgb,${CAT[c]} 14%,transparent);color:${CAT[c]}">${SV[c]}</i>${t}`;b.onclick=fn;g.appendChild(b);});
-  SB.appendChild(g);
-  const F=FLOORS[cur];const fi=document.createElement("div");fi.className="floorinfo";
-  fi.innerHTML=`<b>Tầng ${F.f} · ${esc(F.dept.map(d=>d[0]).join(" · "))}</b><span>Bấm vào một phòng trên bản đồ để chỉ đường tới phòng đó. Đổi tầng bằng các nút số bên phải.</span>`;SB.appendChild(fi);}
+function renderHome(){show("home");SB.innerHTML="";}
 function doSearch(t){$("q").value=t;onQ();$("q").focus({preventScroll:true});}
 function onQ(){const q=$("q").value;$("qx").hidden=!q;if(!q.trim()){renderHome();return;}show("search");SB.innerHTML="";
   const items=search(q);const h=document.createElement("div");h.className="h3";h.innerHTML=`Kết quả<small>${items.length} nơi</small>`;SB.appendChild(h);
