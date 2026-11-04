@@ -41,6 +41,8 @@ button{font:inherit;color:inherit}
 .lb.ico i{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;color:#fff;flex:none}
 .lb.ico i svg{width:13px;height:13px}
 .lb.side{background:transparent;box-shadow:none;color:var(--mute);font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.lb.tap{pointer-events:auto;cursor:pointer}
+.lb.tap:active{filter:brightness(.9)}
 .lb.ftag{background:var(--panel);color:var(--ink);font-size:12px;pointer-events:auto;cursor:pointer;padding:5px 9px;border-radius:9px}
 .lb.ftag b{color:var(--primary);margin-right:6px}
 .lb.here{background:var(--primary);color:#fff;font-size:12.5px;padding:6px 10px;border-radius:10px;box-shadow:0 4px 12px rgba(27,92,255,.35)}
@@ -654,14 +656,14 @@ const LB=document.getElementById("labels");let labels=[];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function nice(n){const s=n.toLocaleLowerCase("vi");return (s.charAt(0).toLocaleUpperCase("vi")+s.slice(1))
   .replace(/\bwc\b/gi,"WC").replace(/\bkcb\b/gi,"KCB").replace(/\bnv\b/gi,"NV").replace(/\belv\b/gi,"ELV").replace(/\bdsa\b/gi,"DSA").replace(/\bct\b/gi,"CT")
-  .replace(/x-quang/g,"X-quang").replace(/\(hạng e\)/gi,"(hạng E)").replace(/\bp\.\s?/gi,"P. ").replace(/\bn\.viên/gi,"Nhân viên");}
+  .replace(/x-quang/g,"X-quang").replace(/\(hạng e\)/gi,"(hạng E)").replace(/\bp\.\s?/gi,"P. ").replace(/\bn\.viên/gi,"Nhân viên").replace(/\b([pn])(\d)/g,(m,a,b)=>a.toUpperCase()+b);}
 function el(cls,html){const d=document.createElement("div");d.className="lb "+cls;d.innerHTML=html;LB.appendChild(d);return d;}
 const iconLb=(cat,txt)=>`<i style="background:${CAT[cat]}">${SV[cat]}</i>${esc(txt)}`;
 function buildLabels(){LB.innerHTML="";labels=[];
   if(mode==="all"){floors.forEach((o,i)=>{const d=el("ftag",`<b>Tầng ${o.F.f}</b>${esc(o.F.dept.map(x=>x[0]).join(" · "))}`);d.onclick=()=>{setFloor(i);overview();};labels.push({el:d,fi:i,ftag:true,pri:100});});}
   else {const o=floors[cur];
     CORES.forEach(c=>{const r=c.rects;const xs=r.map(a=>a[0]),ys=r.map(a=>a[1]),xe=r.map(a=>a[0]+a[2]),ye=r.map(a=>a[1]+a[3]);
-      labels.push({el:el("ico",iconLb(c.type,c.short)),u:(Math.min(...xs)+Math.max(...xe))/2,v:(Math.min(...ys)+Math.max(...ye))/2,fi:cur,y:3.4,pri:80});});
+      labels.push({el:el("ico",iconLb(c.type,c.short)),u:(Math.min(...xs)+Math.max(...xe))/2,v:(Math.min(...ys)+Math.max(...ye))/2,fi:cur,y:3.4,pri:80,core:c});});
     if(state!=="nav")SIDES.forEach(s=>labels.push({el:el("side",esc(s.t)),u:s.u,v:s.v,fi:cur,y:.3,pri:85}));
     if(o.F.f===1)DOOR1.forEach(d=>labels.push({el:el("ico",iconLb("desk",d.t).replace(SV.desk,SV.room||SV.desk)),u:d.u,v:d.v,fi:cur,y:1.2,pri:90}));
     o.F.rooms.forEach(r=>{const c=catOf(r.n);const big=["wc","pharm","er","money","desk","lab","scan"].includes(c);
@@ -669,6 +671,8 @@ function buildLabels(){LB.innerHTML="";labels=[];
   if(state!=="home"&&RT){const last=RT.steps[RT.steps.length-1];
     labels.push({el:el("dest",esc(nice(RT.room.n))),u:last.at[0],v:last.at[1],fi:last.fi,y:4.6,pri:199,always:true});}
   const S=curStart();labels.push({el:el("here","Bạn đang ở đây"),u:S.u,v:S.v,fi:S.f,y:3.4,pri:200,always:true});
+  if(state!=="nav")labels.forEach(l=>{if(l.room||l.core){l.el.classList.add("tap");l.el.setAttribute("role","button");l.el.title="Chỉ đường tới đây";
+    l.el.onclick=e=>{e.stopPropagation();l.room?planTo(l.fi,l.room):goCore(l.core,l.fi);};}});
   labels.sort((a,b)=>b.pri-a.pri);labels.forEach(l=>{l.w=l.el.offsetWidth;l.h=l.el.offsetHeight;if(RT&&state!=="home"&&l.room===RT.room)l.el.hidden=true;});}
 const tmp=new THREE.Vector3();
 function placeLabels(){const W=cv.clientWidth,H=cv.clientHeight,boxes=[];
@@ -719,15 +723,20 @@ function renderHome(){show("home");SB.innerHTML="";}
 function doSearch(t){$("q").value=t;onQ();$("q").focus({preventScroll:true});}
 function onQ(){const q=$("q").value;$("qx").hidden=!q;if(!q.trim()){renderHome();return;}show("search");SB.innerHTML="";
   const items=search(q);const h=document.createElement("div");h.className="h3";h.innerHTML=`Kết quả<small>${items.length} nơi</small>`;SB.appendChild(h);
+  const nq=norm(q),QK=[[/^(thang may|thang m|tm|lift|thang$)/,"lift","Thang máy gần nhất","lift"],[/^(thang bo|thang b|cau thang|thang$)/,"stair","Thang bộ gần nhất","stair"],[/^(wc|ve sinh|nha ve sinh|toilet|nha vs|vs$)/,"wc","Nhà vệ sinh gần nhất","wc"]];
+  QK.filter(([re])=>re.test(nq)).forEach(([,k,t,c])=>{const b=document.createElement("button");b.className="res";
+    b.innerHTML=`<i style="background:${CAT[c]||CAT.room}">${SV[c]||SV.room}</i><span><b>${t}</b><small>Tính từ chỗ bạn đang đứng, tầng ${curStart().f+1}</small></span>`;b.onclick=()=>goNearest(k);SB.appendChild(b);});
+  if(!items.length&&SB.querySelector(".res"))return;
   if(!items.length){const e=document.createElement("div");e.className="empty";e.textContent="Không thấy nơi nào khớp. Thử gõ ngắn hơn, ví dụ: mắt, chụp, máu, thuốc.";SB.appendChild(e);return;}
   items.slice(0,40).forEach(x=>{const b=document.createElement("button");b.className="res";
     b.innerHTML=`<i style="background:${CAT[x.cat]}">${SV[x.cat]}</i><span><b>${esc(nice(x.r.n))}</b><small>Tầng ${x.fi+1} · <em>${esc(FLOORS[x.fi].dept.map(d=>d[0]).join(", "))}</em></small></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="color:var(--mute)"><path d="m9 6 6 6-6 6"/></svg>`;
     b.onclick=()=>planTo(x.fi,x.r);SB.appendChild(b);});}
 $("q").addEventListener("input",onQ);$("qx").onclick=()=>{$("q").value="";onQ();};
 function goName(re){const x=ALLROOMS.find(x=>re.test(x.r.n));if(x)planTo(x.fi,x.r);}
+function goCore(c,fi){planTo(fi,{n:c.short.toUpperCase(),u:c.entry[0],v:c.entry[1]});}
 function goNearest(kind){const s=curStart();const src=snap(s.f,s.u,s.v);const D=dijkstra(s.f,src,-1).dist;let best=null,bd=Infinity;
   if(kind==="wc"){FLOORS[s.f].rooms.filter(PUBLIC_WC).forEach(r=>{const k=snap(s.f,r.u,r.v);if(k>=0&&D[k]<bd){bd=D[k];best=r;}});}
-  else {CORES.filter(c=>c.type==="lift"&&c.route===true).forEach(c=>{const k=snap(s.f,c.entry[0],c.entry[1]);if(k>=0&&D[k]<bd){bd=D[k];best={n:c.short.toUpperCase(),u:c.entry[0],v:c.entry[1]};}});}
+  else {CORES.filter(c=>kind==="stair"?c.type==="stair":(c.type==="lift"&&c.route===true)).forEach(c=>{const k=snap(s.f,c.entry[0],c.entry[1]);if(k>=0&&D[k]<bd){bd=D[k];best={n:c.short.toUpperCase(),u:c.entry[0],v:c.entry[1]};}});}
   if(best){if(/^WC$/.test(best.n))best={...best,n:"NHÀ VỆ SINH"};planTo(s.f,best);}}
 
 // ---------- lộ trình
@@ -835,6 +844,7 @@ setStart(startId,true);setFloor(curStart().f);renderHome();
 // mở từ trang chủ: ?to=<tầng>-<số phòng> chỉ đường luôn, ?q=<chữ> tìm sẵn
 {const sp=new URLSearchParams(location.search);const to=(sp.get("to")||"").match(/^(\d+)-(\d+)$/);
  if(to&&FLOORS[+to[1]]&&FLOORS[+to[1]].rooms[+to[2]])setTimeout(()=>planTo(+to[1],FLOORS[+to[1]].rooms[+to[2]]),50);
+ else if(/^(lift|stair|wc)$/.test(sp.get("near")||""))setTimeout(()=>goNearest(sp.get("near")),50);
  else if(sp.get("q"))setTimeout(()=>doSearch(sp.get("q")),50);}
 {const s=curStart();const t=new THREE.Vector3(U(s.u),0,V(s.v));fly(t,new THREE.Vector3(t.x-10,26,t.z+22),1200);}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>buildLabels());

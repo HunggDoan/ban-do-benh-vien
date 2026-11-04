@@ -1163,7 +1163,7 @@ function searchF(v){const nq=norm(v);if(!nq)return[];const toks=nq.split(" ");le
   return FROOMS.map(x=>{const nt=norm(x.n);let r=-1;
     if(toks.every(t=>x.h.includes(t)))r=nt.startsWith(nq)?0:nt.includes(nq)?1:2;else if(alt&&nt.includes(alt))r=2;
     return {x,r};}).filter(o=>o.r>=0).sort((a,b)=>a.r-b.r||a.x.f-b.x.f||a.x.n.localeCompare(b.x.n,"vi",{numeric:true}));}
-function openF(x){location.href="nhaf/"+(x?("?to="+encodeURIComponent(x.to)):"");}
+function openF(x){location.href="nhaf/"+(x?(/^near:/.test(x.to)?"?near="+x.to.slice(5):"?to="+encodeURIComponent(x.to)):"");}
 let located=false; // chỉ hiện “Bạn đang ở” sau khi đã quét mã QR
 const SVG_HERO2=`<svg viewBox="0 0 210 140" aria-hidden="true"><g opacity=".22" fill="#fff"><circle cx="176" cy="26" r="16"/></g>
 <g stroke="#bcd0ff" stroke-width="1.2"><rect x="10" y="62" width="56" height="70" rx="3" fill="#ffffff"/><rect x="72" y="28" width="74" height="104" rx="3" fill="#ffffff"/><rect x="152" y="70" width="50" height="62" rx="3" fill="#ffffff"/></g>
