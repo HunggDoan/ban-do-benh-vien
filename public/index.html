@@ -16,7 +16,7 @@
   --panel:#fbfbf8; --fg:#24252a; --muted:#62606a; --line:#d9d6cf; --hover:#eef2ee;
   --clinic:#d9bfc1; --support:#cfc9c2; --park:#bfcfc4; --emergency:#c6453c;
   --accent:#2f6f73; --roof:#efe7e4; --door:#d2342a;
-  --route:#d4372c; --start:#1f63b0;
+  --route:#d4372c; --start:#1f63b0; --way:#1b5cff; --way-glow:#8fb0ff;
   --font:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
 }
@@ -25,13 +25,13 @@
   --panel:#1f2226; --fg:#ece8e6; --muted:#a6a2a6; --line:#363a40; --hover:#2a2e33;
   --clinic:#8f6f73; --support:#6e6a66; --park:#5d7364; --emergency:#d0584e;
   --accent:#6fb3b7; --roof:#a88d90; --door:#ff6a5c;
-  --route:#ff6b5e; --start:#6eaeff; color-scheme:dark;}}
+  --route:#ff6b5e; --start:#6eaeff; --way:#4d82ff; --way-glow:#3a5fb8; color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#16181b; --ground:#202327; --path:#2f3338; --road:#3a3d42; --road-line:#5b5f66;
   --panel:#1f2226; --fg:#ece8e6; --muted:#a6a2a6; --line:#363a40; --hover:#2a2e33;
   --clinic:#8f6f73; --support:#6e6a66; --park:#5d7364; --emergency:#d0584e;
   --accent:#6fb3b7; --roof:#a88d90; --door:#ff6a5c;
-  --route:#ff6b5e; --start:#6eaeff; color-scheme:dark;}
+  --route:#ff6b5e; --start:#6eaeff; --way:#4d82ff; --way-glow:#3a5fb8; color-scheme:dark;}
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);overflow:hidden}
 #app{position:relative;height:100%;width:100%}
@@ -626,9 +626,10 @@ Object.values(N).forEach(n=>{if(n.type!=="door")return;const m=new THREE.Mesh(ne
 
 // ---- đường đi trên bản đồ ----
 const routeGroup=new THREE.Group();scene.add(routeGroup);
-const routeMat=new THREE.MeshBasicMaterial({depthTest:false,transparent:true,opacity:.92});
+const routeMat=new THREE.MeshBasicMaterial({depthTest:false,transparent:true,opacity:.95});
+const glowMat=new THREE.MeshBasicMaterial({depthTest:false,transparent:true,opacity:.45});
 const chevMat=new THREE.MeshBasicMaterial({depthTest:false,color:0xffffff});
-const chevGeo=(()=>{const s=new THREE.Shape();s.moveTo(.9,0);s.lineTo(-.5,.75);s.lineTo(-.15,0);s.lineTo(-.5,-.75);s.lineTo(.9,0);const g=new THREE.ShapeGeometry(s);g.rotateX(-Math.PI/2);return g;})();
+const chevGeo=(()=>{const s=new THREE.Shape();s.moveTo(.5,0);s.lineTo(-.25,.62);s.lineTo(-.55,.62);s.lineTo(.15,0);s.lineTo(-.55,-.62);s.lineTo(-.25,-.62);s.lineTo(.5,0);const g=new THREE.ShapeGeometry(s);g.rotateX(-Math.PI/2);return g;})();
 function makePin(colorKey,h){
   const g=new THREE.Group(),m=mat(colorKey+"Pin",{roughness:.5});
   const stem=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,h,10),m);stem.position.y=h/2;g.add(stem);
@@ -644,16 +645,17 @@ beam.renderOrder=8;beam.position.y=.18;beam.visible=false;scene.add(beam);
 function updateBeam(){const d=facingVec(facing);beam.position.x=startPin.position.x;beam.position.z=startPin.position.z;beam.rotation.y=-Math.atan2(d.y,d.x);beam.visible=startPin.visible;}
 const youLbl=addLabel("Bạn đang ở đây",new THREE.Vector3(),"you"),destLbl=addLabel("Điểm đến",new THREE.Vector3(),"dest");
 youLbl.hidden=destLbl.hidden=true;
-let chevrons=[],routePts=[],routeLen=0;
+let chevrons=[],routePts=[],routeLen=0;const CHEV=2.6;
 function drawRoute(ids){
   routeIdsNow=ids;if(gps.on)gpsRoute(ids);
   while(routeGroup.children.length)routeGroup.remove(routeGroup.children[0]);chevrons=[];
   routePts=ids.map(id=>new THREE.Vector3(wx(N[id].x),.2,wz(N[id].y)));routeLen=0;
   for(let i=0;i<routePts.length-1;i++){
     const a=routePts[i],b=routePts[i+1];routeLen+=a.distanceTo(b);
-    const s=flatStrip(a.x,a.z,b.x,b.z,1.7,routeMat,.2);s.renderOrder=10;routeGroup.add(s);
+    const g=flatStrip(a.x,a.z,b.x,b.z,3.1,glowMat,.19);g.renderOrder=9;routeGroup.add(g);
+    const s=flatStrip(a.x,a.z,b.x,b.z,1.9,routeMat,.2);s.renderOrder=10;routeGroup.add(s);
   }
-  const n=Math.floor(routeLen/5);
+  const n=Math.floor(routeLen/CHEV);
   for(let i=0;i<n;i++){const c=new THREE.Mesh(chevGeo,chevMat);c.renderOrder=11;c.position.y=.22;routeGroup.add(c);chevrons.push(c);}
 }
 function pointAt(d){
@@ -670,7 +672,7 @@ function applyTheme(){
   scene.background=c("--bg");scene.fog=new THREE.Fog(c("--bg"),320,700);
   mat("ground").color=c("--ground");mat("road").color=c("--road");mat("path").color=c("--path");mat("post").color=c("--support");
   mat("door").color=c("--door");mat("door").emissive=c("--door");dashM.color=c("--road-line");
-  mat("startPin").color=c("--start");mat("routePin").color=c("--route");routeMat.color=c("--route");
+  mat("startPin").color=c("--start");mat("routePin").color=c("--route");routeMat.color=c("--way");glowMat.color=c("--way-glow");
   scene.traverse(o=>{(o.material?(Array.isArray(o.material)?o.material:[o.material]):[]).forEach(m=>{const t=(m.userData&&m.userData.tint)||o.userData.tint;if(t&&TINT[t])m.color=c(TINT[t]);});});
   highlight();
 }
@@ -1490,7 +1492,7 @@ function loop(now){
   requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
   if(anim){let k=reduce?1:Math.min(1,(now-anim.t0)/900);k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
     controls.target.lerpVectors(anim.ft,anim.target,k);camera.position.lerpVectors(anim.fp,anim.pos,k);if(k>=1)anim=null;}
-  if(chevrons.length){flow=(flow+dt*(reduce?0:6))%5;chevrons.forEach((c,i)=>{const r=pointAt((i*5+flow)%routeLen);c.position.x=r.p.x;c.position.z=r.p.z;c.rotation.y=r.ang;});}
+  if(chevrons.length){flow=(flow+dt*(reduce?0:4))%CHEV;chevrons.forEach((c,i)=>{const r=pointAt((i*CHEV+flow)%routeLen);c.position.x=r.p.x;c.position.z=r.p.z;c.rotation.y=r.ang;});}
   const pulse=1+.25*Math.sin(now/300);[startPin,destPin].forEach(p=>{if(p.visible)p.children[2].scale.setScalar(reduce?1:pulse);});
   if(compass.on&&compass.follow&&!anim){
     const d=facingVec(facing),t=controls.target,off=camera.position.clone().sub(t),hd=Math.hypot(off.x,off.z);
