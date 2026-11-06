@@ -204,6 +204,13 @@ GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà
 
 **Điểm mốc GPS** (trang quản trị → thẻ **Khác** → **Định vị GPS**): mỗi điểm là một cổng/cửa trên bản đồ kèm vĩ độ, kinh độ thật. Mở trang quản trị trên điện thoại, đứng đúng chỗ, bấm **Lấy vị trí của tôi**. Cần ít nhất 2 điểm; nên 3–5 điểm rải ở các góc. Từ điểm thứ 3 trang báo mỗi điểm lệch bao nhiêu mét; điểm lệch trên 8 m nên đo lại.
 
+### 5.7. Chỉ đường nối bản đồ bệnh viện với nhà F
+
+- Khi người bệnh tìm một phòng của nhà F (ở trang chủ hoặc ô tìm trên bản đồ), bản đồ bệnh viện chỉ đường tới cửa nhà F gần nhất. Bước cuối có nút **Vào bản đồ nhà F**: bấm vào, bản đồ nhà F mở ở đúng cửa đó và tự vào chế độ dẫn đường từng bước tới phòng cần đến.
+- Nếu đang đi theo GPS, tới cửa nhà F thanh chỉ dẫn phía trên cũng hiện nút này.
+- Cửa nào trên bản đồ bệnh viện ứng với cửa nào của nhà F được ghi sẵn trong mã: `cua_f_phai` (phía A3) → cửa chính sảnh chờ `f1-cong`, `cua_f_duong` (mặt đường Tôn Thất Tùng) → cửa cấp cứu `f1-capcuu`. Nếu sau này đổi mã điểm, thêm vào `map_data.json` mục `config.fLink`, ví dụ `"fLink": {"cua_f_moi": "f1-cong"}`.
+- Khi đang chỉ đường, ô tìm kiếm thu lại thành hai nút: **‹** (quay lại) và **kính lúp** (tìm nơi khác). Bảng dưới chỉ hiện một bước mỗi lần, bấm **Bước tiếp** / **Trước** để chuyển bước, bản đồ tự xoay tới đoạn đường của bước đó.
+
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
 Gói miễn phí của Netlify tính theo credit, mỗi lần lưu là trừ một ít nên nhanh hết. Cloudflare Pages miễn phí khoảng 500 lần đăng mỗi tháng, không giới hạn lượt xem.

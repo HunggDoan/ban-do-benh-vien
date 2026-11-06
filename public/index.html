@@ -76,6 +76,36 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .actions button.primary{background:var(--route);border-color:var(--route);color:#fff;font-weight:600}
 #sBody{overflow:auto;min-height:0}
 #sheet[data-collapsed="true"] #sBody{display:none}
+/* thanh gọn khi đang chỉ đường: chỉ còn nút quay lại và nút tìm */
+#mini{display:none;gap:8px;align-self:flex-start}
+#mini button{width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--fg);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.16)}
+#mini button.s{color:var(--route)}
+#panel.routing:not(.expanded) .card.search{display:none}
+#panel.routing:not(.expanded) #mini{display:flex}
+/* bảng chỉ đường gọn */
+#sheet.rt header{padding:10px 12px 6px;gap:2px;border-bottom:0}
+#sheet.rt .eyebrow,#sheet.rt #sSum,#sheet.rt .actions:empty{display:none}
+#sheet.rt #sTitle{display:flex;align-items:center;gap:8px;font-size:15.5px;font-weight:500;line-height:1.3}
+#sheet.rt #sTitle .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sheet.rt #sTitle .tt b{font-weight:700}
+#sheet.rt #sTitle .dm{flex:none;font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+#sheet.rt #sTitle .x{flex:none;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:none;color:var(--muted);font-size:18px;line-height:1;display:grid;place-items:center}
+#sheet.rt #sSub{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stp{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:center;margin:4px 12px 0;padding:10px;border-radius:12px;background:var(--hover)}
+.stp .ic{width:40px;height:40px}
+.stp .tx{font-size:15.5px;line-height:1.4}
+.stp .tx b{font-weight:700}
+.stp .tx small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.sdots{display:flex;gap:4px;margin:8px 12px 0}
+.sdots i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.sdots i.done{background:color-mix(in srgb,var(--route) 45%,var(--line))}
+.sdots i.cur{background:var(--route)}
+.snav{display:flex;gap:6px;padding:10px 12px 12px}
+.snav button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:none;color:var(--fg);border-radius:10px;padding:10px 12px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.snav button.go{flex:1;background:var(--route);border-color:var(--route);color:#fff}
+.snav button.go.f{background:#c2410c;border-color:#c2410c}
+.snav button:disabled{opacity:.4}
+.snav button.gps{color:var(--start);border-color:color-mix(in srgb,var(--start) 45%,var(--line))}
 ol.steps{list-style:none;margin:0;padding:6px 8px 12px}
 ol.steps li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:10px 8px;border-bottom:1px solid var(--line)}
 ol.steps li:last-child{border-bottom:none}
@@ -289,6 +319,10 @@ body.gps-on #panel{top:calc(max(10px,env(safe-area-inset-top,0px)) + 96px)}
 <div id="app">
   <div id="labels"></div>
   <div id="panel">
+    <div id="mini">
+      <button id="miniBack" aria-label="Quay lại"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+      <button id="miniSearch" class="s" aria-label="Tìm nơi khác"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
+    </div>
     <div class="card search">
       <button class="mapback" id="mapHome"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg>Trang chủ</button>
       <div class="row start">
@@ -428,36 +462,38 @@ function turnAt(a,b,c){
 }
 function buildSteps(route,place,dept,facing,fsrc){
   const ids=route.ids,steps=[],total=route.edges.reduce((s,e)=>s+meters(e.len),0);
-  steps.push({ic:"go",t:`Bạn đang ở <b>${N[ids[0]].name}</b>`});
+  steps.push({ic:"go",t:`Bạn đang ở <b>${N[ids[0]].name}</b>`,a:0,b:0});
   if(route.edges.length&&facing!=null){
     const a=N[ids[0]],b=N[ids[1]],tgt=b.type==="jct"?b.lm:b.name;
     let d=Math.atan2(b.x-a.x,-(b.y-a.y))*180/Math.PI-facing;while(d<=-180)d+=360;while(d>180)d-=360;
-    if(Math.abs(d)>145) steps.push({ic:"back",t:`<b>${fsrc==="compass"?"Quay người ra phía sau":"Quay lưng lại tấm biển QR"}</b>, hướng về ${tgt}`});
-    else if(d>=35) steps.push({ic:"right",t:`<b>Quay người sang phải</b>, hướng về ${tgt}`});
-    else if(d<=-35) steps.push({ic:"left",t:`<b>Quay người sang trái</b>, hướng về ${tgt}`});
-    else steps.push({ic:"straight",t:`<b>Đi thẳng về phía trước</b>, hướng về ${tgt}`});
+    if(Math.abs(d)>145) steps.push({ic:"back",t:`<b>${fsrc==="compass"?"Quay người ra phía sau":"Quay lưng lại tấm biển QR"}</b>, hướng về ${tgt}`,a:0,b:0,face:1});
+    else if(d>=35) steps.push({ic:"right",t:`<b>Quay người sang phải</b>, hướng về ${tgt}`,a:0,b:0,face:1});
+    else if(d<=-35) steps.push({ic:"left",t:`<b>Quay người sang trái</b>, hướng về ${tgt}`,a:0,b:0,face:1});
   }
-  if(ids.length===1){ steps.push({ic:"end",t:`Bạn đang đứng ngay <b>${N[ids[0]].name}</b>`}); }
+  if(ids.length===1){ steps.push({ic:"end",t:`Bạn đang đứng ngay <b>${N[ids[0]].name}</b>`,a:0,b:0}); }
   const kind=e=>e.indoor?"in":e.cov?"cov":"out";
-  let acc=0;
+  let acc=0,a0=0;
   for(let k=0;k<route.edges.length;k++){
     const e=route.edges[k];acc+=meters(e.len);
     const lead=kind(e)==="in"?`Đi xuyên qua ${e.indoor} khoảng <b>${fmtM(acc)}</b>`:
                kind(e)==="cov"?`Đi theo hành lang có mái che khoảng <b>${fmtM(acc)}</b>`:`Đi thẳng khoảng <b>${fmtM(acc)}</b>`;
     const at=N[ids[k+1]];
-    if(k===route.edges.length-1){ steps.push({ic:"end",t:`${lead} là tới <b>${at.name}</b>`}); break; }
+    if(k===route.edges.length-1){ steps.push({ic:"end",t:`${lead} là tới <b>${at.name}</b>`,a:a0,b:k+1,L:acc}); break; }
     const t=turnAt(N[ids[k]],at,N[ids[k+2]]);
     if(t){
       const word=t==="right"?"rẽ phải":t==="left"?"rẽ trái":"quay ngược lại";
-      steps.push({ic:t,t:`${lead}, rồi <b>${word}</b> ở ${at.lm}`});acc=0;
+      steps.push({ic:t,t:`${lead}, rồi <b>${word}</b> ở ${at.lm}`,a:a0,b:k+1,L:acc});acc=0;a0=k+1;
     }else if(kind(route.edges[k+1])!==kind(e)){
-      steps.push({ic:"straight",t:`${lead} tới ${at.type==="jct"?at.lm:"<b>"+at.name+"</b>"}`});acc=0;
+      steps.push({ic:"straight",t:`${lead} tới ${at.type==="jct"?at.lm:"<b>"+at.name+"</b>"}`,a:a0,b:k+1,L:acc});acc=0;a0=k+1;
     }
   }
-  if(dept){
-    if(dept.f===1) steps.push({ic:"floor",t:`<b>${dept.n}</b> ở ngay <b>Tầng 1</b>, vào cửa là tới`});
-    else if(dept.f) steps.push({ic:"floor",t:`Vào tòa, lên <b>Tầng ${dept.f}</b> bằng thang máy hoặc cầu thang bộ để tới <b>${dept.n}</b>`});
-    else steps.push({ic:"floor",t:`Vào tòa, hỏi quầy hướng dẫn để tới <b>${dept.n}</b>`});
+  const z=ids.length-1;
+  if(dept&&dept.fx){
+    steps.push({ic:"floor",t:`Vào <b>${N[ids[z]].name}</b>, rồi mở <b>bản đồ nhà F</b> để đi tiếp tới <b>${dept.n}</b>${dept.fx.to.startsWith("near:")?"":` (tầng ${dept.f})`}`,a:z,b:z,fx:1});
+  }else if(dept){
+    if(dept.f===1) steps.push({ic:"floor",t:`<b>${dept.n}</b> ở ngay <b>Tầng 1</b>, vào cửa là tới`,a:z,b:z});
+    else if(dept.f) steps.push({ic:"floor",t:`Vào tòa, lên <b>Tầng ${dept.f}</b> bằng thang máy hoặc cầu thang bộ để tới <b>${dept.n}</b>`,a:z,b:z});
+    else steps.push({ic:"floor",t:`Vào tòa, hỏi quầy hướng dẫn để tới <b>${dept.n}</b>`,a:z,b:z});
   }
   return {steps,total};
 }
@@ -723,55 +759,85 @@ function renderResults(list,raw){
     const t=document.createElement("span");t.className="t";t.textContent=it.t;const s=document.createElement("span");s.className="s";s.textContent=it.s;
     b.append(t,s);b.onclick=()=>choose(it);results.appendChild(b);});
 }
-q.addEventListener("input",()=>{const v=q.value.trim();if(!v){results.hidden=true;$("clearQ").hidden=true;return;}renderResults(search(v),v);});
+function searchMapAll(v){const A=search(v),nq=norm(v);const B=(typeof searchF==="function"?searchF(v):[]).slice(0,15).map(o=>({t:o.x.n,s:(/^near:/.test(o.x.to)?"Nhà F · chỗ gần nhất":"Tầng "+o.x.f+" · Nhà F"),fx:o.x,r:o.r}));
+  const a=A.map(it=>{const nt=norm(it.t);return {it,r:nt.startsWith(nq)?0:nt.includes(nq)?1:2};});
+  return [...a,...B.map(it=>({it,r:it.r,f:1}))].sort((x,y)=>x.r-y.r||(x.f?1:0)-(y.f?1:0)).slice(0,40).map(o=>o.it);}
+q.addEventListener("input",()=>{const v=q.value.trim();if(!v){results.hidden=true;$("clearQ").hidden=true;return;}renderResults(searchMapAll(v),v);});
 q.addEventListener("keydown",e=>{if(e.key==="Enter"&&shown[0]){choose(shown[0]);}if(e.key==="Escape"){results.hidden=true;q.blur();}});
-q.addEventListener("focus",()=>{if(q.value.trim())renderResults(search(q.value),q.value.trim());});
+q.addEventListener("focus",()=>{if(q.value.trim())renderResults(searchMapAll(q.value),q.value.trim());});
 $("clearQ").onclick=()=>{q.value="";results.hidden=true;$("clearQ").hidden=true;q.focus();};
-function choose(it){q.value=it.t;results.hidden=true;q.blur();$("clearQ").hidden=false;showRoute(it.p,it.d);}
+function choose(it){if(it.fx){results.hidden=true;q.blur();routeF(it.fx);return;}q.value=it.t;results.hidden=true;q.blur();$("clearQ").hidden=false;showRoute(it.p,it.d);}
 
 // bảng chỉ dẫn
 const sTitle=$("sTitle"),sSub=$("sSub"),sSum=$("sSum"),sEyebrow=$("sEyebrow"),sActions=$("sActions"),sBody=$("sBody");
 function btn(label,fn,cls){const b=document.createElement("button");b.textContent=label;b.onclick=fn;if(cls)b.className=cls;return b;}
 function openSheet(){sheet.hidden=false;sheet.dataset.collapsed="false";requestAnimationFrame(updateOffset);}
-function closeSheet(){sheet.hidden=true;panel.classList.remove("routing");current=null;hiBld=null;highlight();clearRouteGfx();q.value="";$("clearQ").hidden=true;
+function closeSheet(){sheet.hidden=true;sheet.classList.remove("rt");panel.classList.remove("routing","expanded");current=null;hiBld=null;highlight();clearRouteGfx();q.value="";$("clearQ").hidden=true;
   fitStart();requestAnimationFrame(updateOffset);}
 function collapseBtn(){const b=btn("Thu gọn",()=>{const c=sheet.dataset.collapsed!=="true";sheet.dataset.collapsed=c;b.textContent=c?"Xem các bước":"Thu gọn";requestAnimationFrame(updateOffset);});return b;}
 
 function showRoute(place,dept,quiet){
-  if(!quiet)remember(place,dept);
-  const wasCollapsed=sheet.dataset.collapsed;
+  if(!quiet&&!(dept&&dept.fx))remember(place,dept);
   const res=dijkstra(startId);
   let best=null;place.doors.forEach(d=>{if(isFinite(res.dist[d])&&(!best||res.dist[d]<res.dist[best]))best=d;});
-  current={place,dept};panel.classList.add("routing");
+  const keepCur=quiet&&current&&current.steps?current.cur:null;
+  current={place,dept};panel.classList.add("routing");panel.classList.remove("expanded");sheet.classList.add("rt");
   hiBld=place.bld||null;highlight();
-  sEyebrow.textContent="Chỉ đường";sTitle.textContent=dept?dept.n:place.name;
-  sSub.textContent=dept?((dept.f?`Tầng ${dept.f} · `:"")+place.name):(place.note||"");
+  const name=dept?dept.n:place.name;
+  sEyebrow.textContent="";sSum.textContent="";
+  sTitle.innerHTML=`<span class="tt">Chỉ đường tới <b>${escH(name)}</b></span><span class="dm" id="sDist"></span><button class="x" id="sX" aria-label="Đóng chỉ đường">×</button>`;
+  $("sX").onclick=closeSheet;
+  sSub.textContent=dept?(dept.fx?`Nhà F (nhà 10 tầng)${dept.fx.to.startsWith("near:")?"":" · Tầng "+dept.f}`:(dept.f?`Tầng ${dept.f} · `:"")+place.name):"";
+  sSub.hidden=!sSub.textContent;
   sActions.innerHTML="";sBody.innerHTML="";
   if(!best){
-    clearRouteGfx();sSum.textContent="";
+    clearRouteGfx();
     sBody.innerHTML='<div class="floors"><p>Chưa có lối đi nối từ vị trí của bạn tới điểm này trong dữ liệu. Vui lòng hỏi nhân viên hoặc quầy hướng dẫn gần nhất.</p></div>';
-    sActions.append(btn("Đóng",closeSheet));openSheet();return;
+    openSheet();return;
   }
   const route=pathTo(res,startId,best),{steps,total}=buildSteps(route,place,dept,facing,facingSrc);
-  const mins=Math.max(1,Math.round(total/WALK_MPS/60));
-  sSum.textContent=route.edges.length?`Khoảng ${mins} phút đi bộ · ${fmtM(total)}`:"Bạn đang ở ngay đây";
-  const ol=document.createElement("ol");ol.className="steps";
-  steps.forEach(s=>{const li=document.createElement("li");li.innerHTML=`<span class="ic ${s.ic==="go"?"go":s.ic==="end"?"end":s.ic==="floor"?"floor":""}">${ICON[s.ic]}</span><span class="tx">${s.t}</span>`;ol.appendChild(li);});
-  sBody.appendChild(ol);
-  const cb=collapseBtn();if(GPS_FIT&&navigator.geolocation&&!gps.on)sActions.append(btn("Đi theo GPS",gpsStart,"primary"));sActions.append(cb,btn("Xem toàn tuyến",()=>fitRoute(route)),btn("Đóng",closeSheet));
+  current.route=route;current.steps=steps;current.best=best;current.total=total;
+  $("sDist").textContent=route.edges.length?fmtM(total):"";
   drawRoute(route.ids);
   const dn=N[best];destPin.position.set(wx(dn.x),0,wz(dn.y));destPin.visible=true;destLbl.pos.set(wx(dn.x),10.6,wz(dn.y));destLbl.hidden=false;
-  destLbl.el.textContent=dept?`${place.name}${dept.f?" · Tầng "+dept.f:""}`:place.name;
-  if(quiet){sheet.hidden=false;if(wasCollapsed==="true"){sheet.dataset.collapsed="true";cb.textContent="Xem các bước";}return;}
-  openSheet();fitRoute(route);
+  destLbl.el.textContent=dept&&dept.fx?`${dn.name}`:dept?`${place.name}${dept.f?" · Tầng "+dept.f:""}`:place.name;
+  const first=steps.length>1?1:0;
+  current.cur=keepCur!=null?Math.min(keepCur,steps.length-1):first;
+  renderStep(!quiet);
+  openSheet();
 }
+// mở bản đồ nhà F ở đúng cửa vừa tới, đi tiếp tới phòng cần đến
+function fUrl(){const c=current;if(!c||!c.dept||!c.dept.fx)return "nhaf/";const x=c.dept.fx;
+  return "nhaf/?start="+(F_LINK[c.best]||"f1-cong")+"&"+(/^near:/.test(x.to)?"near="+x.to.slice(5):"to="+encodeURIComponent(x.to))+"&nav=1";}
+function goF(){location.href=fUrl();}
+function renderStep(move){
+  const c=current;if(!c||!c.steps)return;const S=c.steps,i=c.cur,st=S[i],last=i>=S.length-1;
+  const cls=st.ic==="go"?"go":st.ic==="end"?"end":st.ic==="floor"?"floor":"";
+  const cnt=S.length-1;
+  sBody.innerHTML=`<div class="stp"><span class="ic ${cls}">${ICON[st.ic]}</span><span class="tx">${st.t}${cnt>0&&i>0?`<small>Bước ${i}/${cnt}</small>`:""}</span></div>
+    ${cnt>1?`<div class="sdots">${S.slice(1).map((_,k)=>`<i class="${k+1<i?"done":k+1===i?"cur":""}"></i>`).join("")}</div>`:""}
+    <div class="snav"><button id="sPrev" aria-label="Bước trước" ${i<=(S.length>1?1:0)?"disabled":""} ${cnt<=1?"hidden":""}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg>Trước</button>
+    <button id="sNext" class="go${last&&c.dept&&c.dept.fx?" f":""}">${last?(c.dept&&c.dept.fx?"Vào bản đồ nhà F":"Hoàn tất"):"Bước tiếp"}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    ${GPS_FIT&&navigator.geolocation&&!gps.on?`<button id="sGps" class="gps" aria-label="Đi theo GPS">GPS</button>`:""}</div>`;
+  $("sPrev").onclick=()=>{if(c.cur>(S.length>1?1:0)){c.cur--;renderStep(true);}};
+  $("sNext").onclick=()=>{if(last){if(c.dept&&c.dept.fx)goF();else{closeSheet();toast("Bạn đã tới nơi. Cần hỗ trợ, hãy hỏi nhân viên gần nhất.",3500);}return;}c.cur++;renderStep(true);};
+  if($("sGps"))$("sGps").onclick=()=>{gpsStart();renderStep(false);};
+  requestAnimationFrame(()=>{updateOffset();if(move)followStep(st);});
+}
+function followStep(st){const c=current;if(!c||!c.route)return;const ids=c.route.ids;
+  const a=Math.min(st.a||0,ids.length-1),b=Math.min(st.b==null?a:st.b,ids.length-1);
+  const pts=ids.slice(a,b+1).map(id=>new THREE.Vector3(wx(N[id].x),0,wz(N[id].y)));
+  let dir=facingVec(facing);
+  if(b>a){const p=N[ids[a]],q2=N[ids[b]],L=Math.hypot(q2.x-p.x,q2.y-p.y);if(L>0.1)dir=new THREE.Vector2((q2.x-p.x)/L,(q2.y-p.y)/L);}
+  else if(st.face&&ids.length>1){const p=N[ids[0]],q2=N[ids[1]],L=Math.hypot(q2.x-p.x,q2.y-p.y)||1;dir=new THREE.Vector2((q2.x-p.x)/L,(q2.y-p.y)/L);pts.push(new THREE.Vector3(wx(q2.x),0,wz(q2.y)));}
+  fit(pts,dir,b>a?28:22);}
 function fitRoute(route){
   const pts=route.ids.map(id=>new THREE.Vector3(wx(N[id].x),0,wz(N[id].y)));
   // nhìn theo hướng người đang đứng, để phía trước mặt họ là phía trên màn hình
   requestAnimationFrame(()=>{updateOffset();fit(pts,facingVec(facing),30);});
 }
 function openPlace(place){
-  current=null;clearRouteGfx();panel.classList.add("routing");hiBld=place.bld||null;highlight();
+  current=null;clearRouteGfx();panel.classList.add("routing");panel.classList.remove("expanded");sheet.classList.remove("rt");sSub.hidden=false;hiBld=place.bld||null;highlight();
   sEyebrow.textContent=place.doors.some(d=>N[d].type==="gate")?"Cổng":"Tòa nhà";sTitle.textContent=place.name;sSub.textContent=place.note||"";sSum.textContent="";
   sActions.innerHTML="";sBody.innerHTML="";
   sActions.append(btn("Chỉ đường tới đây",()=>{q.value=place.name;showRoute(place,null);},"primary"),btn("Đóng",closeSheet));
@@ -786,14 +852,14 @@ function openPlace(place){
 }
 function tapBuilding(id){
   const pid=PLACE_BY_BLD[id];if(pid){openPlace(PLACE_BY_ID[pid]);return;}
-  const b=BLD[id];current=null;clearRouteGfx();hiBld=id;highlight();
+  const b=BLD[id];current=null;clearRouteGfx();sheet.classList.remove("rt");sSub.hidden=false;hiBld=id;highlight();
   sEyebrow.textContent="Công trình";sTitle.textContent=b.label||"Công trình phụ";sSub.textContent=b.info||"";sSum.textContent="";
   sActions.innerHTML="";sBody.innerHTML="";sActions.append(btn("Đóng",closeSheet));openSheet();
 }
 
 // chạm vào bản đồ
 const ray=new THREE.Raycaster(),mv=new THREE.Vector2();let down=null;
-renderer.domElement.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];results.hidden=true;q.blur();});
+renderer.domElement.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];results.hidden=true;q.blur();if(current&&current.steps)panel.classList.remove("expanded");});
 renderer.domElement.addEventListener("pointerup",e=>{
   if(pick.on&&down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])<=6){pickAt(e);return;}
   if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;
@@ -806,7 +872,7 @@ renderer.domElement.addEventListener("pointerup",e=>{
 function updateOffset(){
   const W=app.clientWidth,H=app.clientHeight;let dx=0,dy=0;
   if(W>720){ if(!sheet.hidden){const r=panel.getBoundingClientRect();dx=r.right/2;} }
-  else{ const top=panel.querySelector(".search").getBoundingClientRect().bottom;
+  else{ const mini=$("mini"),top=(mini&&getComputedStyle(mini).display!=="none"?mini:panel.querySelector(".search")).getBoundingClientRect().bottom;
         const bottom=sheet.hidden?0:H-sheet.getBoundingClientRect().top;dy=(top-bottom)/2; }
   camera.setViewOffset(W,H,-dx,-dy,W,H);camera.updateProjectionMatrix();
 }
@@ -933,6 +999,9 @@ function onFix(p){
     const s=gps.lastS,left=Math.max(0,R.total-s);
     if(gps.off>=4){const b=document.createElement("button");b.textContent="Tìm lại đường từ đây";b.onclick=gpsReroute;
       gBarSet("wait","Bạn đang đi lệch khỏi đường",`Cách đường chỉ dẫn khoảng ${Math.round(sn.d)} m.`,b);if(!gps.said.off){gps.said.off=1;say("Bạn đang đi lệch khỏi đường");}}
+    else if(left<10&&current&&current.dept&&current.dept.fx){const b=document.createElement("button");b.textContent="Vào bản đồ nhà F để đi tiếp";b.onclick=goF;
+      gBarSet("end",`Bạn đã tới <b>${escH(N[current.best].name)}</b>`,`Vào cửa rồi xem tiếp đường tới ${escH(current.dept.n)} trên bản đồ nhà F.`,b);
+      if(!gps.arrived){gps.arrived=true;say("Bạn đã tới cửa nhà F");try{navigator.vibrate&&navigator.vibrate([80,60,80]);}catch(e){}}}
     else if(left<10){gBarSet("end",`Bạn đã tới <b>${escH(R.dest)}</b>`,current&&current.dept&&current.dept.f>1?`Vào tòa rồi lên tầng ${current.dept.f}.`:"Hỏi quầy hướng dẫn nếu cần hỗ trợ thêm.");
       if(!gps.arrived){gps.arrived=true;say("Bạn đã tới "+R.dest);try{navigator.vibrate&&navigator.vibrate([80,60,80]);}catch(e){}}}
     else{gps.said.off=0;const nt=R.turns.find(t=>t.s>s+3);
@@ -1163,6 +1232,14 @@ function searchF(v){const nq=norm(v);if(!nq)return[];const toks=nq.split(" ");le
   return FROOMS.map(x=>{const nt=norm(x.n);let r=-1;
     if(toks.every(t=>x.h.includes(t)))r=nt.startsWith(nq)?0:nt.includes(nq)?1:2;else if(alt&&nt.includes(alt))r=2;
     return {x,r};}).filter(o=>o.r>=0).sort((a,b)=>a.r-b.r||a.x.f-b.x.f||a.x.n.localeCompare(b.x.n,"vi",{numeric:true}));}
+// cửa nhà F trên bản đồ chính → điểm xuất phát tương ứng trên bản đồ nhà F
+const F_LINK=Object.assign({cua_f_phai:"f1-cong",cua_f_duong:"f1-capcuu"},(D.config&&D.config.fLink)||{});
+function fPlace(){const p=PLACE_BY_ID.F||PLACES.find(p=>p.doors.some(d=>F_LINK[d]));if(!p)return null;
+  const doors=p.doors.filter(d=>F_LINK[d]&&N[d]);return doors.length?Object.assign({},p,{doors}):null;}
+function routeF(x){const p=fPlace();if(!p){openF(x);return;}
+  if(x&&!x.n){const y=FROOMS.find(r=>r.to===x.to);if(y)x=y;}
+  rememberF(x);if(screen!=="map")setScreen("map");q.value=x.n;$("clearQ").hidden=false;
+  showRoute(p,{n:x.n,f:x.f,fx:x});}
 function openF(x){location.href="nhaf/"+(x?(/^near:/.test(x.to)?"?near="+x.to.slice(5):"?to="+encodeURIComponent(x.to)):"");}
 let located=false; // chỉ hiện “Bạn đang ở” sau khi đã quét mã QR
 const SVG_HERO2=`<svg viewBox="0 0 210 140" aria-hidden="true"><g opacity=".22" fill="#fff"><circle cx="176" cy="26" r="16"/></g>
@@ -1230,9 +1307,9 @@ function homeSearch(query){
   const hd=document.createElement("div");hd.className="hd";hd.innerHTML=`<span>${all.length>=30?"30+":all.length} nơi phù hợp</span><span>Bấm để xem đường đi</span>`;R.appendChild(hd);
   all.forEach(o=>{const b=document.createElement("button");b.className="it";b.setAttribute("role","option");
     if(o.k==="m"){b.innerHTML=`<i>${ico(o.it.d?"steth":"pin")}</i><span class="t"><b>${escH(o.it.t)}</b><small>${escH(o.it.s)}</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
-      b.onclick=()=>{setScreen("map");choose(o.it);};}
-    else{b.innerHTML=`<i style="background:#fff1e6;color:#c2410c">${ico({wc:"wc",pharm:"pharm",er:"er",money:"money",desk:"desk",lab:"lab",scan:"scan",baby:"baby",steth:"steth"}[o.x.c]||"pin")}</i><span class="t"><b>${escH(o.x.n)}</b><small><span class="tagF">Nhà F</span>Tầng ${o.x.f} · mở bản đồ nhà F</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
-      b.onclick=()=>{rememberF(o.x);openF(o.x);};}
+      b.onclick=()=>{routeFromHome=true;setScreen("map");choose(o.it);};}
+    else{b.innerHTML=`<i style="background:#fff1e6;color:#c2410c">${ico({wc:"wc",pharm:"pharm",er:"er",money:"money",desk:"desk",lab:"lab",scan:"scan",baby:"baby",steth:"steth"}[o.x.c]||"pin")}</i><span class="t"><b>${escH(o.x.n)}</b><small><span class="tagF">Nhà F</span>${/^near:/.test(o.x.to)?"Chỗ gần nhất":"Tầng "+o.x.f} · chỉ đường tới nhà F</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
+      b.onclick=()=>{routeFromHome=true;routeF(o.x);};}
     R.appendChild(b);});
 }
 function rememberF(x){const h=LSx.get("recent",[]).filter(y=>y.fto!==x.to);h.unshift({fto:x.to,fn:x.n,ff:x.f,t:Date.now()});LSx.set("recent",h.slice(0,15));}
@@ -1275,7 +1352,7 @@ function openPage(kind){setScreen(kind);const title={notices:"Thông báo",info:
     if(!h.length){B.innerHTML=`<div class="pempty">Bạn chưa tìm nơi nào trên máy này.</div>`;return;}
     const c=document.createElement("div");c.className="pcard";
     h.forEach(x=>{if(x.fto){const r=document.createElement("div");r.className="prow";r.style.cursor="pointer";
-      r.innerHTML=`<i>${ico("history")}</i><span>${escH(x.fn)}<small>Nhà F · Tầng ${x.ff} · ${new Date(x.t).toLocaleDateString("vi-VN")}</small></span>${IC.chev}`;r.onclick=()=>openF({to:x.fto});c.appendChild(r);return;}
+      r.innerHTML=`<i>${ico("history")}</i><span>${escH(x.fn)}<small>Nhà F · Tầng ${x.ff} · ${new Date(x.t).toLocaleDateString("vi-VN")}</small></span>${IC.chev}`;r.onclick=()=>routeF({to:x.fto,n:x.fn,f:x.ff});c.appendChild(r);return;}
       const p=PLACE_BY_ID[x.p],d=x.d?p.depts.find(y=>y.n===x.d):null;const r=document.createElement("div");r.className="prow";r.style.cursor="pointer";
       r.innerHTML=`<i>${ico("history")}</i><span>${escH(d?d.n:p.name)}<small>${escH(d?((d.f?"Tầng "+d.f+" · ":"")+p.name):(p.note||""))} · ${new Date(x.t).toLocaleDateString("vi-VN")}</small></span>${IC.chev}`;
       r.onclick=()=>{setScreen("map");q.value=d?d.n:p.name;showRoute(p,d);};c.appendChild(r);});
@@ -1294,6 +1371,9 @@ tabbar.innerHTML=`<div class="in">
   <button data-s="info">${IC.info}<span>Thông tin</span></button></div>`;
 tabbar.querySelectorAll("button").forEach(b=>b.onclick=()=>{if(b.dataset.a==="scan")openScan();else if(b.dataset.s==="home")setScreen("home");else if(b.dataset.s==="map")openPage("maps");else openPage(b.dataset.s);});
 $("mapHome").onclick=()=>setScreen("home");
+let routeFromHome=false;
+$("miniBack").onclick=()=>{closeSheet();if(routeFromHome){routeFromHome=false;setScreen("home");}};
+$("miniSearch").onclick=()=>{panel.classList.add("expanded");q.value="";$("clearQ").hidden=true;results.hidden=true;setTimeout(()=>q.focus(),30);};
 
 // ---- quét mã QR ngay trong trang
 let scanStream=null,scanTimer=null,detector=null,detTried=false,scanBusy=false;
@@ -1413,7 +1493,7 @@ function loop(now){
 requestAnimationFrame(loop);
 
 // dùng cho kiểm thử
-window.__nav={N,E,PLACES,dijkstra,pathTo,buildSteps,search,gps,GPS_FIT};
+window.__nav={N,E,PLACES,dijkstra,pathTo,buildSteps,search,gps,GPS_FIT,get current(){return current;},fUrl};
 })();
 </script>
 

@@ -843,8 +843,10 @@ setStart(startId,true);setFloor(curStart().f);renderHome();
 {const st=new URLSearchParams(location.search).get("start");if(st&&STARTS.some(s=>s.id===st)){startId=st;setStart(st,true);setFloor(curStart().f);renderHome();}}
 // mở từ trang chủ: ?to=<tầng>-<số phòng> chỉ đường luôn, ?q=<chữ> tìm sẵn
 {const sp=new URLSearchParams(location.search);const to=(sp.get("to")||"").match(/^(\d+)-(\d+)$/);
- if(to&&FLOORS[+to[1]]&&FLOORS[+to[1]].rooms[+to[2]])setTimeout(()=>planTo(+to[1],FLOORS[+to[1]].rooms[+to[2]]),50);
- else if(/^(lift|stair|wc)$/.test(sp.get("near")||""))setTimeout(()=>goNearest(sp.get("near")),50);
+ // &nav=1: đi tiếp từ bản đồ bệnh viện, vào thẳng chế độ dẫn đường từng bước
+ const nav=()=>{if(sp.get("nav")==="1"&&RT)startNav();};
+ if(to&&FLOORS[+to[1]]&&FLOORS[+to[1]].rooms[+to[2]])setTimeout(()=>{planTo(+to[1],FLOORS[+to[1]].rooms[+to[2]]);nav();},50);
+ else if(/^(lift|stair|wc)$/.test(sp.get("near")||""))setTimeout(()=>{goNearest(sp.get("near"));nav();},50);
  else if(sp.get("q"))setTimeout(()=>doSearch(sp.get("q")),50);}
 {const s=curStart();const t=new THREE.Vector3(U(s.u),0,V(s.v));fly(t,new THREE.Vector3(t.x-10,26,t.z+22),1200);}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>buildLabels());
