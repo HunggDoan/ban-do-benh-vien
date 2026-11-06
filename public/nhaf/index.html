@@ -171,29 +171,31 @@ ol.steps .m{font-size:12px;color:var(--mute);white-space:nowrap}
 #ui.navmode #navCard,#ui.navmode #planCard,#ui.navmode #homeCard{display:none!important}
 #ui.navmode #fmini{display:flex}
 #ui.navmode #sheet .grab{display:none}
-#ui.navmode #sheetBody{padding:10px 12px 12px;overflow:visible}
+#ui.navmode #sheetBody{padding:8px 10px 10px;overflow:visible}
 #ui.navmode #sheet{max-height:none!important;flex:none!important}
 .fnav .hd{display:flex;align-items:center;gap:8px;min-width:0}
-.fnav .hd .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14.5px}
+.fnav .hd .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
 .fnav .hd .tt b{font-weight:800}
-.fnav .hd .dm{flex:none;font-size:12.5px;font-weight:700;color:var(--mute);font-variant-numeric:tabular-nums}
-.fnav .hd .x{flex:none;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:none;color:var(--mute);font-size:18px;line-height:1;display:grid;place-items:center;cursor:pointer}
-.fnav .stp{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;margin-top:8px;padding:8px 10px;border-radius:12px;background:var(--primary-soft)}
-.fnav .stp .ar{width:38px;height:38px;border-radius:10px;background:var(--primary);display:grid;place-items:center}
-.fnav .stp .ar svg{width:28px;height:28px;color:#fff}
-.fnav .stp.end .ar{background:var(--danger)}
-.fnav .stp .tx{font-size:14.5px;font-weight:700;line-height:1.3;min-width:0}
-.fnav .stp .tx small{display:block;font-size:12px;font-weight:500;color:var(--mute);margin-top:1px}
-.fnav .stp .d{font-size:16px;font-weight:800;color:var(--primary);white-space:nowrap;font-variant-numeric:tabular-nums}
-.fnav .stp .d small{font-size:11.5px;font-weight:700;margin-left:1px}
-.fnav .sd{display:flex;gap:3px;margin-top:8px}
-.fnav .sd i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.fnav .hd .dm{flex:none;font-size:12px;font-weight:700;color:var(--mute);font-variant-numeric:tabular-nums}
+.fnav .hd .x{flex:none;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--mute);font-size:17px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.fnav .stp{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;margin-top:6px;padding:6px 10px;border-radius:10px;background:var(--primary-soft)}
+.fnav .stp .ar{width:24px;height:24px;display:grid;place-items:center;color:var(--primary)}
+.fnav .stp .ar svg{width:24px;height:24px}
+.fnav .stp.end .ar{color:var(--danger)}
+.fnav .stp .tx{font-size:13.5px;font-weight:700;line-height:1.3;min-width:0}
+.fnav .stp .tx small{display:block;font-size:11.5px;font-weight:500;color:var(--mute);margin-top:1px}
+.fnav .stp .d{font-size:14px;font-weight:800;color:var(--primary);white-space:nowrap;font-variant-numeric:tabular-nums}
+.fnav .stp .d small{font-size:11px;font-weight:700;margin-left:1px}
+.fnav .sd{display:flex;gap:3px;margin-top:6px}
+.fnav .sd i{flex:1;height:3px;border-radius:2px;background:var(--line)}
 .fnav .sd i.done{background:color-mix(in srgb,var(--primary) 45%,var(--line))}
 .fnav .sd i.cur{background:var(--primary)}
-.fnav .bt{display:flex;gap:6px;margin-top:10px}
-.fnav .bt button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:none;color:var(--ink);border-radius:10px;padding:10px 12px;display:inline-flex;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.fnav .bt{display:flex;gap:6px;margin-top:8px}
+.fnav .bt button{font:inherit;font-size:13px;font-weight:700;white-space:nowrap;height:36px;border:1px solid var(--line);background:none;color:var(--ink);border-radius:9px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+.fnav .bt button svg{width:16px;height:16px;flex:none}
 .fnav .bt button.go{flex:1;background:var(--primary);border-color:var(--primary);color:#fff}
-.fnav .bt button.ic{width:42px;padding:0}
+.fnav .bt button.ic{width:36px;padding:0}
+.fnav .bt button.ic svg{width:18px;height:18px}
 .fnav .bt button[aria-pressed="true"]{background:var(--primary-soft);color:var(--primary);border-color:var(--primary)}
 .fnav .bt button:disabled{opacity:.4}
 .fnav .bt button[hidden]{display:none}
