@@ -164,6 +164,39 @@ ol.steps .m{font-size:12px;color:var(--mute);white-space:nowrap}
 .stepbtns .btnP{padding:12px}
 .note{font-size:11.5px;color:var(--mute);line-height:1.45}
 
+/* dẫn đường gọn */
+#fmini{display:none;gap:8px;pointer-events:auto}
+#fmini button{width:46px;height:46px;border-radius:14px;border:0;background:var(--panel);color:var(--ink);display:grid;place-items:center;box-shadow:var(--shadow);cursor:pointer}
+#fmini button.s{color:var(--primary)}
+#ui.navmode #navCard,#ui.navmode #planCard,#ui.navmode #homeCard{display:none!important}
+#ui.navmode #fmini{display:flex}
+#ui.navmode #sheet .grab{display:none}
+#ui.navmode #sheetBody{padding:10px 12px 12px;overflow:visible}
+#ui.navmode #sheet{max-height:none!important;flex:none!important}
+.fnav .hd{display:flex;align-items:center;gap:8px;min-width:0}
+.fnav .hd .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14.5px}
+.fnav .hd .tt b{font-weight:800}
+.fnav .hd .dm{flex:none;font-size:12.5px;font-weight:700;color:var(--mute);font-variant-numeric:tabular-nums}
+.fnav .hd .x{flex:none;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:none;color:var(--mute);font-size:18px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.fnav .stp{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;margin-top:8px;padding:8px 10px;border-radius:12px;background:var(--primary-soft)}
+.fnav .stp .ar{width:38px;height:38px;border-radius:10px;background:var(--primary);display:grid;place-items:center}
+.fnav .stp .ar svg{width:28px;height:28px;color:#fff}
+.fnav .stp.end .ar{background:var(--danger)}
+.fnav .stp .tx{font-size:14.5px;font-weight:700;line-height:1.3;min-width:0}
+.fnav .stp .tx small{display:block;font-size:12px;font-weight:500;color:var(--mute);margin-top:1px}
+.fnav .stp .d{font-size:16px;font-weight:800;color:var(--primary);white-space:nowrap;font-variant-numeric:tabular-nums}
+.fnav .stp .d small{font-size:11.5px;font-weight:700;margin-left:1px}
+.fnav .sd{display:flex;gap:3px;margin-top:8px}
+.fnav .sd i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.fnav .sd i.done{background:color-mix(in srgb,var(--primary) 45%,var(--line))}
+.fnav .sd i.cur{background:var(--primary)}
+.fnav .bt{display:flex;gap:6px;margin-top:10px}
+.fnav .bt button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:none;color:var(--ink);border-radius:10px;padding:10px 12px;display:inline-flex;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.fnav .bt button.go{flex:1;background:var(--primary);border-color:var(--primary);color:#fff}
+.fnav .bt button.ic{width:42px;padding:0}
+.fnav .bt button[aria-pressed="true"]{background:var(--primary-soft);color:var(--primary);border-color:var(--primary)}
+.fnav .bt button:disabled{opacity:.4}
+.fnav .bt button[hidden]{display:none}
 /* điều khiển bản đồ bên phải */
 #mapctl{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:auto}
 #floors{display:flex;flex-direction:column;gap:6px;padding:6px;background:var(--panel);border-radius:14px;box-shadow:var(--shadow)}
@@ -220,6 +253,7 @@ button:focus-visible,.pt:focus-visible{outline:2px solid var(--primary);outline-
           </div>
         </div>
       </div>
+      <div id="fmini"><button id="fmBack" aria-label="Thoát chỉ đường"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button><button id="fmFind" class="s" aria-label="Tìm nơi khác"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button></div>
       <div class="navc" id="navCard" hidden>
         <div class="main">
           <svg class="arrow" id="navArrow" viewBox="0 0 64 64"></svg>
@@ -763,6 +797,7 @@ function planTo(fi,room){const s=curStart();
   SB.appendChild(ol);
   const n=document.createElement("p");n.className="note";n.textContent="Khoảng cách tính theo bản vẽ thiết kế, sai lệch vài mét. Thời gian đã cộng khoảng 1 phút chờ thang máy khi phải đổi tầng.";SB.appendChild(n);
   setFloor(s.f);fitPts(R.legs[0].pts.concat([[s.u,s.v]]));
+  startNav();
 }
 $("mWalk").onclick=()=>{modeWheel=false;if(RT)planTo(RT.destFi,RT.room);};
 $("mWheel").onclick=()=>{modeWheel=true;if(RT)planTo(RT.destFi,RT.room);};
@@ -774,27 +809,29 @@ let speakOn=false;
 function say(t){if(!speakOn||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="vi-VN";speechSynthesis.speak(u);}catch(e){}}
 $("speak").onclick=()=>{speakOn=!speakOn;$("speak").setAttribute("aria-pressed",speakOn);if(speakOn&&RT&&RT.cur>=0)say(stepText(RT.steps[RT.cur]));else try{speechSynthesis.cancel();}catch(e){}};
 function startNav(){if(!RT)return;show("nav");RT.cur=RT.steps.length>1?1:0;renderNav();}
-function renderNav(){const st=RT.steps[RT.cur],S=RT.steps;drawRoute();
+function exitNav(){if(!RT)return;RT.cur=-1;try{speechSynthesis.cancel();}catch(e){}clearRouteObjs();RT=null;if($("q").value.trim())onQ();else renderHome();buildLabels();overview();}
+function renderNav(){const st=RT.steps[RT.cur],S=RT.steps,i=RT.cur,last=i>=S.length-1;drawRoute();
   if(cur!==st.fi||mode!=="floor")setFloor(st.fi);
-  $("navArrow").innerHTML=turnSvg(st.turn);$("navArrow").style.color="#fff";
-  $("navDist").innerHTML=st.kind==="move"?`${rm(st.L)}<small>m</small>`:st.kind==="lift"?`Tầng ${st.floorTo+1}`:st.kind==="end"?"Đã đến":"";
-  $("navWhat").innerHTML=`${esc(st.title)}${st.sub?`<small>${esc(st.sub)}</small>`:""}`;
-  $("navDots").innerHTML=S.slice(1).map((_,i)=>`<i class="${i+1<RT.cur?"done":i+1===RT.cur?"cur":""}"></i>`).join("");
-  const nx=S[RT.cur+1];$("navNext").textContent=nx?`Tiếp theo: ${nx.title}${nx.kind==="move"?` ${rm(nx.L)} m`:""}`:"Bạn đã đến nơi";
-  // ngăn dưới
-  const remain=S.slice(RT.cur).reduce((a,x)=>a+(x.L||0),0),total=S.reduce((a,x)=>a+(x.L||0),0);
-  const mins=Math.max(1,Math.round((remain/(modeWheel?.7:1)+(S.slice(RT.cur).some(x=>x.kind==="lift")?60:0))/60));
-  SB.innerHTML=`<div class="navbot"><div class="dest"><span class="pinI"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg></span>
-    <span><b>${esc(nice(RT.room.n))}</b><small>Tầng ${RT.destFi+1} · còn ${Math.round(remain)} m · ${mins} phút</small></span><button class="exit" id="navExit">Thoát</button></div>
-    <div class="bar"><i style="width:${total?Math.round((1-remain/total)*100):100}%"></i></div>
-    <div class="stepbtns"><button class="btnS" id="navPrev" ${RT.cur<=1?"disabled":""}>Bước trước</button><button class="btnP" id="navGo">${RT.cur>=S.length-1?"Hoàn tất":st.kind==="lift"?`Đã tới tầng ${st.floorTo+1}`:"Tôi đã đi tới · bước tiếp"}</button></div>
-    <p class="note">Bấm "bước tiếp" mỗi khi làm xong một chỉ dẫn. Ở sảnh thang máy mỗi tầng có mã QR, quét lại nếu bạn bị lạc.</p></div>`;
-  $("navExit").onclick=()=>{RT.cur=-1;try{speechSynthesis.cancel();}catch(e){}planTo(RT.destFi,RT.room);};
+  const remain=S.slice(i).reduce((a,x)=>a+(x.L||0),0);
+  const d=st.kind==="move"?`${rm(st.L)}<small>m</small>`:st.kind==="lift"?`Tầng ${st.floorTo+1}`:"";
+  const n=S.length-1;
+  SB.innerHTML=`<div class="fnav"><div class="hd"><span class="tt">Chỉ đường tới <b>${esc(nice(RT.room.n))}</b></span><span class="dm">${remain>=1?Math.round(remain)+" m":"Tầng "+(RT.destFi+1)}</span><button class="x" id="navExit" aria-label="Thoát chỉ đường">×</button></div>
+    <div class="stp${st.kind==="end"?" end":""}"><span class="ar"><svg viewBox="0 0 64 64">${turnSvg(st.turn)}</svg></span><span class="tx">${esc(st.title)}${st.sub?`<small>${esc(st.sub)}</small>`:""}</span><span class="d">${d}</span></div>
+    ${n>1?`<div class="sd">${S.slice(1).map((_,k)=>`<i class="${k+1<i?"done":k+1===i?"cur":""}"></i>`).join("")}</div>`:""}
+    <div class="bt"><button id="navPrev" ${i<=1?"disabled":""} ${n<=1?"hidden":""}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg>Trước</button>
+    <button class="go" id="navGo">${last?"Hoàn tất":st.kind==="lift"?`Đã tới tầng ${st.floorTo+1}`:"Bước tiếp"}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    <button class="ic" id="navWheel" aria-pressed="${modeWheel}" aria-label="Đường cho xe lăn" title="Đường cho xe lăn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="10" cy="4" r="2"/><path d="M9 8h2v5h5l2.6 5.2-1.8.9L14.8 15H9a1 1 0 0 1-1-1V8Zm-1.4 3.2.4 2A4 4 0 1 0 13.9 18h2.1A6 6 0 1 1 7.6 11.2Z"/></svg></button>
+    <button class="ic" id="navSpeak" aria-pressed="${speakOn}" aria-label="Đọc to chỉ dẫn" title="Đọc to chỉ dẫn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3Zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4Z"/></svg></button></div></div>`;
+  $("navExit").onclick=exitNav;
   $("navPrev").onclick=()=>{if(RT.cur>1){RT.cur--;renderNav();}};
-  $("navGo").onclick=()=>{if(RT.cur>=S.length-1){RT.cur=-1;$("q").value="";renderHome();clearRouteObjs();RT=null;buildLabels();overview();return;}
+  $("navGo").onclick=()=>{if(last){$("q").value="";exitNav();return;}
     if(st.kind==="lift"){setFloor(st.floorTo);}RT.cur++;renderNav();};
-  followStep(st.kind==="lift"?st:st);say(stepText(st));buildLabels();
+  $("navWheel").onclick=()=>{modeWheel=!modeWheel;planTo(RT.destFi,RT.room);};
+  $("navSpeak").onclick=()=>{speakOn=!speakOn;$("speak").setAttribute("aria-pressed",speakOn);$("navSpeak").setAttribute("aria-pressed",speakOn);if(speakOn)say(stepText(st));else try{speechSynthesis.cancel();}catch(e){}};
+  followStep(st);say(stepText(st));buildLabels();
 }
+$("fmBack").onclick=exitNav;
+$("fmFind").onclick=()=>{exitNav();$("q").value="";renderHome();setTimeout(()=>$("q").focus(),30);};
 
 // ---------- bảng tầng, góc nhìn
 const FB=$("floors");
