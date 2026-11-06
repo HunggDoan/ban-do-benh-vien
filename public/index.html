@@ -82,6 +82,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 #mini button.s{color:var(--pri,#1b5cff)}
 #panel.routing:not(.expanded) .card.search{display:none}
 #panel.routing:not(.expanded) #mini{display:flex}
+#panel.routing:not(.expanded) #results{display:none!important}
 /* bảng chỉ đường gọn — cùng kiểu với bản đồ nhà F */
 #sheet.rt header{display:none}
 #sheet.rt #sBody{padding:8px 10px 10px;overflow:visible}
@@ -110,6 +111,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .fnav .bt button.ic{width:36px;padding:0}
 .fnav .bt button.ic svg{width:18px;height:18px}
 .fnav .bt button:disabled{opacity:.4}
+.fnav .bt button[aria-pressed="true"]{background:var(--fs);color:var(--fp);border-color:var(--fp)}
 .fnav .bt button[hidden]{display:none}
 ol.steps{list-style:none;margin:0;padding:6px 8px 12px}
 ol.steps li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:10px 8px;border-bottom:1px solid var(--line)}
@@ -758,6 +760,7 @@ QUICK.forEach(([lab,query,em])=>{const b=document.createElement("button");b.text
   b.onclick=()=>{q.value=lab;const r=search(query);if(r.length===1)choose(r[0]);else renderResults(r,lab);};chips.appendChild(b);});
 let shown=[];
 function renderResults(list,raw){
+  if(panel.classList.contains("routing")&&!panel.classList.contains("expanded")){results.hidden=true;return;}
   shown=list;results.innerHTML="";results.hidden=false;$("clearQ").hidden=!q.value;
   if(!list.length){const d=document.createElement("div");d.className="empty";d.textContent=`Không tìm thấy “${raw}”. Thử gõ tên khoa ngắn hơn, ví dụ “sản”, “nhi”, “xét nghiệm”, hoặc hỏi quầy hướng dẫn gần nhất.`;results.appendChild(d);return;}
   list.forEach((it,i)=>{const b=document.createElement("button");b.setAttribute("role","option");
@@ -824,12 +827,13 @@ function renderStep(move){
     ${n>1?`<div class="sd">${S.slice(1).map((_,k)=>`<i class="${k+1<i?"done":k+1===i?"cur":""}"></i>`).join("")}</div>`:""}
     <div class="bt"><button id="sPrev" ${i<=(n>0?1:0)?"disabled":""} ${n<=1?"hidden":""}>${chev("m15 6-6 6 6 6")}Trước</button>
     <button id="sNext" class="go${last&&fx?" f":""}">${last?(fx?"Vào bản đồ nhà F":"Hoàn tất"):"Bước tiếp"}${chev("m9 6 6 6-6 6")}</button>
-    ${GPS_FIT&&navigator.geolocation&&!gps.on?`<button id="sGps" class="ic" aria-label="Đi theo GPS" title="Đi theo GPS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>`:""}</div></div>`;
+    <button id="sSpeak" class="ic" aria-pressed="${gps.voice}" aria-label="Đọc to chỉ dẫn" title="Đọc to chỉ dẫn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3Zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4Z"/></svg></button></div></div>`;
   $("sX").onclick=closeSheet;
   $("sPrev").onclick=()=>{if(c.cur>1){c.cur--;renderStep(true);}};
   $("sNext").onclick=()=>{if(last){if(fx)goF();else{closeSheet();toast("Bạn đã tới nơi. Cần hỗ trợ, hãy hỏi nhân viên gần nhất.",3500);}return;}c.cur++;renderStep(true);};
-  if($("sGps"))$("sGps").onclick=()=>{gpsStart();renderStep(false);};
+  $("sSpeak").onclick=()=>{setVoice(!gps.voice);if(gps.voice)say(st.t);};
   requestAnimationFrame(()=>{updateOffset();if(move)followStep(st);});
+  if(move&&!gps.on)say(st.t);
 }
 function followStep(st){const c=current;if(!c||!c.route)return;const ids=c.route.ids;
   const a=Math.min(st.a||0,ids.length-1),b=Math.min(st.b==null?a:st.b,ids.length-1);
@@ -1038,7 +1042,8 @@ function gpsStop(){if(!gps.on)return;gps.on=false;gpsStopWatch();gBar.hidden=tru
   youLbl.hidden=!startPin.visible;try{speechSynthesis.cancel();}catch(e){}if($("vGps"))$("vGps").setAttribute("aria-pressed","false");}
 let routeIdsNow=[];
 $("gStop").onclick=gpsStop;
-$("gVoice").onclick=()=>{gps.voice=!gps.voice;$("gVoice").textContent=gps.voice?"🔊":"🔈";$("gVoice").setAttribute("aria-pressed",gps.voice);if(gps.voice)say("Đã bật đọc chỉ dẫn");};
+function setVoice(v){gps.voice=v;$("gVoice").textContent=v?"🔊":"🔈";$("gVoice").setAttribute("aria-pressed",v);const s=$("sSpeak");if(s)s.setAttribute("aria-pressed",v);if(!v)try{speechSynthesis.cancel();}catch(e){}}
+$("gVoice").onclick=()=>{setVoice(!gps.voice);if(gps.voice)say("Đã bật đọc chỉ dẫn");};
 $("gFollow").onclick=()=>{gps.follow=true;$("gFollow").hidden=true;};
 renderer.domElement.addEventListener("pointerdown",()=>{if(gps.on&&gps.me){gps.follow=false;$("gFollow").hidden=false;}});
 // gọi mỗi khung hình: chấm GPS trượt mượt, camera đi theo
@@ -1314,9 +1319,9 @@ function homeSearch(query){
   const hd=document.createElement("div");hd.className="hd";hd.innerHTML=`<span>${all.length>=30?"30+":all.length} nơi phù hợp</span><span>Bấm để xem đường đi</span>`;R.appendChild(hd);
   all.forEach(o=>{const b=document.createElement("button");b.className="it";b.setAttribute("role","option");
     if(o.k==="m"){b.innerHTML=`<i>${ico(o.it.d?"steth":"pin")}</i><span class="t"><b>${escH(o.it.t)}</b><small>${escH(o.it.s)}</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
-      b.onclick=()=>{routeFromHome=true;setScreen("map");choose(o.it);};}
+      b.onclick=()=>{try{document.activeElement&&document.activeElement.blur();}catch(e){}routeFromHome=true;setScreen("map");choose(o.it);};}
     else{b.innerHTML=`<i style="background:#fff1e6;color:#c2410c">${ico({wc:"wc",pharm:"pharm",er:"er",money:"money",desk:"desk",lab:"lab",scan:"scan",baby:"baby",steth:"steth"}[o.x.c]||"pin")}</i><span class="t"><b>${escH(o.x.n)}</b><small><span class="tagF">Nhà F</span>${/^near:/.test(o.x.to)?"Chỗ gần nhất":"Tầng "+o.x.f} · chỉ đường tới nhà F</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
-      b.onclick=()=>{routeFromHome=true;routeF(o.x);};}
+      b.onclick=()=>{try{document.activeElement&&document.activeElement.blur();}catch(e){}routeFromHome=true;routeF(o.x);};}
     R.appendChild(b);});
 }
 function rememberF(x){const h=LSx.get("recent",[]).filter(y=>y.fto!==x.to);h.unshift({fto:x.to,fn:x.n,ff:x.f,t:Date.now()});LSx.set("recent",h.slice(0,15));}
