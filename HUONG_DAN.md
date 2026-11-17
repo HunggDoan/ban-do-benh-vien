@@ -213,9 +213,9 @@ GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà
 
 ### 5.8. Mô hình 3D nhà F dựng từ bản vẽ thiết kế
 
-- Ba tầng 1–3 của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh.
-- Thư mục `public/nhaf/` phải có đủ: `index.html`, `phong.json` và ba ảnh `san1.png`, `san2.png`, `san3.png` (nét mặt bằng phủ lên sàn của từng tầng). Thiếu ảnh thì sàn vẫn hiện nhưng mất nét chi tiết.
-- Khi có bản vẽ PDF của tầng khác, gửi file PDF để dựng tiếp theo cùng cách.
+- Tầng 1 đến tầng 5 của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh.
+- Thư mục `public/nhaf/` chỉ cần hai file: `index.html` và `phong.json`. Ba ảnh `san1.png`, `san2.png`, `san3.png` của bản trước không còn dùng, có thể xóa.
+- Các tầng còn lại (6–10) dựng tiếp theo cùng cách từ file PDF.
 
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
