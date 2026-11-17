@@ -211,6 +211,12 @@ GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà
 - Cửa nào trên bản đồ bệnh viện ứng với cửa nào của nhà F được ghi sẵn trong mã: `cua_f_phai` (phía A3) → cửa chính sảnh chờ `f1-cong`, `cua_f_duong` (mặt đường Tôn Thất Tùng) → cửa cấp cứu `f1-capcuu`. Nếu sau này đổi mã điểm, thêm vào `map_data.json` mục `config.fLink`, ví dụ `"fLink": {"cua_f_moi": "f1-cong"}`.
 - Khi đang chỉ đường, ô tìm kiếm thu lại thành hai nút: **‹** (quay lại) và **kính lúp** (tìm nơi khác). Bảng dưới chỉ hiện một bước mỗi lần, bấm **Bước tiếp** / **Trước** để chuyển bước, bản đồ tự xoay tới đoạn đường của bước đó.
 
+### 5.8. Mô hình 3D nhà F dựng từ bản vẽ thiết kế
+
+- Ba tầng 1–3 của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh.
+- Thư mục `public/nhaf/` phải có đủ: `index.html`, `phong.json` và ba ảnh `san1.png`, `san2.png`, `san3.png` (nét mặt bằng phủ lên sàn của từng tầng). Thiếu ảnh thì sàn vẫn hiện nhưng mất nét chi tiết.
+- Khi có bản vẽ PDF của tầng khác, gửi file PDF để dựng tiếp theo cùng cách.
+
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
 Gói miễn phí của Netlify tính theo credit, mỗi lần lưu là trừ một ít nên nhanh hết. Cloudflare Pages miễn phí khoảng 500 lần đăng mỗi tháng, không giới hạn lượt xem.
