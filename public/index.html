@@ -319,9 +319,18 @@ body.gps-on #panel{top:calc(max(10px,env(safe-area-inset-top,0px)) + 96px)}
 #scan .bot{position:relative;z-index:2;display:flex;justify-content:space-around;align-items:center;padding:18px 16px calc(22px + env(safe-area-inset-bottom,0px))}
 #scan .bot button{border:0;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px}
 #scan .bot button span.c{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center}
+/* màn chờ: che khung bản đồ trong lúc tải thư viện 3D và dữ liệu, tránh nháy giao diện cũ */
+#boot{position:fixed;inset:0;z-index:100;background:var(--h-bg,#f2f5fa);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .2s}
+#boot.out{opacity:0;pointer-events:none}
+#boot i{width:34px;height:34px;border-radius:50%;border:3px solid color-mix(in srgb,var(--pri,#1b5cff) 22%,transparent);border-top-color:var(--pri,#1b5cff);animation:bootspin .8s linear infinite}
+#boot span{font:500 13.5px/1.4 "Be Vietnam Pro",system-ui,sans-serif;color:var(--h-mute,#5b6b82)}
+@keyframes bootspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#boot i{animation-duration:2.4s}}
 </style>
 </head>
 <body>
+<div id="boot" role="status"><i aria-hidden="true"></i><span>Đang mở bản đồ…</span></div>
+<script>setTimeout(function(){var b=document.getElementById("boot");if(b)b.remove();},10000);</script>
 
 <div id="app">
   <div id="labels"></div>
@@ -394,7 +403,7 @@ try{
   if(/[?&]preview=1/.test(location.search)){try{const t=localStorage.getItem("mapEditor.preview");if(t){D=JSON.parse(t);PREVIEW=true;}}catch(e){}}
   if(!D){const r=await fetch("map_data.json",{cache:"no-cache"});if(!r.ok)throw new Error("HTTP "+r.status);D=await r.json();}
 }
-catch(e){document.getElementById("app").innerHTML='<div style="padding:24px;font:16px/1.5 system-ui">Không tải được dữ liệu bản đồ (map_data.json). Vui lòng tải lại trang.<br><small>'+String(e)+'</small></div>';return;}
+catch(e){{const b=document.getElementById("boot");if(b)b.remove();}document.getElementById("app").innerHTML='<div style="padding:24px;font:16px/1.5 system-ui">Không tải được dữ liệu bản đồ (map_data.json). Vui lòng tải lại trang.<br><small>'+String(e)+'</small></div>';return;}
 // ================= CẤU HÌNH =================
 const DOMAIN = String(D.config.domain||location.origin).replace(/\/+$/,""); // tên miền in trên mã QR, sửa ở trang quản trị → Khác
 const LOG_URL = D.config.logUrl;
@@ -1257,13 +1266,14 @@ const noticeKey=n=>(n.date||"")+"|"+(n.title||"");
 function unseen(){const s=new Set(LSx.get("seenNotices",[]));return (UI.notices||[]).filter(n=>!s.has(noticeKey(n))).length;}
 function startName(){const n=N[startId];return n?n.name:"Chưa xác định";}
 let screen="home";
+function hideBoot(){const b=document.getElementById("boot");if(!b)return;requestAnimationFrame(()=>requestAnimationFrame(()=>{b.classList.add("out");setTimeout(()=>b.remove(),250);}));}
 function setScreen(s){screen=s;
   home.hidden=s!=="home";page.hidden=!["notices","info","history","all","maps"].includes(s);
   document.body.classList.toggle("with-tabs",true);
   tabbar.querySelectorAll("button[data-s]").forEach(b=>{const on=b.dataset.s===s||(b.dataset.s==="map"&&(s==="map"||s==="maps"));b.toggleAttribute("aria-current",false);if(on)b.setAttribute("aria-current","page");});
   if(s==="home")renderHome();
   if(s==="map"){requestAnimationFrame(()=>{resize();});}
-  renderBadges();
+  renderBadges();hideBoot();
 }
 function renderBadges(){const n=unseen();document.querySelectorAll(".nbadge").forEach(b=>{b.hidden=!n;b.textContent=n>9?"9+":n;});}
 // ---- phòng của nhà F (bản đồ chi tiết riêng ở nhaf/)
