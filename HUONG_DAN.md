@@ -3,16 +3,16 @@
 ## 1. Cách hệ thống chạy
 
 ```
-Người vận hành (CNTT)                 GitHub (kho chứa code)              Netlify (trang web)
+Người vận hành (CNTT)                 GitHub (kho chứa code)              Cloudflare Pages (trang web)
   mở /quantri/ → sửa → bấm Lưu  ──►   lưu map_data.json + lịch sử   ──►   tự đăng lại sau 1–2 phút
                                                                            │
                                        Người bệnh quét QR  ◄───────────────┘
 ```
 
-- **Trang người bệnh** `…netlify.app/`: trang nhẹ, mở ngay khi quét QR.
-- **Trang quản trị** `…netlify.app/quantri/`: sửa khoa phòng, tòa nhà, cửa, đường đi trên bản đồ, kiểm tra lỗi, thử chỉ đường, rồi lưu.
-- **App Flutter** `…netlify.app/app/`: bản đầy đủ. Khi mở, app tự tải dữ liệu mới nhất, nên không cần build lại khi chỉ đổi dữ liệu.
-- **Mã QR cho IT**: `…netlify.app/#qr`.
+- **Trang người bệnh** `…pages.dev/`: trang nhẹ, mở ngay khi quét QR.
+- **Trang quản trị** `…pages.dev/quantri/`: sửa khoa phòng, tòa nhà, cửa, đường đi trên bản đồ, kiểm tra lỗi, thử chỉ đường, rồi lưu.
+- **App Flutter** `…pages.dev/app/`: bản đầy đủ. Khi mở, app tự tải dữ liệu mới nhất, nên không cần build lại khi chỉ đổi dữ liệu.
+- **Mã QR cho IT**: `…pages.dev/#qr`.
 
 Mọi dữ liệu nằm trong **một file duy nhất**: `public/map_data.json`.
 
@@ -102,7 +102,7 @@ Mỗi người ở phòng CNTT dùng tài khoản GitHub riêng, để lịch s�
    - **Expiration**: nên đặt 1 năm và ghi lịch gia hạn.
    - Bấm **Generate token** và chép mã `github_pat_…` ngay. GitHub chỉ hiện mã này một lần.
    - Nếu tổ chức bật duyệt token, người quản lý phải duyệt trong **Organization settings → Personal access tokens** thì token mới dùng được.
-3. Mở `…netlify.app/quantri/` → **Cài đặt GitHub**, nhập: tài khoản là **tên tổ chức**, tên kho, nhánh `main`, đường dẫn `public/map_data.json`, token, tên người sửa → **Kiểm tra kết nối** → **Lưu cài đặt**.
+3. Mở `…pages.dev/quantri/` → **Cài đặt GitHub**, nhập: tài khoản là **tên tổ chức**, tên kho, nhánh `main`, đường dẫn `public/map_data.json`, token, tên người sửa → **Kiểm tra kết nối** → **Lưu cài đặt**.
 
 Token chỉ lưu trên trình duyệt của máy đó. Ai mở trang quản trị mà không có token thì chỉ xem được, **không lưu được**. Khi nghỉ việc: xóa người đó khỏi kho, token của họ lập tức hết tác dụng.
 
@@ -160,9 +160,9 @@ Khi đặt hoặc kéo điểm, trang **tự gióng thẳng hàng** với các �
 
 **Đổi mã một cửa.** Mã là thứ in trên QR. Khi đổi, giữ tích "tự chuyển mã cũ sang mã mới" để QR đã in vẫn đúng.
 
-**In mã QR cho cửa mới.** Mở `…netlify.app/#qr`, chọn mũi tên hướng người đứng quét đang nhìn, bấm **Xem thử trên bản đồ**, rồi in.
+**In mã QR cho cửa mới.** Mở `…pages.dev/#qr`, chọn mũi tên hướng người đứng quét đang nhìn, bấm **Xem thử trên bản đồ**, rồi in.
 
-**Tạo mã QR ở điểm bất kỳ.** Ở đầu trang `…netlify.app/#qr` có khung **Tạo mã QR ở điểm bất kỳ**: chọn điểm (cổng, cửa, cả ngã rẽ và lối đi), chọn mũi tên hướng nhìn, có thể gõ tên in dưới mã, bấm **Xem thử trên bản đồ** rồi **Tải ảnh PNG để in**. Dùng khi muốn dời chỗ dán QR. Chưa có điểm ở đúng chỗ thì thêm ngã rẽ ở trang quản trị, lưu lại rồi quay lại trang này.
+**Tạo mã QR ở điểm bất kỳ.** Ở đầu trang `…pages.dev/#qr` có khung **Tạo mã QR ở điểm bất kỳ**: chọn điểm (cổng, cửa, cả ngã rẽ và lối đi), chọn mũi tên hướng nhìn, có thể gõ tên in dưới mã, bấm **Xem thử trên bản đồ** rồi **Tải ảnh PNG để in**. Dùng khi muốn dời chỗ dán QR. Chưa có điểm ở đúng chỗ thì thêm ngã rẽ ở trang quản trị, lưu lại rồi quay lại trang này.
 
 **Tạo mã QR ngay trong trang quản trị.** Bấm vào một cổng, cửa hoặc ngã rẽ trên bản đồ. Ở thẻ Đối tượng, kéo xuống mục **Mã QR dán ở điểm này** để xem mã, **Tải ảnh PNG để in** (có in kèm tên điểm), **In mã này** hoặc **Chép link**. Hướng nhìn in trong mã lấy theo ô *Hướng người đứng quét đang nhìn* ngay phía trên.
 
@@ -261,7 +261,7 @@ File `public/_headers` là cài đặt bộ nhớ đệm cho Cloudflare (giống
 
 1. Sửa code trong `lib/`, chạy thử bằng `flutter run -d chrome`. Bản chạy thử đọc dữ liệu từ `public/map_data.json` trên máy.
 2. Chạy `./build_flutter.sh` (Windows: `.\build_flutter.bat`).
-3. Commit và push lên GitHub. Netlify tự đăng.
+3. Commit và push lên GitHub. Cloudflare Pages tự đăng.
 
 Trước khi sửa code, nên chạy `git pull` (hoặc nút đồng bộ trong VS Code) để lấy `map_data.json` mới nhất mà trang quản trị đã lưu. Nếu không, lần push sau có thể ghi đè dữ liệu cũ lên.
 
@@ -272,7 +272,7 @@ Trước khi sửa code, nên chạy `git pull` (hoặc nút đồng bộ trong 
 | Quản trị báo "Token sai hoặc đã hết hạn" | Tạo token mới (mục 4.4) và nhập lại trong Cài đặt GitHub |
 | Báo "Token không có quyền với kho này" | Token phải chọn đúng kho và có quyền Contents: Read and write; tổ chức có thể cần duyệt token |
 | Báo "Không kết nối được tới GitHub" | Mạng bệnh viện có thể chặn `api.github.com`. Nhờ quản trị mạng mở, hoặc dùng mạng khác |
-| Đã lưu nhưng trang người bệnh chưa đổi | Chờ 1–2 phút. Xem tab **Deploys** trên Netlify có lần đăng mới chưa. Tải lại trang |
+| Đã lưu nhưng trang người bệnh chưa đổi | Chờ 1–2 phút. Xem mục **Deployments** của dự án trên Cloudflare Pages có lần đăng mới chưa. Tải lại trang |
 | Netlify đăng lỗi | Kiểm tra Netlify đang đọc `netlify.toml` (thư mục đăng `public`) và ô Build command để trống |
 | `/app/` không mở được | Chưa chạy `build_flutter`, hoặc chưa push thư mục `public/app` |
 | `flutter run` báo không đọc được dữ liệu | Kiểm tra `pubspec.yaml` có dòng `- public/map_data.json` |

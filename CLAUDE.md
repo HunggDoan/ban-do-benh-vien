@@ -10,10 +10,10 @@ Ba giao diện cùng đọc **một file dữ liệu duy nhất**: `public/map_d
 
 - `public/index.html` — trang người bệnh (HTML/JS tĩnh, mở khi quét QR, có bản đồ 3D, quét QR bằng camera, tìm kiếm, chỉ đường).
 - `public/quantri/index.html` — trang quản trị (HTML/JS tĩnh): vẽ bản đồ, sửa khoa phòng/giao diện, kiểm tra lỗi, thử chỉ đường. Nút **Lưu** ghi `map_data.json` (và ảnh vào `public/img/`) thẳng lên GitHub qua API bằng token lưu ở trình duyệt; chặn lưu khi dữ liệu còn lỗi.
-- `public/app/` — app Flutter web **đã build** (được commit; Netlify không build Flutter). Không sửa tay.
+- `public/app/` — app Flutter web **đã build** (được commit; Cloudflare Pages không build Flutter). Không sửa tay.
 - `lib/` — nguồn Flutter: `map_models.dart`/`map_data.dart` (mô hình + tải dữ liệu), `path_finder.dart` (tìm đường), `directions.dart` (sinh câu chỉ dẫn rẽ trái/phải), `search.dart`, `qr.dart`, `map3d_view.dart`, `main.dart`. Logic tìm đường/chỉ dẫn tồn tại ở cả Dart và JS trong các trang HTML — sửa một nơi thì kiểm tra nơi kia.
 
-Luồng triển khai: quản trị lưu → commit lên GitHub nhánh `main` → Netlify tự đăng thư mục `public` (xem [netlify.toml](netlify.toml), không có build command). Vì quản trị commit trực tiếp vào `main`, nên `git pull` trước khi sửa/push để không ghi đè `map_data.json` bằng bản cũ.
+Luồng triển khai: quản trị lưu → commit lên GitHub nhánh `main` → Cloudflare Pages tự đăng thư mục `public` (không có build command; tên miền `https://ban-do-benh-vien.pages.dev`). `netlify.toml` là cấu hình cũ từ khi còn dùng Netlify. Vì quản trị commit trực tiếp vào `main`, nên `git pull` trước khi sửa/push để không ghi đè `map_data.json` bằng bản cũ.
 
 ## Lệnh thường dùng
 

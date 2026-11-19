@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- Trang quản trị bản đồ cho phòng CNTT. Sửa dữ liệu rồi lưu thẳng lên GitHub; Netlify tự đăng lại. -->
+<!-- Trang quản trị bản đồ cho phòng CNTT. Sửa dữ liệu rồi lưu thẳng lên GitHub; Cloudflare Pages tự đăng lại. -->
 <title>Quản trị bản đồ</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1580,7 +1580,7 @@ async function doSave(force){
     go.textContent="Đang lưu…";
     const res=await ghPut(c,text,remote.sha,msg);
     setBase(text,res.content.sha,"GitHub");LS.del(DRAFT_KEY);histCache=null;afterChange();
-    setOut(out,"ok",`Đã lưu. Trang người bệnh sẽ cập nhật sau khoảng 1–2 phút, khi Netlify đăng xong. <a href="${esc(res.commit.html_url)}" target="_blank" rel="noopener">Xem lần lưu này trên GitHub</a>`);
+    setOut(out,"ok",`Đã lưu. Trang người bệnh sẽ cập nhật sau khoảng 1–2 phút, khi Cloudflare Pages đăng xong. <a href="${esc(res.commit.html_url)}" target="_blank" rel="noopener">Xem lần lưu này trên GitHub</a>`);
     go.textContent="Đã lưu";
   }catch(e){setOut(out,"bad",esc(e.message));go.disabled=false;go.textContent="Thử lại";}
 }
