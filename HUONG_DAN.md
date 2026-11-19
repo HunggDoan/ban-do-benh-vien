@@ -213,9 +213,11 @@ GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà
 
 ### 5.8. Mô hình 3D nhà F dựng từ bản vẽ thiết kế
 
-- Tầng 1 đến tầng 5 của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh.
-- Thư mục `public/nhaf/` chỉ cần hai file: `index.html` và `phong.json`. Ba ảnh `san1.png`, `san2.png`, `san3.png` của bản trước không còn dùng, có thể xóa.
-- Các tầng còn lại (6–10) dựng tiếp theo cùng cách từ file PDF.
+- Tầng 1 đến tầng 7 của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh.
+- Mỗi phòng được gắn vào khoa theo vùng gạch chéo phân khu trong bản vẽ (khoa ghi đầu trong chú thích là vùng có gạch chéo). Gõ tên khoa ở ô tìm kiếm (trang chủ, bản đồ bệnh viện hoặc bản đồ nhà F) sẽ ra mục "Khoa …" của nhà F, bấm vào là chỉ đường tới quầy điều dưỡng hoặc sảnh của khoa.
+- Danh sách khoa theo bản vẽ: tầng 1 Chẩn đoán hình ảnh, Cấp cứu; tầng 2 Khám bệnh; tầng 3 Sơ sinh, Hồi sức sơ sinh; tầng 4 Sơ sinh; tầng 5 Tiêu hóa; tầng 6 Nội tim mạch, Ngoại tim mạch; tầng 7 Mắt, Răng hàm mặt.
+- Thư mục `public/nhaf/` chỉ cần hai file: `index.html` và `phong.json`.
+- Các tầng còn lại (8–10) dựng tiếp theo cùng cách từ file PDF.
 
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 

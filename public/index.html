@@ -801,7 +801,7 @@ function renderResults(list,raw){
     const t=document.createElement("span");t.className="t";t.textContent=it.t;const s=document.createElement("span");s.className="s";s.textContent=it.s;
     b.append(t,s);b.onclick=()=>choose(it);results.appendChild(b);});
 }
-function searchMapAll(v){const A=search(v),nq=norm(v);const B=(typeof searchF==="function"?searchF(v):[]).slice(0,15).map(o=>({t:o.x.n,s:(/^near:/.test(o.x.to)?"Nhà F · chỗ gần nhất":"Tầng "+o.x.f+" · Nhà F"),fx:o.x,r:o.r}));
+function searchMapAll(v){const A=search(v),nq=norm(v);const B=(typeof searchF==="function"?searchF(v):[]).slice(0,15).map(o=>({t:o.x.n,s:(/^near:/.test(o.x.to)?"Nhà F · chỗ gần nhất":"Tầng "+o.x.f+" · Nhà F"+(o.x.k&&!o.x.khoa?" · "+o.x.k:"")),fx:o.x,r:o.r}));
   const a=A.map(it=>{const nt=norm(it.t);return {it,r:nt.startsWith(nq)?0:nt.includes(nq)?1:2};});
   return [...a,...B.map(it=>({it,r:it.r,f:1}))].sort((x,y)=>x.r-y.r||(x.f?1:0)-(y.f?1:0)).slice(0,40).map(o=>o.it);}
 q.addEventListener("input",()=>{const v=q.value.trim();if(!v){results.hidden=true;$("clearQ").hidden=true;return;}renderResults(searchMapAll(v),v);});
@@ -850,7 +850,7 @@ function showRoute(place,dept,quiet){
 }
 // mở bản đồ nhà F ở đúng cửa vừa tới, đi tiếp tới phòng cần đến
 function fUrl(){const c=current;if(!c||!c.dept||!c.dept.fx)return "nhaf/";const x=c.dept.fx;
-  return "nhaf/?start="+(F_LINK[c.best]||"f1-cong")+"&"+(/^near:/.test(x.to)?"near="+x.to.slice(5):"to="+encodeURIComponent(x.to))+"&nav=1";}
+  return "nhaf/?start="+(F_LINK[c.best]||"f1-cong")+"&"+(/^near:/.test(x.to)?"near="+x.to.slice(5):"to="+encodeURIComponent(x.to)+(x.khoa?"&kh=1":""))+"&nav=1";}
 function goF(){location.href=fUrl();}
 function renderStep(move){
   const c=current;if(!c||!c.steps)return;const S=c.steps,i=c.cur,st=S[i],last=i>=S.length-1,fx=c.dept&&c.dept.fx;
@@ -1271,23 +1271,25 @@ const MAPS={main:Object.assign({title:"Bản đồ bệnh viện",sub:"Toàn khu
   f:Object.assign({title:"Bản đồ nhà F (nhà 10 tầng)",sub:"Chi tiết từng tầng, từng phòng"},((UI.maps||{}).f)||{})};
 let FROOMS=[];
 fetch("nhaf/phong.json").then(r=>r.ok?r.json():null).then(j=>{if(!j)return;
-  FROOMS=(j.phong||[]).map(x=>({n:x.n,f:x.f,to:x.to,c:x.c,h:norm(x.n+" nha f toa f tang "+x.f)}));
+  FROOMS=(j.phong||[]).map(x=>({n:x.n,f:x.f,to:x.to,c:x.c,k:x.k||"",khoa:!!x.khoa,h:norm(x.n+" nha f toa f tang "+x.f+" "+(x.k||""))}));
   if(j.tang)MAPS.f.floors=j.tang.length;if(screen==="home"&&$("hq")&&$("hq").value.trim())homeSearch();}).catch(()=>{});
 const F_ALIAS=[[/lay mau|thu mau/,"xet nghiem mau"],[/chup phim|x quang|xquang/,"x quang"],[/nho rang|nha khoa/,"rang"],[/thanh toan|thu ngan|dong tien|vien phi/,"thanh toan"],
   [/mua thuoc|nha thuoc/,"thuoc"],[/dang ky|lam thu tuc|tiep don/,"thu tuc"],[/toilet|nha ve sinh|wc/,"ve sinh"],[/tmh/,"tai mui hong"]];
 function searchF(v){const nq=norm(v);if(!nq)return[];const toks=nq.split(" ");let alt=null;F_ALIAS.forEach(([re,t])=>{if(re.test(nq))alt=t;});
-  return FROOMS.map(x=>{const nt=norm(x.n);let r=-1;
+  return FROOMS.map(x=>{const nt=norm(x.n);let r=null;
     if(toks.every(t=>x.h.includes(t)))r=nt.startsWith(nq)?0:nt.includes(nq)?1:2;else if(alt&&nt.includes(alt))r=2;
-    return {x,r};}).filter(o=>o.r>=0).sort((a,b)=>a.r-b.r||a.x.f-b.x.f||a.x.n.localeCompare(b.x.n,"vi",{numeric:true}));}
+    if(r!==null&&x.khoa)r-=1.5; // tên khoa của nhà F đứng đầu danh sách
+    if(r!==null&&!x.n.toLowerCase().includes(String(v).trim().toLowerCase().replace(/^khoa\s+/,"")))r+=0.6;
+    return {x,r};}).filter(o=>o.r!==null).sort((a,b)=>a.r-b.r||a.x.f-b.x.f||a.x.n.localeCompare(b.x.n,"vi",{numeric:true}));}
 // cửa nhà F trên bản đồ chính → điểm xuất phát tương ứng trên bản đồ nhà F
 const F_LINK=Object.assign({cua_f_phai:"f1-cong",cua_f_duong:"f1-capcuu"},(D.config&&D.config.fLink)||{});
 function fPlace(){const p=PLACE_BY_ID.F||PLACES.find(p=>p.doors.some(d=>F_LINK[d]));if(!p)return null;
   const doors=p.doors.filter(d=>F_LINK[d]&&N[d]);return doors.length?Object.assign({},p,{doors}):null;}
 function routeF(x){const p=fPlace();if(!p){openF(x);return;}
-  if(x&&!x.n){const y=FROOMS.find(r=>r.to===x.to);if(y)x=y;}
+  if(x&&(!x.n||x.khoa===undefined)){const y=FROOMS.find(r=>r.to===x.to&&(!x.n||r.n===x.n));if(y)x=y;}
   rememberF(x);if(screen!=="map")setScreen("map");q.value=x.n;$("clearQ").hidden=false;
   showRoute(p,{n:x.n,f:x.f,fx:x});}
-function openF(x){location.href="nhaf/"+(x?(/^near:/.test(x.to)?"?near="+x.to.slice(5):"?to="+encodeURIComponent(x.to)):"");}
+function openF(x){location.href="nhaf/"+(x?(/^near:/.test(x.to)?"?near="+x.to.slice(5):"?to="+encodeURIComponent(x.to)+(x.khoa?"&kh=1":"")):"");}
 let located=false; // chỉ hiện “Bạn đang ở” sau khi đã quét mã QR
 const SVG_HERO2=`<svg viewBox="0 0 210 140" aria-hidden="true"><g opacity=".22" fill="#fff"><circle cx="176" cy="26" r="16"/></g>
 <g stroke="#bcd0ff" stroke-width="1.2"><rect x="10" y="62" width="56" height="70" rx="3" fill="#ffffff"/><rect x="72" y="28" width="74" height="104" rx="3" fill="#ffffff"/><rect x="152" y="70" width="50" height="62" rx="3" fill="#ffffff"/></g>
@@ -1355,7 +1357,7 @@ function homeSearch(query){
   all.forEach(o=>{const b=document.createElement("button");b.className="it";b.setAttribute("role","option");
     if(o.k==="m"){b.innerHTML=`<i>${ico(o.it.d?"steth":"pin")}</i><span class="t"><b>${escH(o.it.t)}</b><small>${escH(o.it.s)}</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
       b.onclick=()=>{try{document.activeElement&&document.activeElement.blur();}catch(e){}routeFromHome=true;setScreen("map");choose(o.it);};}
-    else{b.innerHTML=`<i style="background:#fff1e6;color:#c2410c">${ico({wc:"wc",pharm:"pharm",er:"er",money:"money",desk:"desk",lab:"lab",scan:"scan",baby:"baby",steth:"steth"}[o.x.c]||"pin")}</i><span class="t"><b>${escH(o.x.n)}</b><small><span class="tagF">Nhà F</span>${/^near:/.test(o.x.to)?"Chỗ gần nhất":"Tầng "+o.x.f} · chỉ đường tới nhà F</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
+    else{b.innerHTML=`<i style="background:#fff1e6;color:#c2410c">${ico({wc:"wc",pharm:"pharm",er:"er",money:"money",desk:"desk",lab:"lab",scan:"scan",baby:"baby",steth:"steth"}[o.x.c]||"pin")}</i><span class="t"><b>${escH(o.x.n)}</b><small><span class="tagF">Nhà F</span>${/^near:/.test(o.x.to)?"Chỗ gần nhất · chỉ đường tới nhà F":o.x.khoa?"Tầng "+o.x.f+" · chỉ đường tới khoa":"Tầng "+o.x.f+(o.x.k?" · "+escH(o.x.k):" · chỉ đường tới nhà F")}</small></span><span class="chev" style="color:var(--h-mute)">${IC.chev}</span>`;
       b.onclick=()=>{try{document.activeElement&&document.activeElement.blur();}catch(e){}routeFromHome=true;routeF(o.x);};}
     R.appendChild(b);});
 }
