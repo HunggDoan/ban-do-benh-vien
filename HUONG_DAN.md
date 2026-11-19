@@ -162,6 +162,8 @@ Khi đặt hoặc kéo điểm, trang **tự gióng thẳng hàng** với các �
 
 **In mã QR cho cửa mới.** Mở `…netlify.app/#qr`, chọn mũi tên hướng người đứng quét đang nhìn, bấm **Xem thử trên bản đồ**, rồi in.
 
+**Tạo mã QR ở điểm bất kỳ.** Ở đầu trang `…netlify.app/#qr` có khung **Tạo mã QR ở điểm bất kỳ**: chọn điểm (cổng, cửa, cả ngã rẽ và lối đi), chọn mũi tên hướng nhìn, có thể gõ tên in dưới mã, bấm **Xem thử trên bản đồ** rồi **Tải ảnh PNG để in**. Dùng khi muốn dời chỗ dán QR. Chưa có điểm ở đúng chỗ thì thêm ngã rẽ ở trang quản trị, lưu lại rồi quay lại trang này.
+
 **Tạo mã QR ngay trong trang quản trị.** Bấm vào một cổng, cửa hoặc ngã rẽ trên bản đồ. Ở thẻ Đối tượng, kéo xuống mục **Mã QR dán ở điểm này** để xem mã, **Tải ảnh PNG để in** (có in kèm tên điểm), **In mã này** hoặc **Chép link**. Hướng nhìn in trong mã lấy theo ô *Hướng người đứng quét đang nhìn* ngay phía trên.
 
 **Dán QR ở chỗ bất kỳ (không phải cổng hay cửa).** Dùng công cụ Ngã rẽ (J) đặt một điểm lên lối đi ở chỗ muốn dán, nối đường cho điểm đó, đặt **Tên mốc** (ví dụ "Trước sảnh đón xe"), rồi tích **Dán mã QR ở điểm này**. Trên bản đồ quản trị, điểm dán QR vẽ bằng ô vuông. Có thể tích như vậy cho ngã rẽ đã có. Bấm **Lưu lên GitHub** trước rồi mới dán, vì mã chỉ dùng được sau khi lưu.

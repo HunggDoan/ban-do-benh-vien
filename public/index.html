@@ -153,6 +153,10 @@ ol.steps .tx b{font-weight:600}
 .dirs{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;width:100%}
 .dirs button{border:1px solid var(--line);background:none;border-radius:6px;padding:5px 0;font-size:15px;line-height:1}
 .dirs button[aria-pressed="true"]{background:var(--start);border-color:var(--start);color:#fff}
+.qrany{padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:420px;box-shadow:none}
+.qrany p{margin:0!important;text-align:left}.qrany select,.qrany input{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg)}
+.qrany .qr{background:#fff;padding:8px;border-radius:6px}.qrany code{font-size:11px;color:var(--muted);word-break:break-all}
+.qrany .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.qrany .test{font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;color:var(--fg)}
 .qrgrid b{font-size:14px}.qrgrid code{font-size:11px;color:var(--muted);word-break:break-all}
 
 #pickPanel{position:absolute;top:12px;right:max(16px,env(safe-area-inset-right,0px));width:min(380px,calc(100% - 32px));max-height:calc(100% - 24px);overflow:auto;padding:12px 14px;z-index:25;font-size:13px}
@@ -787,7 +791,8 @@ function defaultFacing(id){
 let facing=0,facingSrc="qr",qrFacing=0;
 const facingVec=f=>new THREE.Vector2(Math.sin(f*Math.PI/180),-Math.cos(f*Math.PI/180));
 function setStart(id,h){
-  startId=id;startSel.value=id;const n=N[id];
+  const n=N[id];if(![...startSel.options].some(o=>o.value===id)){const o=document.createElement("option");o.value=id;o.textContent=n.name;startSel.appendChild(o);} // điểm dán QR ở lối đi chưa có trong danh sách
+  startId=id;startSel.value=id;
   qrFacing=h!=null?h:defaultFacing(id);if(!compass.on){facing=qrFacing;facingSrc="qr";}
   startPin.position.set(wx(n.x),0,wz(n.y));startPin.visible=true;youLbl.pos.set(wx(n.x),8.6,wz(n.y));youLbl.hidden=false;
   updateBeam();
@@ -1105,13 +1110,13 @@ function showQr(){
   const v=$("qrView");v.hidden=false;if(v.dataset.done)return;v.dataset.done=1;
   v.innerHTML=`<div class="qrhead"><div><h1>Mã QR các điểm xuất phát</h1>
     <p>Với mỗi tấm biển, chọn mũi tên chỉ hướng mà <b>người đứng quét mã đang nhìn</b>, tức hướng từ người tới tấm biển. Mũi tên tính theo sơ đồ: ↑ về phía Tòa E · ↓ về phía đường Tôn Thất Tùng · → về phía Tòa D, Khoa Nhiệt đới · ← về phía Tòa F, B2.</p></div>
-    <button class="back" id="qrBack">Về bản đồ</button></div><div id="qrWarn"></div><h2 class="qrsec">Bản đồ bệnh viện · cổng, cửa các tòa và các điểm dán QR khác</h2><div class="qrgrid" id="qrg"></div>
+    <button class="back" id="qrBack">Về bản đồ</button></div><div id="qrWarn"></div><h2 class="qrsec">Tạo mã QR ở điểm bất kỳ</h2><div class="qrany card" id="qrAny"></div><h2 class="qrsec">Bản đồ bệnh viện · cổng, cửa các tòa và các điểm dán QR khác</h2><div class="qrgrid" id="qrg"></div>
     <h2 class="qrsec">Bản đồ nhà F · cửa và sảnh thang máy từng tầng</h2><div class="qrgrid" id="qrgF"><p style="opacity:.7">Đang tải danh sách điểm của nhà F…</p></div>`;
   try{const dh=new URL(DOMAIN).host;if(!/^(localhost|127\.)/.test(location.hostname)&&dh!==location.host)
     $("qrWarn").innerHTML=`<p style="margin:0 0 14px;padding:10px 14px;border-radius:10px;background:#fff4d6;color:#7a4b00;font-size:14px;line-height:1.5">Mã QR đang dùng tên miền <b>${DOMAIN}</b>, khác trang bạn đang mở (<b>${location.origin}</b>). Nếu đã chuyển sang nơi đăng mới, hãy vào trang quản trị → thẻ <b>Khác</b> → <b>Tên miền trang web</b> để sửa trước khi in.</p>`;}catch(e){}
   $("qrBack").onclick=()=>{location.hash="";};
   const saved=loadH();
-  const go=()=>{Object.values(N).filter(n=>n.qr).forEach(n=>{
+  const go=()=>{qrAny(saved);Object.values(N).filter(n=>n.qr).forEach(n=>{
     let h=saved[n.id]!=null?saved[n.id]:defaultFacing(n.id);
     const c=document.createElement("div");c.className="card";
     const box=document.createElement("div");box.className="qr";const b=document.createElement("b");b.textContent=n.name;
@@ -1131,6 +1136,37 @@ function showQr(){
       try{new QRCode(box,{text:url,width:150,height:150,correctLevel:QRCode.CorrectLevel.M});}catch(e){box.textContent=url;}
       c.append(box,b,code,test);g.appendChild(c);});}).catch(()=>{$("qrgF").innerHTML="<p>Không tải được danh sách điểm của nhà F.</p>";});};
   if(window.QRCode)go();else{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";s.onload=go;s.onerror=go;document.head.appendChild(s);}
+}
+// tạo mã cho bất kỳ điểm nào trên bản đồ (cổng, cửa, ngã rẽ, lối đi) — dùng khi dời chỗ dán QR
+function qrAny(saved){
+  const el=$("qrAny");el.innerHTML="";const sel=document.createElement("select");sel.setAttribute("aria-label","Chọn điểm dán mã QR");
+  const nm=n=>n.type==="jct"?(n.lm&&n.lm!==n.id?n.lm:"Lối đi · "+n.id):n.name;
+  [["Cổng","gate"],["Cửa các tòa nhà","door"],["Ngã rẽ, lối đi","jct"]].forEach(([lab,t])=>{const og=document.createElement("optgroup");og.label=lab;
+    Object.values(N).filter(n=>n.type===t).sort((a,b)=>nm(a).localeCompare(nm(b),"vi")).forEach(n=>{const o=document.createElement("option");o.value=n.id;o.textContent=nm(n);og.appendChild(o);});sel.appendChild(og);});
+  const box=document.createElement("div");box.className="qr";const code=document.createElement("code");
+  const pick=document.createElement("div");pick.className="dirs";pick.setAttribute("role","group");pick.setAttribute("aria-label","Hướng nhìn khi quét");
+  const nameIn=document.createElement("input");nameIn.type="text";nameIn.placeholder="Tên in dưới mã (để trống thì lấy tên điểm)";nameIn.setAttribute("aria-label","Tên in dưới mã");
+  const bar=document.createElement("div");bar.className="bar";
+  const test=document.createElement("button");test.className="test";test.textContent="Xem thử trên bản đồ";
+  const dl=document.createElement("button");dl.className="test";dl.textContent="Tải ảnh PNG để in";bar.append(test,dl);
+  let id=sel.value,h=0;
+  const url=()=>`${DOMAIN}/?start=${encodeURIComponent(id)}&h=${h}`;
+  const draw=()=>{const u=url();code.textContent=u.replace(DOMAIN,"");box.innerHTML="";
+    try{new QRCode(box,{text:u,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});}catch(e){box.textContent=u;}
+    pick.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.h===h));};
+  const choose=()=>{id=sel.value;h=saved[id]!=null?saved[id]:defaultFacing(id);nameIn.value="";draw();};
+  DIRS.forEach(([deg,ar])=>{const x=document.createElement("button");x.textContent=ar;x.dataset.h=deg;x.setAttribute("aria-label","Hướng "+deg+" độ");
+    x.onclick=()=>{h=deg;saved[id]=deg;saveH(saved);draw();};pick.appendChild(x);});
+  sel.onchange=choose;
+  test.onclick=()=>{location.hash="";if(compass.on)stopCompass();located=true;setStart(id,h);};
+  dl.onclick=()=>{try{const t=document.createElement("div");new QRCode(t,{text:url(),width:640,height:640,correctLevel:QRCode.CorrectLevel.M});const q=t.querySelector("canvas");
+    const W=760,name=nameIn.value.trim()||nm(N[id]),c=document.createElement("canvas"),g=c.getContext("2d");c.width=W;c.height=850;
+    g.fillStyle="#fff";g.fillRect(0,0,W,850);g.drawImage(q,60,60);g.fillStyle="#111";g.textAlign="center";let fs=44;g.font=`700 ${fs}px system-ui,sans-serif`;
+    while(g.measureText(name).width>W-40&&fs>20){fs-=2;g.font=`700 ${fs}px system-ui,sans-serif`;}g.fillText(name,W/2,762);
+    g.font="400 28px system-ui,sans-serif";g.fillStyle="#444";g.fillText("Quét mã để xem đường đi trong bệnh viện",W/2,810);
+    const a=document.createElement("a");a.href=c.toDataURL("image/png");a.download="qr-"+id+".png";document.body.appendChild(a);a.click();a.remove();}catch(e){toast("Không tạo được ảnh mã QR.");}};
+  const help=document.createElement("p");help.innerHTML="Chọn điểm gần chỗ định dán (kể cả ngã rẽ, lối đi), chọn mũi tên hướng người đứng quét đang nhìn, bấm <b>Xem thử</b> rồi tải ảnh để in. Chưa có điểm ở đúng chỗ thì thêm ngã rẽ ở trang quản trị, lưu lại rồi quay lại đây.";
+  el.append(help,sel,box,code,pick,nameIn,bar);choose();
 }
 // ================= LẤY TỌA ĐỘ (nội bộ: thêm #toado vào cuối đường link) =================
 const pick={on:false,pts:[],panel:null,marks:[],idLabels:[]};
@@ -1504,7 +1540,7 @@ function onCode(text){
     if(!start&&u.hash){const hs=decodeURIComponent(u.hash.slice(1));const i=hs.indexOf("?");if(i>=0){const sp=new URLSearchParams(hs.slice(i+1));start=sp.get("start");h=sp.get("h");to=sp.get("to");}}}catch(e){}
   try{const u=new URL(text,location.href);if(/\/nhaf\/?$/.test(u.pathname)&&u.searchParams.get("start")){closeScan();location.href="nhaf/?start="+encodeURIComponent(u.searchParams.get("start"));return;}}catch(e){}
   if(start&&!N[start]&&OLD_IDS[start])start=OLD_IDS[start];
-  if(!start||!N[start]||!N[start].qr){scanMsg("Mã QR này không phải mã vị trí của bệnh viện. Hãy quét mã dán ở cổng, cửa tòa nhà hoặc sảnh thang máy.");
+  if(!start||!N[start]){scanMsg("Mã QR này không phải mã vị trí của bệnh viện. Hãy quét mã dán ở cổng, cửa tòa nhà hoặc sảnh thang máy.");
     if(scanStream)scanTimer=setTimeout(async function again(){const v=$("scanVideo");const t=await decodeFrame(v,v.videoWidth,v.videoHeight);if(t&&t!==text){onCode(t);return;}if(scanStream)scanTimer=setTimeout(again,260);},1200);return;}
   closeScan();located=true;const hv=parseFloat(h);setStart(start,isFinite(hv)?((hv%360)+360)%360:null);
   try{fetch(LOG_URL+"?location="+encodeURIComponent(N[start].name)+"&id="+encodeURIComponent(start)+"&src=web",{mode:"no-cors",keepalive:true}).catch(()=>{});}catch(e){}
@@ -1526,7 +1562,7 @@ if(PREVIEW){const b=document.createElement("div");b.className="previewBadge";b.t
 (function boot(){
   const {start,to,h}=readParams();let sid="cong_chinh";
   if(start){
-    if(N[start]&&N[start].qr){sid=start;located=true;}
+    if(N[start]){sid=start;located=true;}
     else if(start in OLD_IDS&&OLD_IDS[start]===null) toast("Tòa C đã ngừng sử dụng. Vị trí xuất phát được đặt tại Cổng chính, bạn có thể đổi ở ô phía trên.",6000);
     else if(OLD_IDS[start]||N[start]) toast("Mã QR này không gắn với cửa hay cổng nào. Vui lòng chọn vị trí của bạn ở ô phía trên.",6000);
     else toast("Không nhận ra mã QR. Vị trí xuất phát đang là Cổng chính, bạn có thể đổi ở ô phía trên.",6000);
