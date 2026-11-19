@@ -213,11 +213,11 @@ GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà
 
 ### 5.8. Mô hình 3D nhà F dựng từ bản vẽ thiết kế
 
-- Tầng 1 đến tầng 7 của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh.
+- Cả 10 tầng của nhà F được dựng thẳng từ nét vẽ trong file PDF thiết kế: tường, cột, cửa (mở đúng chiều như bản vẽ), vách kính, cửa sổ, giường, ghế chờ, bàn, tủ, thiết bị vệ sinh; tầng 10 có hội trường 200 chỗ, phòng họp, bàn làm việc khối hành chính.
+- Khi dựng có bước kiểm tra tự động: bỏ đồ đạc nằm trên ô cửa, trong vùng cánh cửa quét hoặc lấn vào tường; bỏ "cửa" nhận nhầm từ nét chéo vẽ trên giường; lanh tô trên cửa chỉ dựng khi hai bên là tường.
 - Mỗi phòng được gắn vào khoa theo vùng gạch chéo phân khu trong bản vẽ (khoa ghi đầu trong chú thích là vùng có gạch chéo). Gõ tên khoa ở ô tìm kiếm (trang chủ, bản đồ bệnh viện hoặc bản đồ nhà F) sẽ ra mục "Khoa …" của nhà F, bấm vào là chỉ đường tới quầy điều dưỡng hoặc sảnh của khoa.
-- Danh sách khoa theo bản vẽ: tầng 1 Chẩn đoán hình ảnh, Cấp cứu; tầng 2 Khám bệnh; tầng 3 Sơ sinh, Hồi sức sơ sinh; tầng 4 Sơ sinh; tầng 5 Tiêu hóa; tầng 6 Nội tim mạch, Ngoại tim mạch; tầng 7 Mắt, Răng hàm mặt.
+- Khoa theo bản vẽ: tầng 1 Chẩn đoán hình ảnh, Cấp cứu; tầng 2 Khám bệnh; tầng 3 Sơ sinh, Hồi sức sơ sinh; tầng 4 Sơ sinh; tầng 5 Tiêu hóa; tầng 6 Nội tim mạch, Ngoại tim mạch; tầng 7 Mắt, Răng hàm mặt; tầng 8 Tai mũi họng; tầng 9 Miễn dịch, Trung tâm Tai thính học; tầng 10 Khối hành chính, Ban giám đốc.
 - Thư mục `public/nhaf/` chỉ cần hai file: `index.html` và `phong.json`.
-- Các tầng còn lại (8–10) dựng tiếp theo cùng cách từ file PDF.
 
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
