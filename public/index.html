@@ -850,7 +850,7 @@ function showRoute(place,dept,quiet){
 }
 // mở bản đồ nhà F ở đúng cửa vừa tới, đi tiếp tới phòng cần đến
 function fUrl(){const c=current;if(!c||!c.dept||!c.dept.fx)return "nhaf/";const x=c.dept.fx;
-  return "nhaf/?start="+(F_LINK[c.best]||"f1-cong")+"&"+(/^near:/.test(x.to)?"near="+x.to.slice(5):"to="+encodeURIComponent(x.to)+(x.khoa?"&kh=1":""))+"&nav=1";}
+  return "nhaf/?start="+(F_LINK[c.best]||"f1-cong")+"&"+(/^near:/.test(x.to)?"near="+x.to.slice(5):"to="+encodeURIComponent(x.to)+(x.khoa?"&kh=1":""))+"&nav=1"+(PREVIEW?"&preview=1":"");}
 function goF(){location.href=fUrl();}
 function renderStep(move){
   const c=current;if(!c||!c.steps)return;const S=c.steps,i=c.cur,st=S[i],last=i>=S.length-1,fx=c.dept&&c.dept.fx;
@@ -1271,9 +1271,18 @@ const MAPS={main:Object.assign({title:"Bản đồ bệnh viện",sub:"Toàn khu
   f:Object.assign({title:"Bản đồ nhà F (nhà 10 tầng)",sub:"Chi tiết từng tầng, từng phòng"},((UI.maps||{}).f)||{})};
 let FROOMS=[];
 fetch("nhaf/phong.json").then(r=>r.ok?r.json():null).then(j=>{if(!j)return;
-  FROOMS=(j.phong||[]).map(x=>({n:x.n,f:x.f,to:x.to,c:x.c,k:x.k||"",khoa:!!x.khoa,h:norm(x.n+" nha f toa f tang "+x.f+" "+(x.k||""))}));
+  // chỉnh sửa tên phòng / khoa của nhà F trong trang quản trị (map_data.json, mục "nhaF")
+  const OV=(D&&D.nhaF)||{},OP=OV.phong||{},OK=OV.khoa||{},TG=j.tang||[];
+  const kname=(fi,k)=>{const key=fi+"-"+k;return OK[key]||(TG[fi]&&TG[fi].d[k])||"";};
+  const seenF=new Set();
+  FROOMS=(j.phong||[]).map(x=>{const fi=+String(x.to).split("-")[0];let n=x.n,k=x.k||"",a="";
+      const ki=TG[fi]?TG[fi].d.indexOf(x.k):-1;if(ki>=0)k=kname(fi,ki);
+      if(x.khoa){n=k||n;}
+      else{const o=OP[x.to];if(o){if(o.an)return null;if(o.n)n=o.n;if("k" in o)k=(o.k==null||o.k<0)?"":kname(fi,o.k);a=o.a||"";}}
+      const dk=n+"|"+x.f+"|"+k+"|"+(x.khoa?1:0);if(seenF.has(dk))return null;seenF.add(dk);   // gộp các phòng trùng tên trong cùng khoa
+      return {n,f:x.f,to:x.to,c:x.c,k,khoa:!!x.khoa,h:norm(n+" nha f toa f tang "+x.f+" "+k+" "+a)};}).filter(Boolean);
   if(j.tang)MAPS.f.floors=j.tang.length;if(screen==="home"&&$("hq")&&$("hq").value.trim())homeSearch();}).catch(()=>{});
-const F_ALIAS=[[/lay mau|thu mau/,"xet nghiem mau"],[/chup phim|x quang|xquang/,"x quang"],[/nho rang|nha khoa/,"rang"],[/thanh toan|thu ngan|dong tien|vien phi/,"thanh toan"],
+const F_ALIAS=[[/khanh tiet|le tan|don khach/,"tiep khach"],[/lay mau|thu mau/,"xet nghiem mau"],[/chup phim|x quang|xquang/,"x quang"],[/nho rang|nha khoa/,"rang"],[/thanh toan|thu ngan|dong tien|vien phi/,"thanh toan"],
   [/mua thuoc|nha thuoc/,"thuoc"],[/dang ky|lam thu tuc|tiep don/,"thu tuc"],[/toilet|nha ve sinh|wc/,"ve sinh"],[/tmh/,"tai mui hong"]];
 function searchF(v){const nq=norm(v);if(!nq)return[];const toks=nq.split(" ");let alt=null;F_ALIAS.forEach(([re,t])=>{if(re.test(nq))alt=t;});
   return FROOMS.map(x=>{const nt=norm(x.n);let r=null;
@@ -1289,7 +1298,7 @@ function routeF(x){const p=fPlace();if(!p){openF(x);return;}
   if(x&&(!x.n||x.khoa===undefined)){const y=FROOMS.find(r=>r.to===x.to&&(!x.n||r.n===x.n));if(y)x=y;}
   rememberF(x);if(screen!=="map")setScreen("map");q.value=x.n;$("clearQ").hidden=false;
   showRoute(p,{n:x.n,f:x.f,fx:x});}
-function openF(x){location.href="nhaf/"+(x?(/^near:/.test(x.to)?"?near="+x.to.slice(5):"?to="+encodeURIComponent(x.to)+(x.khoa?"&kh=1":"")):"");}
+function openF(x){let u="nhaf/"+(x?(/^near:/.test(x.to)?"?near="+x.to.slice(5):"?to="+encodeURIComponent(x.to)+(x.khoa?"&kh=1":"")):"");if(PREVIEW)u+=(u.includes("?")?"&":"?")+"preview=1";location.href=u;}
 let located=false; // chỉ hiện “Bạn đang ở” sau khi đã quét mã QR
 const SVG_HERO2=`<svg viewBox="0 0 210 140" aria-hidden="true"><g opacity=".22" fill="#fff"><circle cx="176" cy="26" r="16"/></g>
 <g stroke="#bcd0ff" stroke-width="1.2"><rect x="10" y="62" width="56" height="70" rx="3" fill="#ffffff"/><rect x="72" y="28" width="74" height="104" rx="3" fill="#ffffff"/><rect x="152" y="70" width="50" height="62" rx="3" fill="#ffffff"/></g>

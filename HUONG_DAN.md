@@ -219,6 +219,22 @@ GPS chỉ dùng ngoài trời trong khuôn viên (sai số 5–15 m); trong nhà
 - Khoa theo bản vẽ: tầng 1 Chẩn đoán hình ảnh, Cấp cứu; tầng 2 Khám bệnh; tầng 3 Sơ sinh, Hồi sức sơ sinh; tầng 4 Sơ sinh; tầng 5 Tiêu hóa; tầng 6 Nội tim mạch, Ngoại tim mạch; tầng 7 Mắt, Răng hàm mặt; tầng 8 Tai mũi họng; tầng 9 Miễn dịch, Trung tâm Tai thính học; tầng 10 Khối hành chính, Ban giám đốc.
 - Thư mục `public/nhaf/` chỉ cần hai file: `index.html` và `phong.json`.
 
+### 5.9. Sửa tên phòng, khoa của nhà F (thẻ Nhà F)
+
+Dùng khi thay biển bảng, đánh số phòng, đổi tên khoa. Hình 3D (tường, cửa, đồ đạc) vẫn giữ theo bản vẽ, thẻ này chỉ sửa chữ.
+
+1. Trang quản trị → thẻ **Nhà F** → chọn tầng.
+2. **Tên khoa**: mở mục "Tên khoa tầng …", gõ tên mới. Để trống thì dùng tên trong bản vẽ.
+3. Mỗi phòng có:
+   - **Tên hiển thị**: tên mới hiện trên bản đồ và ở kết quả tìm kiếm (vd: đổi "Phòng 3 GG" thành "Phòng 401").
+   - **Thuộc khoa**: khoa của phòng, hoặc "Khu chung".
+   - **Từ khoá tìm thêm**: chữ người bệnh hay gõ, cách nhau bằng dấu phẩy (vd: "khánh tiết, lễ tân").
+   - **Ẩn khỏi kết quả tìm kiếm**: cho kho, phòng kỹ thuật… (vẫn hiện tên trên bản đồ).
+   Phòng đã sửa có viền cam. Ô lọc phía trên giúp tìm nhanh phòng cần sửa. Nhiều phòng trùng tên (vd: nhiều "WC"), bấm **Xem** để biết đó là phòng nào trên bản đồ.
+4. Bấm **Xem thử tầng …** để xem trước trên bản đồ nhà F (chưa cần lưu), rồi **Lưu lên GitHub**.
+
+Chỉnh sửa được lưu trong `map_data.json`, mục `nhaF`. File `public/nhaf/phong_goc.json` là danh sách phòng gốc theo bản vẽ, trang quản trị đọc file này để hiện danh sách, đừng xoá.
+
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
 Gói miễn phí của Netlify tính theo credit, mỗi lần lưu là trừ một ít nên nhanh hết. Cloudflare Pages miễn phí khoảng 500 lần đăng mỗi tháng, không giới hạn lượt xem.

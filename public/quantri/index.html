@@ -92,7 +92,7 @@ main{display:grid;grid-template-columns:52px minmax(0,1fr) clamp(380px,32vw,500p
 .panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
 .tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;flex:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:1 0 auto;justify-content:center;border:none;background:none;padding:11px 8px 9px;font-size:12.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;display:inline-flex;gap:6px;align-items:center}
+.tabs button{flex:1 0 auto;justify-content:center;border:none;background:none;padding:11px 6px 9px;font-size:12px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;display:inline-flex;gap:6px;align-items:center}
 .tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
 .tabs .cnt{font-size:11px;font-weight:700;padding:0 6px;border-radius:999px;background:var(--danger);color:#fff}
 .tabs .cnt.w{background:var(--warn)}
@@ -110,6 +110,17 @@ p{margin:0;line-height:1.55}
 .f input:not([type=checkbox]),.f select,.f textarea,.tbl input,.tbl select,.inl input,.inl select{width:100%;min-width:0;border:1px solid var(--line);background:var(--panel2);border-radius:7px;padding:6px 8px;font-size:13.5px}
 .f textarea{resize:vertical;line-height:1.45}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fflo{display:flex;flex-wrap:wrap;gap:4px}
+.fflo button{min-width:38px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font:inherit;font-weight:600;cursor:pointer}
+.fflo button[aria-pressed="true"]{background:var(--accent,#1b5cff);border-color:var(--accent,#1b5cff);color:#fff}
+.frow{border:1px solid var(--line);border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;background:var(--panel)}
+.frow.chg{border-color:#c2410c;box-shadow:inset 3px 0 0 #c2410c}
+.frow .fh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.frow .fh b{font-size:13px}.frow .fh small{color:var(--muted);font-size:11.5px;text-align:right}
+.frow .fh a{font-size:12px;white-space:nowrap}
+.frow input:not([type=checkbox]),.frow select{width:100%;min-width:0}
+.frow .chk{font-size:12.5px;color:var(--muted)}
+.flist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .chk{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.4;cursor:pointer}
 .chk input{margin-top:2px}
@@ -377,6 +388,10 @@ function serialize(o){
   const L=["{"],ks=Object.keys(o);
   ks.forEach((k,i)=>{const v=o[k],c=i<ks.length-1?",":"";
     if(Array.isArray(v)&&v.length&&v[0]&&typeof v[0]==="object"&&!Array.isArray(v[0])){L.push(`  ${JSON.stringify(k)}: [`);v.forEach((x,j)=>L.push("    "+JSON.stringify(x)+(j<v.length-1?",":"")));L.push("  ]"+c);}
+    else if(k==="nhaF"&&v&&typeof v==="object"&&!Array.isArray(v)){const dk=Object.keys(v);L.push(`  ${JSON.stringify(k)}: {`);
+      dk.forEach((d,j)=>{const w=v[d]||{},cc=j<dk.length-1?",":"",wk=Object.keys(w);L.push(`    ${JSON.stringify(d)}: {`);
+        wk.forEach((x,m)=>L.push(`      ${JSON.stringify(x)}: ${JSON.stringify(w[x])}${m<wk.length-1?",":""}`));L.push("    }"+cc);});
+      L.push("  }"+c);}
     else if((k==="decor"||k==="ui")&&v&&typeof v==="object"&&!Array.isArray(v)){const dk=Object.keys(v);L.push(`  ${JSON.stringify(k)}: {`);
       dk.forEach((d,j)=>{const w=v[d],cc=j<dk.length-1?",":"";
         if(Array.isArray(w)&&w.length&&w[0]&&typeof w[0]==="object"&&!Array.isArray(w[0])){L.push(`    ${JSON.stringify(d)}: [`);w.forEach((x,m)=>L.push("      "+JSON.stringify(x)+(m<w.length-1?",":"")));L.push("    ]"+cc);}
@@ -885,7 +900,7 @@ document.addEventListener("keyup",e=>{if(e.key===" "){spaceDown=false;cv.style.c
 // =====================================================================
 // BẢNG BÊN PHẢI
 // =====================================================================
-const TABS=[["obj","Đối tượng"],["places","Khoa phòng"],["list","Danh sách"],["check","Kiểm tra"],["ui","Giao diện"],["other","Khác"],["hist","Lịch sử"]];
+const TABS=[["obj","Đối tượng"],["places","Khoa phòng"],["list","Danh sách"],["check","Kiểm tra"],["ui","Giao diện"],["nhaf","Nhà F"],["other","Khác"],["hist","Lịch sử"]];
 function refreshTabs(){
   const t=$("#tabs");t.innerHTML="";
   TABS.forEach(([id,l])=>{
@@ -894,10 +909,11 @@ function refreshTabs(){
     else if(id==="check"&&V.warnings.length)b.append(h("span",{class:"cnt w"},V.warnings.length));
     t.append(b);
   });
+  const on=t.querySelector('[aria-selected="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:"nearest",inline:"nearest"});
 }
 function refreshPanel(){
   refreshTabs();const body=$("#tabBody"),sc=body.scrollTop;body.innerHTML="";
-  ({obj:tabObj,places:tabPlaces,list:tabList,check:tabCheck,ui:tabUi,other:tabOther,hist:tabHist})[activeTab](body);
+  ({obj:tabObj,places:tabPlaces,list:tabList,check:tabCheck,ui:tabUi,nhaf:tabNhaF,other:tabOther,hist:tabHist})[activeTab](body);
   body.scrollTop=sc;
 }
 function select(s){SEL=s;if(s&&activeTab!=="obj"&&activeTab!=="places")activeTab="obj";if(s&&activeTab==="places"&&s.k!=="node")activeTab="obj";refreshPanel();render();}
@@ -910,6 +926,59 @@ function focusRef(ref){
   else if(ref.k==="place"){curPlace=ref.id;activeTab="places";const p=PM.get(ref.id),b=p&&p.building&&BM.get(p.building);if(b)centerOn((b.rect[0]+b.rect[2])/2,(b.rect[1]+b.rect[3])/2);}
   else if(ref.k==="other"){activeTab="other";}
   refreshPanel();render();
+}
+
+// ---- thẻ Nhà F: sửa tên phòng, khoa, từ khoá tìm kiếm của bản đồ nhà F (hình 3D vẫn theo bản vẽ)
+let FG=null,FGerr=null,fFloor=0,fFilter="";
+function loadFG(){if(FG||FGerr)return;
+  fetch("../nhaf/phong_goc.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json();})
+    .then(j=>{FG=j;if(activeTab==="nhaf")refreshPanel();}).catch(e=>{FGerr=String(e.message||e);if(activeTab==="nhaf")refreshPanel();});}
+function fEdit(label,fn){mutate(label,()=>{D.nhaF=D.nhaF||{};fn(D.nhaF);
+  ["phong","khoa"].forEach(k=>{if(D.nhaF[k]&&!Object.keys(D.nhaF[k]).length)delete D.nhaF[k];});if(!Object.keys(D.nhaF).length)delete D.nhaF;},{keepPanel:true});}
+function setFRoom(fi,r,patch){fEdit("Sửa phòng nhà F",N=>{const P=N.phong=N.phong||{},key=fi+"-"+r.i,o=Object.assign({},P[key]||{},patch);
+  if(!o.n||o.n===r.ten)delete o.n;if(!o.a)delete o.a;if(!o.an)delete o.an;
+  if("k" in o&&(o.k??-1)===(r.k??-1))delete o.k;
+  delete o.goc;delete o.u;delete o.v;
+  if(Object.keys(o).length)P[key]=Object.assign({goc:r.n,u:r.u,v:r.v},o);else delete P[key];});}
+function tabNhaF(body){
+  body.append(h("p",{class:"muted"},"Đổi tên phòng, đổi khoa, thêm từ khoá tìm kiếm hoặc ẩn phòng trên ",h("b",null,"bản đồ nhà F"),". Dùng khi thay biển bảng, đổi tên khoa. Hình 3D (tường, cửa, đồ đạc) vẫn giữ theo bản vẽ thiết kế. Sửa xong bấm ",h("b",null,"Lưu lên GitHub"),", khoảng 1 phút sau trang người bệnh dùng tên mới."));
+  loadFG();
+  if(FGerr){body.append(h("p",{style:"color:var(--danger,#c0392b)"},"Không đọc được danh sách phòng nhà F (",FGerr,"). Kiểm tra file nhaf/phong_goc.json đã có trên trang chưa."));return;}
+  if(!FG){body.append(h("p",{class:"muted"},"Đang tải danh sách phòng nhà F…"));return;}
+  const T=FG.tang;fFloor=Math.min(fFloor,T.length-1);const fi=fFloor,F=T[fi],N=D.nhaF||{},P=N.phong||{},K=N.khoa||{};
+  const kName=k=>K[fi+"-"+k]||F.khoa[k];
+  const nEd=Object.keys(P).length+Object.keys(K).length;
+  const fl=h("div",{class:"fflo",role:"group","aria-label":"Chọn tầng"});
+  T.forEach((t,i)=>{const n=Object.keys(P).filter(k=>+k.split("-")[0]===i).length+Object.keys(K).filter(k=>+k.split("-")[0]===i).length;
+    fl.append(h("button",{"aria-pressed":String(i===fi),title:n?`${n} chỗ đã sửa`:null,onclick:()=>{fFloor=i;refreshPanel();}},String(t.f),n?h("sup",null,"•"):null));});
+  body.append(fld("Tầng",fl,nEd?`Đã sửa ${nEd} chỗ trên các tầng (tầng có dấu •).`:null));
+  const pv=h("a",{href:`../nhaf/?preview=1&start=f${F.f}-p12`,target:"_blank",rel:"noopener",onclick:writePreview},`Xem thử tầng ${F.f} (chưa cần lưu)`);
+  body.append(h("div",{class:"bar"},pv));
+  // tên khoa
+  if(F.khoa.length)body.append(det("nf-khoa",`Tên khoa tầng ${F.f}`,F.khoa.map((d,k)=>fld(`Khoa ${k+1} (bản vẽ: ${d})`,
+    inp(K[fi+"-"+k]||"",v=>fEdit("Đổi tên khoa nhà F",N=>{N.khoa=N.khoa||{};if(v&&v!==d)N.khoa[fi+"-"+k]=v;else delete N.khoa[fi+"-"+k];}),{ph:d,id:`nf-k-${fi}-${k}`}),
+    "Tên này hiện ở kết quả tìm kiếm và nhãn khoa. Để trống thì dùng tên trong bản vẽ."))));
+  // lọc + danh sách phòng
+  const list=h("div",{class:"flist"});
+  const opts=[["-1","Khu chung (không thuộc khoa)"],...F.khoa.map((d,k)=>[String(k),kName(k)])];
+  const draw=()=>{list.innerHTML="";const q=norm(fFilter);let shown=0;
+    F.phong.forEach(r=>{const o=P[fi+"-"+r.i]||{},cur=o.n||r.ten,kk="k" in o?o.k:(r.k??-1);
+      if(q&&!norm(cur+" "+r.ten+" "+(o.a||"")+" "+(kk>=0?kName(kk):"")).includes(q))return;shown++;
+      const arrow=h("small",null,o.n?" → "+o.n:"");
+      const set=patch=>{setFRoom(fi,r,patch);const no=((D.nhaF||{}).phong||{})[fi+"-"+r.i];row.classList.toggle("chg",!!no);arrow.textContent=no&&no.n?" → "+no.n:"";};
+      const row=h("div",{class:"frow"+(P[fi+"-"+r.i]?" chg":"")},
+        h("div",{class:"fh"},h("span",null,h("b",null,r.ten),arrow),
+          h("a",{href:`../nhaf/?preview=1&start=f${F.f}-p12&to=${fi}-${r.i}`,target:"_blank",rel:"noopener",onclick:writePreview},"Xem")),
+        fld("Tên hiển thị",inp(o.n||"",v=>set({n:v}),{ph:r.ten,aria:"Tên hiển thị của "+r.ten})),
+        h("div",{class:"row2"},
+          fld("Thuộc khoa",pick(opts,String(kk),v=>set({k:+v}),{aria:"Khoa của "+r.ten})),
+          fld("Từ khoá tìm thêm",inp(o.a||"",v=>set({a:v}),{ph:"vd: khánh tiết, lễ tân",aria:"Từ khoá của "+r.ten}))),
+        chk(o.an,v=>set({an:v}),"Ẩn khỏi kết quả tìm kiếm (kho, phòng kỹ thuật…)",`nf-an-${fi}-${r.i}`));
+      list.append(row);});
+    if(!shown)list.append(h("p",{class:"muted"},"Không có phòng nào khớp."));};
+  const fil=h("input",{type:"search",placeholder:"Lọc theo tên phòng hoặc khoa…","aria-label":"Lọc phòng"});fil.value=fFilter;
+  fil.addEventListener("input",()=>{fFilter=fil.value;draw();});
+  body.append(fld(`Phòng tầng ${F.f} (${F.phong.length})`,fil),list);draw();
 }
 
 // ---- thẻ Đối tượng
