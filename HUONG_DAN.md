@@ -235,6 +235,22 @@ Dùng khi thay biển bảng, đánh số phòng, đổi tên khoa. Hình 3D (t�
 
 Chỉnh sửa được lưu trong `map_data.json`, mục `nhaF`. File `public/nhaf/phong_goc.json` là danh sách phòng gốc theo bản vẽ, trang quản trị đọc file này để hiện danh sách, đừng xoá.
 
+### 5.10. Tạo và in mã QR (thẻ Mã QR)
+
+Mỗi mã QR mở bản đồ với vị trí xuất phát là chỗ dán mã. Hướng người đứng quét đang nhìn **không in trong mã**, trang đọc hướng từ dữ liệu, nên sửa hướng sau khi đã in vẫn đúng.
+
+**Bản đồ bệnh viện**
+- Cổng và cửa các tòa đã có mã sẵn. Trong thẻ Mã QR: chọn hướng nhìn, bấm **Tải ảnh** để lấy file PNG in được (có tên điểm và dòng hướng dẫn).
+- Dán thêm mã ở chỗ mới (giữa lối đi, ghế chờ, ngã ba…): bấm **＋ Đặt mã QR trên bản đồ bệnh viện** (hoặc công cụ **Đặt mã QR**, phím Q), rồi bấm lên lối đi ở đúng chỗ dán. Trang tự chèn điểm vào lối đi (mã `qr_1`, `qr_2`…). Ở bảng bên phải đặt **Tên in trên biển** và **Hướng nhìn**, rồi **Tải ảnh mã QR để in**.
+- Một ngã rẽ có sẵn cũng dán mã được: chọn ngã rẽ, tick **Có dán mã QR ở điểm này**.
+- Đổi mã điểm hoặc xoá điểm đã có mã: trang tự giữ mã cũ để QR đã in vẫn mở được.
+
+**Bản đồ nhà F**
+- Cửa và sảnh thang máy các tầng có mã sẵn, bấm **Tải ảnh** để in.
+- Dán thêm mã ở chỗ khác: bấm **＋ Chọn chỗ dán mã QR trên bản đồ nhà F**. Tab mới mở bản đồ 3D: chọn tầng, chạm vào đúng chỗ dán, bấm **Dùng chỗ này**. Quay lại trang quản trị, điểm mới đã có trong danh sách (mã `fqr_1`…): sửa tên biển, hướng nhìn, tải ảnh. Phải mở tab chọn chỗ trên cùng trình duyệt với trang quản trị.
+
+Sau khi thêm hoặc sửa, bấm **Lưu lên GitHub**. Mã mới chỉ quét được sau khi đã lưu. **Trang in tất cả mã QR** mở trang `/#qr` gồm mọi mã, kể cả mã vừa thêm.
+
 ## Đăng trang lên Cloudflare Pages (thay cho Netlify)
 
 Gói miễn phí của Netlify tính theo credit, mỗi lần lưu là trừ một ít nên nhanh hết. Cloudflare Pages miễn phí khoảng 500 lần đăng mỗi tháng, không giới hạn lượt xem.

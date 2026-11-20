@@ -943,6 +943,8 @@ function applyF(j){if(!j)return;const P=j.phong||{},K=j.khoa||{};
     if(o.n){r.n=String(o.n);window.FCUSTOM.add(r.n);}
     if("k" in o)r.k=(o.k==null||o.k<0)?null:o.k;
     r.a=o.a||"";r.an=!!o.an;});
+  // điểm dán mã QR thêm trong trang quản trị
+  (j.qr||[]).forEach(q=>{if(q&&q.id&&FLOORS[q.f]&&!STARTS.some(s=>s.id===q.id))STARTS.push({id:q.id,f:q.f,u:+q.u,v:+q.v,h:+(q.h||0),name:q.ten||"Điểm dán mã QR"});});
   buildAll();}
 const FREADY=new Promise(res=>{let done=false;const fin=()=>{if(!done){done=true;res();}};setTimeout(fin,1500);
   // ?preview=1: bản chưa lưu từ trang quản trị (cùng trình duyệt)
@@ -953,7 +955,8 @@ const FREADY=new Promise(res=>{let done=false;const fin=()=>{if(!done){done=true
 const fwait=fn=>FREADY.then(fn);
 setStart(startId,true);setFloor(curStart().f);renderHome();
 // mã QR mới dạng nhaf/?start=f2-p12 (vẫn nhận kiểu cũ #qr-f2-p12)
-{const st=new URLSearchParams(location.search).get("start");if(st&&STARTS.some(s=>s.id===st)){startId=st;setStart(st,true);setFloor(curStart().f);renderHome();}}
+{const st=new URLSearchParams(location.search).get("start");const go=()=>{startId=st;setStart(st,true);setFloor(curStart().f);renderHome();};
+ if(st&&STARTS.some(s=>s.id===st))go();else if(st)fwait(()=>{if(STARTS.some(s=>s.id===st))go();});}
 // mở từ trang chủ: ?to=<tầng>-<số phòng> chỉ đường luôn, ?q=<chữ> tìm sẵn
 {const sp=new URLSearchParams(location.search);const to=(sp.get("to")||"").match(/^(\d+)-(\d+)$/);
  // &nav=1: đi tiếp từ bản đồ bệnh viện, vào thẳng chế độ dẫn đường từng bước
@@ -965,5 +968,28 @@ setStart(startId,true);setFloor(curStart().f);renderHome();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>buildLabels());
 window.addEventListener("hashchange",()=>{const m=location.hash.match(/^#qr-([a-z0-9-]+)$/);if(m&&STARTS.some(s=>s.id===m[1]))setStart(m[1]);});
 requestAnimationFrame(tick);
+if(/[?&]chonqr=1/.test(location.search)){
+  document.body.classList.add("chonqr");
+  const st=document.createElement("style");st.textContent="body.chonqr #sheet,body.chonqr #topArea,body.chonqr #fmini{display:none!important}#qrPick{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:440px;margin:0 auto;z-index:40;background:var(--panel);color:var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;font:14px/1.5 'Be Vietnam Pro',system-ui,sans-serif}#qrPick b{font-size:15px}#qrPick .bt{display:flex;gap:8px;margin-top:10px}#qrPick button{flex:1;height:40px;border-radius:10px;border:1px solid var(--line);background:none;font:inherit;font-weight:700;cursor:pointer}#qrPick button.p{background:var(--primary);border-color:var(--primary);color:#fff}#qrPick small{color:var(--mute)}";
+  document.head.appendChild(st);
+  const box=document.createElement("div");box.id="qrPick";document.body.appendChild(box);
+  let P=null;
+  const idle=()=>{box.innerHTML="<b>Chọn chỗ dán mã QR</b><br>Chọn tầng ở cột bên phải, rồi chạm vào đúng chỗ sẽ dán mã trên bản đồ.";};idle();
+  const near=(fi,u,v)=>{let b=null,bd=1e9;FLOORS[fi].rooms.forEach(r=>{if(/^(WC|KỸ THUẬT ĐIỆN \+ ELV)$/.test(r._goc||r.n))return;const d=Math.hypot(r.u-u,r.v-v);if(d<bd){bd=d;b=r;}});return b?nice(b.n):"";};
+  cv.addEventListener("pointerup",e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;e.stopImmediatePropagation();
+    const r=cv.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mv,camera);
+    const hit=ray.intersectObjects(floors.filter(o=>o.vis).flatMap(o=>[o.slab,o.flo,o.walls,o.furn]))[0];if(!hit)return;
+    const fi=hit.object.userData.floor;if(mode==="all"){setFloor(fi);overview();return;}
+    const p=floors[fi].g.worldToLocal(hit.point.clone());const c=snap(fi,p.x+OX,p.z+OZ);
+    if(c<0){box.innerHTML="<b>Chỗ này không đi tới được</b><br>Hãy chạm vào hành lang, sảnh hoặc trong phòng.";return;}
+    const [u,v]=ptOf(c);const hh=Math.round(heading([u,v],[18.5,18])/45)*45%360;const nm=near(fi,u,v);
+    P={f:fi,u:Math.round(u*10)/10,v:Math.round(v*10)/10,h:hh,goi:`Tầng ${fi+1}${nm?" · gần "+nm:""}`};
+    const i=STARTS.findIndex(s=>s.id==="__chon");const S={id:"__chon",f:fi,u,v,h:hh,name:P.goi};if(i>=0)STARTS[i]=S;else STARTS.push(S);setStart("__chon",true);buildLabels();
+    box.innerHTML=`<b>${esc(P.goi)}</b><br><small>Chạm chỗ khác để chọn lại. Hướng nhìn và tên biển sửa tiếp ở trang quản trị.</small><div class="bt"><button class="p" id="qpOk">Dùng chỗ này</button></div>`;
+    $("qpOk").onclick=()=>{try{localStorage.setItem("mapEditor.fqrPick",JSON.stringify(Object.assign({t:Date.now()},P)));
+        box.innerHTML="<b>Đã gửi về trang quản trị</b><br>Quay lại thẻ Mã QR của trang quản trị để đặt tên, hướng nhìn rồi bấm Lưu. Có thể đóng tab này.";}
+      catch(err){box.innerHTML="<b>Không gửi được</b><br>Trình duyệt chặn lưu dữ liệu. Hãy mở trang này từ đúng trình duyệt đang mở trang quản trị.";}};
+  },{capture:true});
+}
 })();
 </script>
